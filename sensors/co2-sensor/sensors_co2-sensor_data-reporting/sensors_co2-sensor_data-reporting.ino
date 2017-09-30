@@ -74,7 +74,7 @@ double getCo2Values(int sensorIn){
       Serial.print(voltage);
       Serial.println("mv");
       
-      //Print CO2 concentration
+      //Print CO2 concentration.
       Serial.print("Concentation: ");
       Serial.print(concentration);
       Serial.println("ppm");
