@@ -1,4 +1,4 @@
-//pin location and number definitions
+//pin location and number definitions CHECK AND REDEFINE BEFORE EACH RUN
 #define PINOXYGEN 3
 #define PINCO2 4
 #define PINENV 5
@@ -8,51 +8,55 @@
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
   pinMode(PINOXYGEN, INPUT);
-  pinMode(PINCO2, INPUT);
+  pinMode(PINCO2, INPUT); //CO2 sensor takes analog values, check pin assignments!
   pinMode(PINENV, INPUT);
+  Serial.begin(9600);
 }
 
 //Main logic
-
 void loop() {
   //declare vars, should we use global?
   double conc_o2=-1;
   double conc_co2=-1;
   double env_temp=-1;
-  double env_humidity=-1;
+  double env_pres=-1;
   char JSONBourne [1024]; //check string possible length and overflow behavior
 
-  //we check for preheat status (further error handlong
-  while (env_temp==-1 || env_humidity==-1 || conc_co2==-1 || conc_o2==-1 ){
-    Serial.println("Preheating sensors!");
+  //assigning data into vars
+  conc_o2=getOxygen();
+  conc_co2=getCO2();
+  env_temp=getTemperature();
+  env_pres=getPressure();
+
+  //we check for preheat status (further error handling required)
+  while (env_temp==-1 || env_pres==-1 || conc_co2==-1 || conc_o2==-1 ){
+    Serial.print("Preheating sensors! ");
   }
-  JSONBourne=sprintf(JSONBourne, "{"GasComposition":{"CO2":"%d" "O2":"%d"}"Temperature":"%d" "Pressure":"%d"}", CO2, O2, temperature, pressure);
+
+  //printing into JSON variable then transmitting to serial
+  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, env_temp, env_pres);
   Serial.println(JSONBourne);
+  
 }
 
 //Functions to be referred to
-//Environment polling data should return 
-
-double pollAverage(){
-  //wip
-}
+//Environment polling data should return -555 as an agreed-upon error value (might be able to change with predefined value above)
 
 double getOxygen(){
   
-  return concentrationOxygen;
+  //return concentrationOxygen;
 }
 
 double getCO2(){
-  return concentrationCO2;
+  //return concentrationCO2;
 }
 
 double getTemperature(){
-  return temperature;
+  //return temperature;
 }
 
 double getPressure(){
-  return pressure;
+  //return pressure;
 }
 
