@@ -5,6 +5,7 @@
 
 #define MIN_VOLTAGE 400
 #define ERROR_CODE -555
+#define SENTINAL -1
 
 //INCREASE VALUES BELOW TO DECREASE PRINT FREQUENCY, AND VICE VERSA
 #define PREHEAT_PRINT_COUNTER_MOD 20
@@ -18,18 +19,18 @@ enum AV{
 };
 
 //A variable that stores sensor integrity. Uses values of enumerated AV
-int integrityAlertLevel = 0;
+short integrityAlertLevel = 0;
 
-int loopCounter = 0;
+long loopCounter = 0;
 
 double getCo2Values(int sensorIn){
 
-  float voltage, concentration;
+  double voltage, concentration;
   //Read sensor report.
-  int sensorValue = analogRead(sensorIn); 
+  short sensorValue = analogRead(sensorIn); 
 
   //Check and handle the sensor integrity.
-  int integrityLevel = checkSensorIntegrity(sensorValue);
+  short integrityLevel = checkSensorIntegrity(sensorValue);
   switch(integrityLevel){
     case -1:
       Serial.println("ERROR: Sensor is faulty.");
@@ -66,7 +67,7 @@ double getCo2Values(int sensorIn){
     if(loopCounter%DATA_PRINT_COUNTER_MOD == 0){ //Controls data printing per loop set.
 
       //Calculate the voltage difference and, by extension, the CO2 concentration.
-      int voltage_diference = voltage - MIN_VOLTAGE;
+      short voltage_diference = voltage - MIN_VOLTAGE;
       concentration = voltage_diference*50.0/16.0;
       
       // Print Voltage
@@ -88,10 +89,10 @@ double getCo2Values(int sensorIn){
 }
 
 //Integrity check variables that cannot be bound to function scope.
-int sensorValueOccuranceCounter = 0;
-int lastSensorValue = -1; //Initialized with a sentinal value.
+short sensorValueOccuranceCounter = 0;
+short lastSensorValue = SENTINAL;
 
-int checkSensorIntegrity(int sensorValue){
+short checkSensorIntegrity(int sensorValue){
   
   //Ensure the sensor is not faulty.
   if(sensorValue == 0)
@@ -100,7 +101,7 @@ int checkSensorIntegrity(int sensorValue){
     return -1;
   }
   //Make sure lastSensorValue has been defined.
-  else if(lastSensorValue < 0){
+  else if(lastSensorValue == SENTINAL){
       lastSensorValue = sensorValue;
   }
   else if(sensorValue == lastSensorValue){
