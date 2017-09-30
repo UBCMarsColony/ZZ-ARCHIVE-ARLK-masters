@@ -22,7 +22,9 @@ int integrityAlertLevel = 0;
 
 int loopCounter = 0;
 
-int getCo2Values(int sensorIn){
+double getCo2Values(int sensorIn){
+
+  float voltage, concentration;
   //Read sensor report.
   int sensorValue = analogRead(sensorIn); 
 
@@ -46,7 +48,7 @@ int getCo2Values(int sensorIn){
   }
 
   // Convert analog signal to voltage.
-  float voltage = sensorValue*(5000/1024.0); 
+  voltage = sensorValue*(5000/1024.0); 
 
   //Choose action to perform given the voltage.
   if(voltage < MIN_VOLTAGE)
@@ -65,7 +67,7 @@ int getCo2Values(int sensorIn){
 
       //Calculate the voltage difference and, by extension, the CO2 concentration.
       int voltage_diference = voltage - MIN_VOLTAGE;
-      float concentration = voltage_diference*50.0/16.0;
+      concentration = voltage_diference*50.0/16.0;
       
       // Print Voltage
       Serial.print("voltage: ");
@@ -82,7 +84,7 @@ int getCo2Values(int sensorIn){
   //Increment the print controlling counter.
   loopCounter++;
 
-  return concentation;
+  return concentration;
 }
 
 //Integrity check variables that cannot be bound to function scope.
