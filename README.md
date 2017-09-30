@@ -1,2 +1,2 @@
 # airlock-masters
-UBC Mars Colony code repository
+UBC Mars Colony code repository.
