@@ -9,6 +9,6 @@ To ensure the repository is quick to navigate, all Mars Colony files follow a na
 *Project-Module_Project-Part_Function-Name(_Sample).codetype*.
 
 ### Folders
-Folders should be broken up into parts as well, to ensure code can be found as quickly as possible. For instance, the path to a CO2 Sensor file may be:
+Folders should be broken up into logical parts, to ensure code can be found as quickly as possible. For instance, the path to a CO2 Sensor file may be:
 
 *airlock-masters/sensors/co2-sensor/sensors-co2-data-reporting/sensors-co2-data-reporting*
