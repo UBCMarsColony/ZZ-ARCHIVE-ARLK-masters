@@ -4,15 +4,11 @@
  */
 
 #define MIN_VOLTAGE 400
+#define ERROR_CODE -555
 
 //INCREASE VALUES BELOW TO DECREASE PRINT FREQUENCY, AND VICE VERSA
 #define PREHEAT_PRINT_COUNTER_MOD 20
 #define DATA_PRINT_COUNTER_MOD 10
-
-enum SV{
-  SENSOR_CLEAR,
-  SENSOR_FAULTY
-};
 
 enum AV{
   STATUS_CLEAR,
@@ -35,7 +31,7 @@ int getCo2Values(int sensorIn){
   switch(integrityLevel){
     case -1:
       Serial.println("ERROR: Sensor is faulty.");
-      return SENSOR_FAULTY;
+      return ERROR_CODE;
     case STATUS_MINOR_WARN:
       //Continue to moderate warn
     case STATUS_MODERATE_WARN:
@@ -44,7 +40,7 @@ int getCo2Values(int sensorIn){
     case STATUS_SERIOUS_WARN:
       Serial.println("WARNING: Sensor integrity compromised. Awaiting fix...");
       delay(500);
-      return SENSOR_FAULTY;
+      return ERROR_CODE;
     default:
       break;
   }
@@ -86,7 +82,7 @@ int getCo2Values(int sensorIn){
   //Increment the print controlling counter.
   loopCounter++;
 
-  return 0;
+  return concentation;
 }
 
 //Integrity check variables that cannot be bound to function scope.
@@ -126,31 +122,4 @@ int checkSensorIntegrity(int sensorValue){
 
   return integrityAlertLevel;
 }
-
-/*THE FUNCTIONS setup() AND loop() SHOULD NOT BE INCLUDED IN THE UPLOAD CODE*/
-void setup(){  
-  Serial.begin(9600);  
-  // Set the default voltage of the reference voltage
-  analogReference(DEFAULT); 
-}
-
-void loop(){
-  getCo2Values(A0);
-  delay(100); 
-}
-
-
-/***************************************************
- * Infrared CO2 Sensor0-5000ppm 
- * ****************************************************
- * This example The sensors detect CO2
- * 
- * @author lg.gang(lg.gang@qq.com)
- * @version  V1.0
- * @date  2016-7-6
- * 
- * GNU Lesser General Public License.
- * See <http://www.gnu.org/licenses/> for details.
- * All above must be included in any redistribution
- * ****************************************************/
 
