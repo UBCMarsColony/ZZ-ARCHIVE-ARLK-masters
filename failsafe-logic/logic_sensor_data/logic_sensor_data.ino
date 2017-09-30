@@ -6,12 +6,12 @@
 
 //Setup subroutine
 
-void setup() 
+void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
   pinMode(PINOXYGEN, INPUT);
-  pinMode(PINCO2, INPUT);
+  pinMode(PINCO2, INPUT); //CO2 sensor takes analog values, check pin assignments!
   pinMode(PINENV, INPUT);
+  Serial.begin(9600);
 }
 
 //Main logic
@@ -35,7 +35,7 @@ void loop() {
   }
 
   //printing into JSON variable then transmitting to serial
-  JSONBourne=sprintf(JSONBourne, "{"GasComposition":{"CO2":"%d" "O2":"%d"}"Temperature":"%d" "Pressure":"%d"}", conc_co2, conc_o2, env-temp, env_pres);
+  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, env_temp, env_pres);
   Serial.println(JSONBourne);
   
 }
@@ -45,18 +45,18 @@ void loop() {
 
 double getOxygen(){
   
-  return concentrationOxygen;
+  //return concentrationOxygen;
 }
 
 double getCO2(){
-  return concentrationCO2;
+  //return concentrationCO2;
 }
 
 double getTemperature(){
-  return temperature;
+  //return temperature;
 }
 
 double getPressure(){
-  return pressure;
+  //return pressure;
 }
 
