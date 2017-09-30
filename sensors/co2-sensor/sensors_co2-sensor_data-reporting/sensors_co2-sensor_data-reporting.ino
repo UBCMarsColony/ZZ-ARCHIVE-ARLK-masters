@@ -123,3 +123,31 @@ int checkSensorIntegrity(int sensorValue){
   return integrityAlertLevel;
 }
 
+/*THE FUNCTIONS setup() AND loop() SHOULD NOT BE INCLUDED IN THE UPLOAD CODE
+* They are here so that the code can run independantly of the main system for debug & development purposes.*/
+void setup(){  
+  Serial.begin(9600);  
+  // Set the default voltage of the reference voltage
+  analogReference(DEFAULT); 
+}
+
+void loop(){
+  getCo2Values(A0);
+  delay(100); 
+}
+
+
+/***************************************************
+ * Infrared CO2 Sensor0-5000ppm 
+ * ****************************************************
+ * This example The sensors detect CO2
+ * 
+ * @author lg.gang(lg.gang@qq.com)
+ * @version  V1.0
+ * @date  2016-7-6
+ * 
+ * GNU Lesser General Public License.
+ * See <http://www.gnu.org/licenses/> for details.
+ * All above must be included in any redistribution
+ * ****************************************************/
+
