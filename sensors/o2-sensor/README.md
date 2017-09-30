@@ -1,7 +1,7 @@
-#O2 Sensor
+# O2 Sensor
 
-##Function
+## Function
 This sensor reports O2 levels.
 
-##Details
+## Details
 **Model:** Grove O2 Sensor
