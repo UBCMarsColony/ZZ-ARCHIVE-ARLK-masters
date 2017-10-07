@@ -1,0 +1,43 @@
+#include <Wire.h>
+#include <BaroSensor.h>
+
+void setup()
+{
+  Serial.begin(9600);
+  BaroSensor.begin();
+}
+
+void loop()
+{
+  //Check if sensor is working properly
+  if(!BaroSensor.isOK()) {
+    Serial.print("Sensor not Found/OK. Error: "); 
+    Serial.println(BaroSensor.getError());
+    BaroSensor.begin(); // Try to reinitialise the sensor if we can
+  }
+  
+  else {
+    Serial.print("Temperature: "); 
+    
+    //Error checking:
+    //Temp range of sensor: -40 to +85 degrees celcius
+    if(getTemperature() <=-40 || getTemperature() >=85){
+      Serial.println("-555");
+    }
+    else { 
+      Serial.println(BaroSensor.getTemperature());
+    }
+
+    Serial.print("Pressure:    ");
+    
+    //Error checking:
+    //Pressure range of sensor: 10 to 2000 mbar
+    if(getPressure() <=10 || getPressure() >=2000){
+      Serial.println("-555");
+    }
+    else {
+      Serial.println(BaroSensor.getPressure());
+    }
+  }
+  delay(1000);
+}
