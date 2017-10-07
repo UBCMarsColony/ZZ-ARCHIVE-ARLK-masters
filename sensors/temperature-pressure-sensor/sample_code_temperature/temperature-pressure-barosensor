@@ -21,7 +21,7 @@ void loop()
     
     //Error checking:
     //Temp range of sensor: -40 to +85 degrees celcius
-    if(getTemperature() <-40 || getTemperature() >85){
+    if(BaroSensor.getTemperature() <-40 || BaroSensor.getTemperature() >85){
       Serial.println("-555");
     }
     else { 
@@ -32,7 +32,7 @@ void loop()
     
     //Error checking:
     //Pressure range of sensor: 10 to 2000 mbar
-    if(getPressure() <10 || getPressure() >2000){
+    if(BaroSensor.getPressure() <10 || BaroSensor.getPressure() >2000){
       Serial.println("-555");
     }
     else {
