@@ -32,3 +32,4 @@ void receiveEvent(int howMany) {
   int x = Wire.read();    // receive byte as an integer
   Serial.println(x);         // print the integer
 }
+//test
