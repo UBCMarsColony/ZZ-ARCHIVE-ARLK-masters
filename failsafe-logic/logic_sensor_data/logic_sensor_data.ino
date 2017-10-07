@@ -2,11 +2,11 @@
 Overall logic to to gather and pass on sensor data to the raspberry pin
 getCO2, getOxygen written by Thomas Richmond
 getTemperature, getPressure licensed under GNU GPL V3, modified by Teryn Tsang
-Wrapper code written by Kevin Oesef
+This wrapper code written by Kevin Oesef
 All code licensed under GNU GPL V3
 */
 
-//pin location and number definitions CHECK AND REDEFINE BEFORE EACH RUN
+//pin location and number definitions, redefine before each run!
 #define PINOXYGEN 3
 #define PINCO2 4
 #define PINENV 5
@@ -19,10 +19,11 @@ All code licensed under GNU GPL V3
 #define MIN_VOLTAGE 400 //minimum voltage for CO2 sensor subroutine
 #define SENTINAL -1
 #define PREHEAT -600
+#define PREHEAT_PRINT_COUNTER_MOD 20
 
 //o2 data gathering constants
 #define REFERENCE_VOLTAGE 3.3
-#define DATA_PRINT_COUNTER_MOD 10 //what is this for?
+#define DATA_PRINT_COUNTER_MOD 10 //what is this for? shared with O2 and CO2
 
 //Setup subroutine
 void setup() {
@@ -111,7 +112,7 @@ double getCO2(int sensorIn){
     //Choose action to perform given the voltage.
     if(voltage < MIN_VOLTAGE){
       //PREHEATING
-      if(loopCounter%PREHEAT_PRINT_COUNTER_MOD == 0){ //Controls data printing per loop set.
+      if(loopCounter % PREHEAT_PRINT_COUNTER_MOD == 0){ //Controls data printing per loop set.
         Serial.print("Preheating. Current voltage: ");
         Serial.print(voltage);
         Serial.println("mv");
