@@ -5,7 +5,7 @@
 // Receives data as an I2C/TWI slave device
 // Refer to the "Wire Master Writer" example for use with this
 
-// Created 29 March 2006
+// Created 29 March 2006.
 
 // This example code is in the public domain.
 
