@@ -28,8 +28,7 @@ double getCo2Values(int sensorIn){
   voltage = sensorValue*(5000/1024.0); 
 
   //Choose action to perform given the voltage.
-  if(voltage < MIN_VOLTAGE)
-  {
+  if(voltage < MIN_VOLTAGE){
     //PREHEATING
     if(loopCounter%PREHEAT_PRINT_COUNTER_MOD == 0){ //Controls data printing per loop set.
       Serial.print("Preheating. Current voltage: ");
