@@ -2,7 +2,7 @@
  * Written: October 2017
  */
 
-#define REFERENCE_VOLTAGE 3.3 // voltage of adc reference
+#define REFERENCE_VOLTAGE 3.3 // voltage of ADC reference
 
 //Increase values below to decrease print frequency.
 #define DATA_PRINT_COUNTER_MOD 10
