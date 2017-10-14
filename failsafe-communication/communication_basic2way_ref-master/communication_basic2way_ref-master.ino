@@ -13,7 +13,7 @@ void setup()
 
 char x1;
 char x2[6];
-char x3[] = "Jiang";
+char x3[] = "Jiang"; //Array used for comparison
 int a = 0;
 
 void loop()
@@ -34,8 +34,7 @@ void loop()
   Serial.print("Slave sent ");
   Serial.print(bytes);
   Serial.print(" bytes of information \n");
-  x2[5] = 0;
- 
+   
   for(int i = 0; i< bytes; i++)
   {
     
@@ -48,14 +47,25 @@ void loop()
     if (strcmp(x2,x3) == 0){  // Prints Full name if x2 matches x3
     Serial.print("Full name is Jacky ");
     Serial.print(x2);
-    Serial.print("\n");
-    a = 0;
+    Serial.print("\n IF \n");
+    
+    a = 0;  // Resets Index to 0
+    memset(x2, 0, sizeof x2); // Resets x2 char array
     }
+    
     else if(a < (bytes-1)) {
+    Serial.print(x2);
+    Serial.print("\n ELSE IF \n");
+    
     a++;  // Increases Index
     }
+    
     else {
     a = 0;  // Resets Index to 0
+    memset(x2, 0, sizeof x2); // Resets x2 char array
+    
+    Serial.print(x2);
+    Serial.print("\n ELSE \n");
     }
   }  
   delay(500);
