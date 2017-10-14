@@ -11,10 +11,10 @@ void setup()
   Serial.begin(9600);  
 }
 
-char x1;
-char x2[6];
-char x3[] = "Jiang"; //Array used for comparison
-int a = 0;
+char x1;             // Stores the read character
+char x2[6];          // Array used to store string of characters read
+char x3[] = "Jiang"; // Array used for comparison
+int a = 0;           // Used to store index position
 
 void loop()
 {
@@ -22,12 +22,12 @@ void loop()
   Serial.print(SLAVE_ADDRESS);
   Serial.print("\n");
   Wire.beginTransmission(SLAVE_ADDRESS);   
-  Wire.write("Jacky");                
+  Wire.write("Jacky");    // Sending string to slave            
   Wire.endTransmission();   
   delay(500);
 
   
-  Serial.println("Master Requesting Data"); //
+  Serial.println("Master Requesting Data"); //Requesting data from slave.
   Wire.requestFrom(SLAVE_ADDRESS, 5);
 
   int bytes = Wire.available();
