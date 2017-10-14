@@ -21,9 +21,6 @@ double getCo2Values(int sensorIn){
   //Read sensor report.
   short sensorValue = analogRead(sensorIn); 
 
-  //Check and handle the sensor integrity.
-  short integrityLevel = checkSensorIntegrity(sensorValue);
-
   // Convert analog signal to voltage.
   voltage = sensorValue*(5000/1024.0); 
 
@@ -91,4 +88,3 @@ void loop(){
  * See <http://www.gnu.org/licenses/> for details.
  * All above must be included in any redistribution
  * ****************************************************/
-
