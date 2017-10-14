@@ -5,18 +5,10 @@
 
 #define MIN_VOLTAGE 400
 #define ERROR_CODE -555
-#define SENTINAL -1
 
 //INCREASE VALUES BELOW TO DECREASE PRINT FREQUENCY, AND VICE VERSA
 #define PREHEAT_PRINT_COUNTER_MOD 20
 #define DATA_PRINT_COUNTER_MOD 10
-
-enum AV{
-  STATUS_CLEAR,
-  STATUS_MINOR_WARN,
-  STATUS_MODERATE_WARN,
-  STATUS_SERIOUS_WARN
-};
 
 //A variable that stores sensor integrity. Uses values of enumerated AV
 short integrityAlertLevel = 0;
@@ -28,25 +20,6 @@ double getCo2Values(int sensorIn){
   double voltage, concentration;
   //Read sensor report.
   short sensorValue = analogRead(sensorIn); 
-
-  //Check and handle the sensor integrity.
-  short integrityLevel = checkSensorIntegrity(sensorValue);
-  switch(integrityLevel){
-    case -1:
-      Serial.println("ERROR: Sensor is faulty.");
-      return ERROR_CODE;
-    case STATUS_MINOR_WARN:
-      //Continue to moderate warn
-    case STATUS_MODERATE_WARN:
-      Serial.println("WARNING: Sensor integrity may be compromised. Please standby until further notice.");
-      break;
-    case STATUS_SERIOUS_WARN:
-      Serial.println("WARNING: Sensor integrity compromised. Awaiting fix...");
-      delay(500);
-      return ERROR_CODE;
-    default:
-      break;
-  }
 
   // Convert analog signal to voltage.
   voltage = sensorValue*(5000/1024.0); 
@@ -88,44 +61,6 @@ double getCo2Values(int sensorIn){
   return concentration;
 }
 
-//Integrity check variables that cannot be bound to function scope.
-short sensorValueOccuranceCounter = 0;
-short lastSensorValue = SENTINAL;
-
-short checkSensorIntegrity(int sensorValue){
-  
-  //Ensure the sensor is not faulty.
-  if(sensorValue == 0)
-  {
-    //FAULT
-    return -1;
-  }
-  //Make sure lastSensorValue has been defined.
-  else if(lastSensorValue == SENTINAL){
-      lastSensorValue = sensorValue;
-  }
-  else if(sensorValue == lastSensorValue){
-    
-    sensorValueOccuranceCounter++;
-
-    if(sensorValueOccuranceCounter > 1000)
-      integrityAlertLevel = STATUS_SERIOUS_WARN;
-    else if(sensorValueOccuranceCounter > 150)
-      integrityAlertLevel = STATUS_MODERATE_WARN;
-    else if(sensorValueOccuranceCounter > 50)
-      integrityAlertLevel = STATUS_MINOR_WARN;
-  }
-  else{
-    if(integrityAlertLevel != 0)
-      Serial.println("Sensor integrity reestablished.");
-    integrityAlertLevel = STATUS_CLEAR;
-    lastSensorValue = sensorValue;
-    sensorValueOccuranceCounter = 0;
-  }
-
-  return integrityAlertLevel;
-}
-
 /*THE FUNCTIONS setup() AND loop() SHOULD NOT BE INCLUDED IN THE UPLOAD CODE
 * They are here so that the code can run independantly of the main system for debug & development purposes.*/
 void setup(){  
@@ -153,4 +88,3 @@ void loop(){
  * See <http://www.gnu.org/licenses/> for details.
  * All above must be included in any redistribution
  * ****************************************************/
-
