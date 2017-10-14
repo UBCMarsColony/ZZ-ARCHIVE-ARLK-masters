@@ -11,7 +11,10 @@ void setup()
   Serial.begin(9600);  
 }
 
-char x=" ";
+char x1;
+char x2[6];
+char x3[] = "Jiang"; //Array used for comparison
+int a = 0;
 
 void loop()
 {
@@ -24,19 +27,46 @@ void loop()
   delay(500);
 
   
-  Serial.println("Requesting Data"); 
+  Serial.println("Master Requesting Data"); //
   Wire.requestFrom(SLAVE_ADDRESS, 5);
 
   int bytes = Wire.available();
   Serial.print("Slave sent ");
   Serial.print(bytes);
-  Serial.print(" of information\n");
+  Serial.print(" bytes of information \n");
+   
   for(int i = 0; i< bytes; i++)
   {
-    x = Wire.read();
+    
+    x1 = Wire.read();
+    x2[a] = x1;
     Serial.print("Slave Sent: ");
-    Serial.print(x);
+    Serial.print(x1);
     Serial.print("\n");
+    
+    if (strcmp(x2,x3) == 0){  // Prints Full name if x2 matches x3
+    Serial.print("Full name is Jacky ");
+    Serial.print(x2);
+    Serial.print("\n IF \n");
+    
+    a = 0;  // Resets Index to 0
+    memset(x2, 0, sizeof x2); // Resets x2 char array
+    }
+    
+    else if(a < (bytes-1)) {
+    Serial.print(x2);
+    Serial.print("\n ELSE IF \n");
+    
+    a++;  // Increases Index
+    }
+    
+    else {
+    a = 0;  // Resets Index to 0
+    memset(x2, 0, sizeof x2); // Resets x2 char array
+    
+    Serial.print(x2);
+    Serial.print("\n ELSE \n");
+    }
   }  
   delay(500);
 }
