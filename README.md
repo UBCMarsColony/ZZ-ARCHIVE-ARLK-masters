@@ -1,5 +1,5 @@
 # airlock-masters
-UBC Mars Colony code repository.
+UBC Mars Colony airlock repository. All source code, datasheets, and other materials related to the airlock are found here.
 
 ## Naming convention
 
