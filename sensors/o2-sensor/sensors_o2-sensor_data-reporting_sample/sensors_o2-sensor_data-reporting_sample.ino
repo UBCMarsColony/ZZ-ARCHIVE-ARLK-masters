@@ -26,13 +26,14 @@ void loop()
     Serial.print("Vout =");
     
     Vout = readO2Vout();
-    if (counter > 1200) {
+    if (counter > 12) {
         Serial.print(Vout);
         Serial.print(" V, Concentration of O2 is ");
         Serial.println(readConcentration());
     }
     else {
-        Serial.print(" Preheat still in progress\n");
+      Serial.print(Vout);
+      Serial.print(", Preheat still in progress\n");
     }
     delay(500);
     if (counter <1205) {
