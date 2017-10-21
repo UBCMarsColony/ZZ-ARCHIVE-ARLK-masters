@@ -4,16 +4,18 @@ Sensors are the systems that will allow for polling of the location at which the
 For a complete list of sensors, refer to the list below:
 <details>
   <summary>Sensor List</summary>
-  - Gravity IR Co2 Sensor <br/>
-  - Grove O2 Sensor <br/>
-  - Temperature/Pressure Sensor
+  - <a href="co2-sensor">Gravity IR CO2 Sensor</a> <br/>
+  - <a href="o2-sensor">Grove O2 Sensor</a> <br/>
+  - <a href="temperature-pressure-sensor">Temperature/Pressure Sensor</a> <br/>
 </details>
 
 ## Universal Sensor Details
 To make sensor code as maintainable as possible, standardizations are in place to reduce code arbitrarity. These should be followed at all times unless otherwise explicitly specified.
 
 ### Encoded Reports
-Oftentimes, sensors encountering an expected situation will relay the situation to the master using a raw integer value. 
+Oftentimes, sensors encountering an expected situation will relay the situation to the master using a raw integer value. These values are listed below:
 
-#### Generic Error
-When a sensor encounters an error, it should return the standardized sensor error code **-555**.
+<details>
+  <summary>Sensor List</summary>
+  <b>-555</b>: Generic Error
+</details>
