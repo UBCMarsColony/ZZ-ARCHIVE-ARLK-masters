@@ -1,7 +1,7 @@
-# CO2 Sensor
+# CO₂ Sensor
 
 ## Function
-The CO2 sensor periodically reports CO₂ data, in parts per million (ppm).
+The CO₂ sensor periodically reports CO₂ data, in parts per million (ppm).
 
 ## Details
 **Model:** Gravity Infrared CO₂ Sensor
