@@ -4,7 +4,7 @@
 
 #define ADC_PORT A0
 
-#define REFERENCE_VOLTAGE_V 5 // voltage of ADC reference
+#define REFERENCE_VOLTAGE_V 5 // voltage of ADC reference.
 #define ERROR_CODE -555
 
 //Increase values below to decrease print frequency.
