@@ -4,7 +4,7 @@ Sensors are the systems that will allow for polling of the location at which the
 For a complete list of sensors, refer to the list below:
 <details>
   <summary>Sensor List</summary>
-  • <a href="co2-sensor">Gravity IR CO₂ Sensor</a><br/>
+  • <a href="co2-sensor">Gravity IR CO₂ Sensor</a> <br/>
   • <a href="o2-sensor">Grove O₂ Sensor</a><br/>
   • <a href="temperature-pressure-sensor">Temperature/Pressure Sensor</a><br/>
 </details>
