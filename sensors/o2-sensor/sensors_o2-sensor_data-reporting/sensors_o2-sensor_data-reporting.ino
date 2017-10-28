@@ -10,24 +10,40 @@
 //Increase values below to decrease print frequency.
 #define DATA_PRINT_COUNTER_MOD 10
 
-double getO2Concentration(int sensorIn){
-  //Read O2 sensor data
-  long sum = 0;
+/* Get the CO2 concentration from the CO2 sensor. Return it, in ppm.
+ * Param: sensorIn - The ADC Port to which this port is attached.
+ * Param: printOn - Specifies if printing should occur (set to 1 if this is the case). Overload parameter
+ */
+double getO2Concentration(int sensorIn, int printOn = 0){
+  //Collect 32 samples of O2 data from the sensor. Then, divide by 32 to get the representative average. 
+  //(NOTE: Bitwise shift 5 right (>>5) is equivalent to dividing by 2^(5), which is 32).
+  //During this process, make sure the sensor is functioning properly, and return an error code otherwise.
+  long sensorValue = 0;
   for(int i = 0; i<32; i++){
-    sum += analogRead(sensorIn);
-  }
-  sum >>= 5;
-
-  //Convert O2 sensor data to voltage.
-  float voltage = sum * (REFERENCE_VOLTAGE_V / 1023.0);
-
-  if( voltage == 0 )
-    return ERROR_CODE;
+    int nextVal = analogRead(sensorIn);
     
+    if (nextVal == 0){
+      if (printOn == 1)
+        Serial.print("ERROR: Sensor is not functioning as expected. Cannot read O2 data.");
+      return ERROR_CODE;
+    }
+   
+    sensorValue += nextVal;
+  }
+  //Didive by 2^(5) to get the average
+  sensorValue >>= 5;
+  
+  //Convert received sensorValue to voltage, and concentrationPercentage.
+  float voltage = ( sensorValue / 1024.0 ) * REFERENCE_VOLTAGE_V;
   float concentrationPercentage = (voltage * 0.21 / 2.0) * 100;
-  Serial.print("Concentration: ");
-  Serial.print(concentrationPercentage);
-  Serial.println("%");
+
+  //Print out O2 concentration data.
+  if(printOn == 1){
+    Serial.print("Concentration: ");
+    Serial.print(concentrationPercentage);
+    Serial.println("%");
+  }
+  
   return concentrationPercentage;
 }
 
