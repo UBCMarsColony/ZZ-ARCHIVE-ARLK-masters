@@ -15,7 +15,6 @@ All code licensed under GNU GPL V3
 //subroutine specific constants
 #define ERROR_CODE -555 //generic error code returned by sensors that screw up
 #define ERROR_INIT_FAILURE -666
-#define REF_VOLT_33 3.3 //reference voltage for 3,3 volt sensors
 
 //co2 data gathering constants
 #define MIN_VOLTAGE 400 //minimum voltage for CO2 sensor subroutine
@@ -24,7 +23,7 @@ All code licensed under GNU GPL V3
 #define PREHEAT_PRINT_COUNTER_MOD 20
 
 //o2 data gathering constants
-#define REFERENCE_VOLTAGE 3.3
+#define REFERENCE_VOLTAGE 5 //reference voltage for conversion in getOxygen()
 #define DATA_PRINT_COUNTER_MOD 10 //what is this for? shared with O2 and CO2
 
 //Setup subroutine
@@ -41,8 +40,8 @@ void loop() {
   //declare vars, should we use global?
   int conc_o2=-1;
   int conc_co2=-1;
-  double environment_array [2]; //2 row array of environment conditions: [TEMPERATURE|PRESSURE]
-  double everything_array [4];
+  int environment_array [2]; //2 row array of environment conditions: [TEMPERATURE|PRESSURE]
+  int everything_array [4];
   char JSONBourne [1024]; //check string possible length and overflow behavior
 
   //assigning data into vars
@@ -57,26 +56,27 @@ void loop() {
   //}
 
   //compile everything into array
-  everything_array[0]=conc_o2;
-  everything_array[1]=conc_co2;
-  everything_array[2]=environment_array[0];
-  everything_array[3]=environment_array[1];
+  // everything_array[0]=conc_o2;
+  // everything_array[1]=conc_co2;
+  // everything_array[2]=environment_array[0];
+  // everything_array[3]=environment_array[1];
 
   //printing into JSON variable then transmitting to serial
-  Serial.println(conc_co2);
-  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, environment_array[1], environment_array[2]);
+  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, environment_array[0], environment_array[1]);
   Serial.println(JSONBourne);
   
   //debugging printer
-  int i;
-  for(i=0;i>=3;i++){
-    Serial.print(everything_array[i]);
-  }
+  // int i;
+  // for(i=0;i>=3;i++){
+  //   Serial.print(everything_array[i]);
+  // }
+  // i=0;
 }
 
 //Subroutine functions
 //Environment polling data should return -555 as an agreed-upon error value (might be able to change with predefined value above)
 
+//getOxygen(char sensorIn) returns the oxygen percentage in the air
 int getOxygen(char sensorIn){
   long sum = 0;
   for(int i = 0; i<32; i++){
@@ -85,16 +85,17 @@ int getOxygen(char sensorIn){
 
   sum >>= 5;
 
-  float voltage = sum * (REFERENCE_VOLTAGE / 1023.0);
+  float voltage = sum * (REFERENCE_VOLTAGE / 1023.0); //change it for your used voltage!
 
   float concentration = voltage * 0.21 / 2.0;
   /*Serial.print("Concentration: ");
   Serial.print(concentration);
   Serial.println("ppm");*/
   float concentrationPercentage = concentration * 100;
-  return concentrationPercentage; //this used to return concentration only, converted 2 percent (kevin)
+  return concentrationPercentage; //this used to return concentration only, converted to percent (kevin)
 }
 
+//getCO2(char sensorIn) takes the pin assignment number sensorIn and returns the CO2 concentration in ppm (parts per million)
 int getCO2(char sensorIn){
   
     double voltage, concentration;
@@ -114,14 +115,17 @@ int getCO2(char sensorIn){
     return concentration;
 }
 
-double getEnvironment(double environment_array[]){
+//getEnvironment passes by array the values of temperature and pressure, pressure converted to kilopascals, temperature in 
+//degrees Celsius.
+double getEnvironment(int environment_array[]){
   double temp;
   double pressure;
+  double factorKpa=0.1;
   
   //Check if sensor is working properly
   if(!BaroSensor.isOK()) {
+    environment_array[0]=ERROR_INIT_FAILURE;
     environment_array[1]=ERROR_INIT_FAILURE;
-    environment_array[2]=ERROR_INIT_FAILURE;
     BaroSensor.begin(); // Try to reinitialise the sensor if we can
   }
   
@@ -142,7 +146,7 @@ double getEnvironment(double environment_array[]){
       environment_array[1]=ERROR_CODE;
     }
     else {
-      environment_array[1]=pressure;
+      environment_array[1]=pressure*factorKpa;
     }
   }
 }
