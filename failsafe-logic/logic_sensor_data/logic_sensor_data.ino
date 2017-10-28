@@ -1,10 +1,12 @@
 /*
 Overall logic to to gather and pass on sensor data to the raspberry pin
 getCO2, getOxygen written by Thomas Richmond
-getTemperature, getPressure licensed under GNU GPL V3, modified by Teryn Tsang
+getEnvironment, getPressure licensed under GNU GPL V3, modified by Teryn Tsang
 This wrapper code written by Kevin Oesef
 All code licensed under GNU GPL V3
 */
+#include <Wire.h>
+#include <BaroSensor.h>
 
 //pin location and number definitions, redefine before each run!
 #define PINOXYGEN A1
@@ -12,7 +14,8 @@ All code licensed under GNU GPL V3
 #define PINENV 5
 
 //subroutine specific constants
-#define ERROR_CODE -555 //universal error code returned by sensors that screw up
+#define ERROR_CODE -555 //generic error code returned by sensors that screw up
+#define ERROR_INIT_FAILURE -666
 #define REF_VOLT_33 3.3 //reference voltage for 3,3 volt sensors
 
 //co2 data gathering constants
@@ -31,6 +34,7 @@ void setup() {
   pinMode(PINOXYGEN, INPUT);
   pinMode(PINCO2, INPUT); //CO2 sensor takes analog values, check pin assignments!
   pinMode(PINENV, INPUT);
+  BaroSensor.begin();
   Serial.begin(9600);
 }
 
@@ -39,26 +43,37 @@ void loop() {
   //declare vars, should we use global?
   int conc_o2=-1;
   int conc_co2=-1;
-  double env_temp=-1;
-  double env_pres=-1;
+  double environment_array [2]; //2 row array of environment conditions: [TEMPERATURE|PRESSURE]
+  double everything_array [4];
   char JSONBourne [1024]; //check string possible length and overflow behavior
 
   //assigning data into vars
   conc_o2=getOxygen(PINOXYGEN);
   conc_co2=getCO2(PINCO2);
-  //env_temp=getTemperature();
-  //env_pres=getPressure();
+  getEnvironment(environment_array);
+  //environment data is passed by ref directly to the array from the function
 
   //we check for preheat status (further error handling required)
   //while (env_temp==-1 || env_pres==-1 || conc_co2==-1 || conc_o2==-1 ){
   //  Serial.println("Preheating sensors! ");
   //}
 
+  //compile everything into array
+  everything_array[0]=conc_o2;
+  everything_array[1]=conc_co2;
+  everything_array[2]=environment_array[0];
+  everything_array[3]=environment_array[1];
+
   //printing into JSON variable then transmitting to serial
   Serial.println(conc_co2);
-  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, env_temp, env_pres);
+  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, environment_array[1], environment_array[2]);
   Serial.println(JSONBourne);
   
+  //debugging printer
+  int i;
+  for(i=0;i>=3;i++){
+    Serial.print(everything_array[i]);
+  }
 }
 
 //Subroutine functions
@@ -99,12 +114,37 @@ int getCO2(char sensorIn){
     concentration = voltage_diference*50.0/16.0;
   
     return concentration;
-  }
-
-double getTemperature(){
-  //return temperature;
 }
 
-double getPressure(){
-  //return pressure;
+double getEnvironment(double environment_array[]){
+  double temp;
+  double pressure;
+  
+  //Check if sensor is working properly
+  if(!BaroSensor.isOK()) {
+    environment_array[1]=ERROR_INIT_FAILURE;
+    environment_array[2]=ERROR_INIT_FAILURE;
+    BaroSensor.begin(); // Try to reinitialise the sensor if we can
+  }
+  
+  else {
+    temp=BaroSensor.getTemperature();
+    pressure=BaroSensor.getPressure();
+    
+    //Error checking: Temp range of sensor: -40 to +85 degrees celcius
+    if(temp <-40 || temp >85){
+      environment_array[0]=ERROR_CODE; //return error code if temperature out of range
+    }
+    else { 
+      environment_array[0]=temp;
+    }
+   
+    //Error checking: pressure range of sensor: 10 to 2000 mbar
+    if(pressure <10 || pressure >2000){
+      environment_array[1]=ERROR_CODE;
+    }
+    else {
+      environment_array[1]=pressure;
+    }
+  }
 }
