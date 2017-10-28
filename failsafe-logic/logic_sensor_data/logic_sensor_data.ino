@@ -11,7 +11,6 @@ All code licensed under GNU GPL V3
 //pin location and number definitions, redefine before each run!
 #define PINOXYGEN A1
 #define PINCO2 A0
-#define PINENV 5
 
 //subroutine specific constants
 #define ERROR_CODE -555 //generic error code returned by sensors that screw up
@@ -33,7 +32,6 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(PINOXYGEN, INPUT);
   pinMode(PINCO2, INPUT); //CO2 sensor takes analog values, check pin assignments!
-  pinMode(PINENV, INPUT);
   BaroSensor.begin();
   Serial.begin(9600);
 }
