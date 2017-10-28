@@ -60,7 +60,7 @@ void setup(){
 
 
 void loop(){
-  getO2Concentration(ADC_PORT);
+  getO2Concentration(ADC_PORT, PRINT_ON);
 }
 
 
