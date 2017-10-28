@@ -13,7 +13,7 @@
 
 #define ERROR_CODE -555
 
-double getCo2Value(int sensorIn, short printOn = 0){
+double getCo2Value(int sensorIn, short printOn){
   double sensorVoltage, concentrationPpm;
   
   //Read sensor report.
