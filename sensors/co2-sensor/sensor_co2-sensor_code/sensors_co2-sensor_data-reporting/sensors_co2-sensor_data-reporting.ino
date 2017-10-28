@@ -3,69 +3,62 @@
  * Written in: Sept 2017
  */
 
+//Parameters for running. Delete these and replace their references in master
 #define ADC_PORT A0
-
-//Increase values to print less often, and vice versa.
-#define PREHEAT_PRINT_COUNTER_FREQ 20
-#define DATA_PRINT_COUNTER_FREQ 10
+#define PRINT_ON 1 //1 for true, 0 for false.
 
 //Some constants
 #define REFERENCE_VOLTAGE_mV 5000.0
 #define MIN_VOLTAGE_mV 400
+
 #define ERROR_CODE -555
 
-//The loopCounter variable and all sections of code based on it can be removed when implemented with master
-unsigned short loopCounter = 0;
-
-double getCo2Value(int sensorIn){
-  double voltageIn, concentration;
+double getCo2Value(int sensorIn, short printOn = 0){
+  double sensorVoltage, concentrationPpm;
   
   //Read sensor report.
   short sensorValue = analogRead(sensorIn); 
 
   // Convert analog signal to voltage.
-  voltageIn = sensorValue * ( REFERENCE_VOLTAGE_mV / 1024.0 ); 
+  sensorVoltage = sensorValue * ( REFERENCE_VOLTAGE_mV / 1024.0 ); 
 
-  //Choose action to perform given the voltage:
-  if(voltageIn == 0) //Error in reporting.
+  if(sensorVoltage == 0){  //Error in reporting.
+    if(printOn == 1)
+      Serial.println("ERROR: Sensor is not functioning as expected. Cannot read O2 data.");
     return ERROR_CODE;
-    
-  if(voltageIn < MIN_VOLTAGE_mV) //Sensor is preheating:
+  }
+
+  //Check if sensor is preheating.
+  //If it is, print this and return sensorVoltage.
+  if(sensorVoltage < MIN_VOLTAGE_mV) 
   {
-    if(loopCounter % PREHEAT_PRINT_COUNTER_FREQ == 0){ //Controls data printing per loop set.
+    if(printOn == 1){
       Serial.print("Preheating. Current voltage: ");
-      Serial.print(voltageIn);
+      Serial.print(sensorVoltage);
       Serial.println("mv");
-    
-      loopCounter = 0;
     }
-  } 
-  else // Sensor report successful
-  {
     
-    //Calculate the voltage difference and, by extension, the CO2 concentration.
-    short voltage_diference = voltageIn - MIN_VOLTAGE_mV;
-    concentration = voltage_diference * 50.0 / 16.0;
+    return sensorVoltage;
+  }    
+    
+  //Calculate the voltage difference and, by extension, the CO2 concentration.
+  short voltage_diference = sensorVoltage - MIN_VOLTAGE_mV;
+  concentrationPpm = voltage_diference * 50.0 / 16.0;
 
-    //Determine if data should be printed to the serial monitor.
-    if(loopCounter % DATA_PRINT_COUNTER_FREQ == 0){ //Controls data printing per loop set.
-      
-      // Print Voltage
-      Serial.print("voltage: ");
-      Serial.print(voltageIn);
-      Serial.println("mv");
-      
-      //Print CO2 concentration.
-      Serial.print("Concentation: ");
-      Serial.print(concentration);
-      Serial.println("ppm");
-
-      loopCounter = 0;
-    }
+  //Determine if data should be printed to the serial monitor.
+  if(printOn == 1){ //Controls data printing per loop set.
+    // Print Voltage
+    Serial.print("voltage: ");
+    Serial.print(sensorVoltage);
+    Serial.println("mv");
+    
+    //Print CO2 concentration.
+    Serial.print("Concentation: ");
+    Serial.print(concentrationPpm);
+    Serial.println("ppm");
   }  
 
-  loopCounter++;
-  return concentration;
+  return concentrationPpm;
 }
 
 /*THE FUNCTIONS setup() AND loop() SHOULD NOT BE INCLUDED IN THE UPLOAD CODE
@@ -77,7 +70,7 @@ void setup(){
 }
 
 void loop(){
-  getCo2Value(ADC_PORT);
+  getCo2Value(ADC_PORT, PRINT_ON);
   delay(100); 
 }
 
