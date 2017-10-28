@@ -16,7 +16,7 @@
  * Param: sensorIn - The ADC Port to which this port is attached.
  * Param: printOn - Specifies if printing should occur (set to 1 if this is the case). Overload parameter
  */
-double getO2Concentration(int sensorIn, int printOn = 0){
+double getO2Concentration(int sensorIn, short printOn = 0){
   //Collect 32 samples of O2 data from the sensor. Then, divide by 32 to get the representative average. 
   //(NOTE: Bitwise shift 5 right (>>5) is equivalent to dividing by 2^(5), which is 32).
   //During this process, make sure the sensor is functioning properly, and return an error code otherwise.
