@@ -1,10 +1,10 @@
 # O2 Sensor
 
 ## Function
-This sensor reports O2 levels.
+This sensor reports O₂ levels in percentage composition.
 
 ## Details
-**Model:** Grove O2 Sensor
+**Model:** Grove O₂ Sensor
 
 **Temperature Range:** -20°C (253 K) to 50°C (323 K)
 
