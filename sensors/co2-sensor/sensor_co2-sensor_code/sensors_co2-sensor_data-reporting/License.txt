@@ -1,0 +1,13 @@
+/***************************************************
+ * Infrared CO2 Sensor0-5000ppm 
+ * ****************************************************
+ * This example The sensors detect CO2
+ * 
+ * @author lg.gang(lg.gang@qq.com)
+ * @version  V1.0
+ * @date  2016-7-6
+ * 
+ * GNU Lesser General Public License.
+ * See <http://www.gnu.org/licenses/> for details.
+ * All above must be included in any redistribution
+ * ****************************************************/
