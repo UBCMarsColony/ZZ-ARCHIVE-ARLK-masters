@@ -12,19 +12,27 @@ All code licensed under GNU GPL V3
 #define PINOXYGEN A1
 #define PINCO2 A0
 
+//data array constants
+#define ENV_TEMP 0
+#define ENV_PRES 1
+
+//reporting codes
+#define CODE_ERROR_GENERIC -555 //generic error code returned by sensors that screw up
+#define CODE_PREHEAT -600
+#define CODE_ERROR_INIT_FAILURE -666
+
 //subroutine specific constants
-#define ERROR_CODE -555 //generic error code returned by sensors that screw up
-#define ERROR_INIT_FAILURE -666
+#define SENTINAL -1
 
 //co2 data gathering constants
-#define MIN_VOLTAGE 400 //minimum voltage for CO2 sensor subroutine
-#define SENTINAL -1
-#define PREHEAT -600
-#define PREHEAT_PRINT_COUNTER_MOD 20
+#define CO2_REFERENCE_VOLTAGE 5000
+#define CO2_MIN_VOLTAGE 400 //minimum voltage for CO2 sensor subroutine
 
 //o2 data gathering constants
-#define REFERENCE_VOLTAGE 5 //reference voltage for conversion in getOxygen()
-#define DATA_PRINT_COUNTER_MOD 10 //what is this for? shared with O2 and CO2
+#define O2_REFERENCE_VOLTAGE 5 //reference voltage for conversion in getOxygen()
+
+//pressure data gathering constants
+#define mBAR_TO_KPA 0.1
 
 //Setup subroutine
 void setup() {
@@ -38,15 +46,15 @@ void setup() {
 //Main logic
 void loop() {
   //declare vars, should we use global?
-  int conc_o2=-1;
-  int conc_co2=-1;
+  int conc_o2 = SENTINAL;
+  int conc_co2 = SENTINAL;
   int environment_array [2]; //2 row array of environment conditions: [TEMPERATURE|PRESSURE]
   int everything_array [4];
   char JSONBourne [1024]; //check string possible length and overflow behavior
 
   //assigning data into vars
-  conc_o2=getOxygen(PINOXYGEN);
-  conc_co2=getCO2(PINCO2);
+  conc_o2 = getOxygen(PINOXYGEN);
+  conc_co2 = getCO2(PINCO2);
   getEnvironment(environment_array);
   //environment data is passed by ref directly to the array from the function
 
@@ -62,7 +70,7 @@ void loop() {
   // everything_array[3]=environment_array[1];
 
   //printing into JSON variable then transmitting to serial
-  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, environment_array[0], environment_array[1]);
+  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, environment_array[ENV_TEMP], environment_array[ENV_PRES]);
   Serial.println(JSONBourne);
   
   //debugging printer
@@ -78,6 +86,9 @@ void loop() {
 
 //getOxygen(char sensorIn) returns the oxygen percentage in the air
 int getOxygen(char sensorIn){
+  //Collect 32 samples of O2 data from the sensor. Then, divide by 32 to get the representative average. 
+  //(NOTE: Bitwise shift 5 right (>>5) is equivalent to dividing by 2^(5), which is 32).
+  //During this process, make sure the sensor is functioning properly, and return an error code otherwise.
   long sum = 0;
   for(int i = 0; i<32; i++){
     sum += analogRead(sensorIn);
@@ -85,34 +96,29 @@ int getOxygen(char sensorIn){
 
   sum >>= 5;
 
-  float voltage = sum * (REFERENCE_VOLTAGE / 1023.0); //change it for your used voltage!
-
-  float concentration = voltage * 0.21 / 2.0;
-  /*Serial.print("Concentration: ");
-  Serial.print(concentration);
-  Serial.println("ppm");*/
-  float concentrationPercentage = concentration * 100;
+  //Convert received sensorValue to voltage, and concentrationPercentage.
+  float voltage = (sum / 1024.0) * O2_REFERENCE_VOLTAGE; //change it for your used voltage!
+  float concentrationPercentage = (voltage * 0.21 / 2.0) * 100;
   return concentrationPercentage; //this used to return concentration only, converted to percent (kevin)
 }
 
 //getCO2(char sensorIn) takes the pin assignment number sensorIn and returns the CO2 concentration in ppm (parts per million)
 int getCO2(char sensorIn){
-  
-    double voltage, concentration;
+    double voltage, concentrationPpm;
     //Read sensor report.
     short sensorValue = analogRead(sensorIn); 
     // Convert analog signal to voltage.
-    voltage = sensorValue*(5000/1024.0); 
+    voltage = (sensorValue / 1024.0) * CO2_REFERENCE_VOLTAGE ; 
   
     //Choose action to perform given the voltage.
     if(voltage < MIN_VOLTAGE){
       return PREHEAT; //return PREHEAT value for function, for handling in master function
     } 
     
-    short voltage_diference = voltage - MIN_VOLTAGE;
-    concentration = voltage_diference*50.0/16.0;
+    short voltage_diference = voltage - CO2_MIN_VOLTAGE;
+    concentrationPpm = voltage_diference*50.0/16.0;
   
-    return concentration;
+    return concentrationPpm;
 }
 
 //getEnvironment passes by array the values of temperature and pressure, pressure converted to kilopascals, temperature in 
@@ -120,33 +126,32 @@ int getCO2(char sensorIn){
 double getEnvironment(int environment_array[]){
   double temp;
   double pressure;
-  double factorKpa=0.1;
   
   //Check if sensor is working properly
   if(!BaroSensor.isOK()) {
-    environment_array[0]=ERROR_INIT_FAILURE;
-    environment_array[1]=ERROR_INIT_FAILURE;
+    environment_array[ENV_TEMP] = CODE_ERROR_INIT_FAILURE;
+    environment_array[ENV_PRES] = CODE_ERROR_INIT_FAILURE;
     BaroSensor.begin(); // Try to reinitialise the sensor if we can
   }
   
   else {
-    temp=BaroSensor.getTemperature();
-    pressure=BaroSensor.getPressure();
+    temp = BaroSensor.getTemperature();
+    pressure = BaroSensor.getPressure(); //Pressure in millibars (mBar)
     
     //Error checking: Temp range of sensor: -40 to +85 degrees celcius
-    if(temp <-40 || temp >85){
-      environment_array[0]=ERROR_CODE; //return error code if temperature out of range
+    if(temp < -40 || temp > 85){
+      environment_array[ENV_TEMP] = CODE_ERROR_GENERIC; //return error code if temperature out of range
     }
     else { 
-      environment_array[0]=temp;
+      environment_array[ENV_TEMP] = temp;
     }
    
     //Error checking: pressure range of sensor: 10 to 2000 mbar
     if(pressure <10 || pressure >2000){
-      environment_array[1]=ERROR_CODE;
+      environment_array[ENV_PRES] = CODE_ERROR_GENERIC;
     }
     else {
-      environment_array[1]=pressure*factorKpa;
+      environment_array[ENV_PRES] = pressure * mBAR_TO_KPA;
     }
   }
 }
