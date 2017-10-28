@@ -4,9 +4,20 @@ Sensors are the systems that will allow for polling of the location at which the
 For a complete list of sensors, refer to the list below:
 <details>
   <summary>Sensor List</summary>
-  - <a href="co2-sensor">Gravity IR CO2 Sensor</a> <br/>
-  - <a href="o2-sensor">Grove O2 Sensor</a> <br/>
-  - <a href="temperature-pressure-sensor">Temperature/Pressure Sensor</a> <br/>
+  • <a href="co2-sensor">Gravity IR CO₂ Sensor</a> <br/>
+  • <a href="o2-sensor">Grove O₂ Sensor</a> <br/>
+  • <a href="temperature-pressure-sensor">Temperature/Pressure Sensor</a> <br/>
+</details>
+
+## Sensor Ports
+To interface with the main system, each sensor will take an ADC port on the arduino. These should be standardized whenever possible. A full list of taken ADC Ports is listed below:
+
+
+<details>
+  <summary>ADC Ports</summary>
+  • <b>AO</b>: CO₂ Sensor </br>
+  • <b>A1</b>: O₂ Sensor </br>
+  • <b>A3</b>: T/P Sensor </br>
 </details>
 
 ## Universal Sensor Details
@@ -17,5 +28,5 @@ Oftentimes, sensors encountering an expected situation will relay the situation 
 
 <details>
   <summary>Sensor List</summary>
-  <b>-555</b>: Generic Error
+  • <b>-555</b>: Generic Error
 </details>

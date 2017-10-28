@@ -37,7 +37,7 @@ double getO2Concentration(int sensorIn){
 void setup(){
     // put your setup code here, to run once:
     Serial.begin(9600);
-    Serial.println("Grove - Gas Sensor Test Code...");
+    Serial.println("Grove - O₂ Sensor Test Code...");
 }
 
 
