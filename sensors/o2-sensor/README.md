@@ -1,4 +1,4 @@
-# O2 Sensor
+# O₂ Sensor
 
 ## Function
 This sensor reports O₂ levels in percentage composition.
