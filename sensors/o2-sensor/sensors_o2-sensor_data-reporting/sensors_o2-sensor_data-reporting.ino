@@ -26,7 +26,7 @@ double getO2Concentration(int sensorIn, short printOn = 0){
     
     if (nextVal == 0){
       if (printOn == 1)
-        Serial.print("ERROR: Sensor is not functioning as expected. Cannot read O2 data.");
+        Serial.print("ERROR: Sensor is not functioning as expected. Cannot read O2 data." );
       return ERROR_CODE;
     }
    
