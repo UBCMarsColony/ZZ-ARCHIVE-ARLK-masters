@@ -2,7 +2,9 @@
  * Written: October 2017
  */
 
+//Parameters for running. Delete these and replace their references in master.
 #define ADC_PORT A0
+#define PRINT_ON 1 //1 for true, 0 for false
 
 #define REFERENCE_VOLTAGE_V 5 // voltage of ADC reference.
 #define ERROR_CODE -555
