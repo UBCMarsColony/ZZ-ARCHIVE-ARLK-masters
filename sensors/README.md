@@ -28,5 +28,6 @@ Oftentimes, sensors encountering an expected situation will relay the situation 
 
 <details>
   <summary>Sensor List</summary>
-  • <b>-555</b>: Generic Error
+  • <b>-555</b>: Generic error<br/>
+  • <b>-600</b>: Preheating in progress
 </details>
