@@ -51,6 +51,6 @@ void loop()
     Serial.print(numrecieved[u]);
     Serial.print("\n");
   }
-  memset(numrecieved,0,sizeof numrecieved);
+  memset(numrecieved,0,sizeof numrecieved);// Clearing array
   delay(500);
 }
