@@ -24,7 +24,7 @@ double getCo2Value(int sensorIn, short printOn){
 
   if(sensorVoltage == 0){  //Error in reporting.
     if(printOn == 1)
-      Serial.println("ERROR: Sensor is not functioning as expected. Cannot read O2 data.");
+      Serial.println("ERROR: Sensor is not functioning as expected! Cannot read O2 data.");
     return ERROR_CODE;
   }
 
