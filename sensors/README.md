@@ -23,6 +23,17 @@ To interface with the main system, each sensor will take an ADC port on the ardu
 ## Universal Sensor Details
 To make sensor code as maintainable as possible, standardizations are in place to reduce code arbitrarity. These should be followed at all times unless otherwise explicitly specified.
 
+### Unit Standards
+All sensors and logic systems should use data expressed in the same, standardized units. Unit conventions are listed below: 
+
+<details>
+  <summary>Unit Standards</summary>
+  • <b>O2 Concentration</b>: Percentage (%)<br/>
+  • <b>CO2 Concentration</b>: Parts per million (ppm)<br/>
+  • <b>Temperature</b>: Degrees Celsius (°C)<br/>
+  • <b>Pressure</b>: kiloPascals (kPa)
+</details>
+
 ### Encoded Reports
 Oftentimes, sensors encountering an expected situation will relay the situation to the master using a raw integer value. These values are listed below:
 
