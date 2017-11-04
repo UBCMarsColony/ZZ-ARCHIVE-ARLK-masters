@@ -16,6 +16,11 @@ All code licensed under GNU GPL V3
 #define ENV_TEMP 0
 #define ENV_PRES 1
 
+#define DATA_CONC_O2 0
+#define DATA_CONC_CO2 1
+#define DATA_TEMP 2
+#define DATA_PRES 3
+
 //reporting codes
 #define CODE_ERROR_GENERIC -555 //generic error code returned by sensors that screw up
 #define CODE_PREHEAT -600
@@ -45,7 +50,7 @@ void setup() {
 
 //Main logic
 void loop() {
-  //declare vars, should we use global?
+  //declare vars
   int conc_o2 = SENTINAL;
   int conc_co2 = SENTINAL;
   int environment_array [2]; //2 row array of environment conditions: [TEMPERATURE|PRESSURE]
@@ -64,10 +69,10 @@ void loop() {
   //}
 
   //compile everything into array
-  // everything_array[0]=conc_o2;
-  // everything_array[1]=conc_co2;
-  // everything_array[2]=environment_array[0];
-  // everything_array[3]=environment_array[1];
+  // everything_array[DATA_CONC_O2]=conc_o2;
+  // everything_array[DATA_CONC_CO2]=conc_co2;
+  // everything_array[DATA_TEMP]=environment_array[ENV_TEMP];
+  // everything_array[DATA_PRES]=environment_array[ENV_PRES];
 
   //printing into JSON variable then transmitting to serial
   sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, environment_array[ENV_TEMP], environment_array[ENV_PRES]);
