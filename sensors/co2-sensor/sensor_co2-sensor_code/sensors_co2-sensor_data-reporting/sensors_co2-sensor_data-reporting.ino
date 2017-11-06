@@ -47,6 +47,7 @@ double getCo2Value(int sensorIn, short printOn){
   concentrationPpm = voltage_diference * 50.0 / 16.0;
 
   //Determine if data should be printed to the serial monitor.
+  //TODO: Add printing of raw values. Maybe multiple printing options?
   if(printOn == 1){ //Controls data printing per loop set.
     // Print Voltage
     Serial.print("voltage: ");
