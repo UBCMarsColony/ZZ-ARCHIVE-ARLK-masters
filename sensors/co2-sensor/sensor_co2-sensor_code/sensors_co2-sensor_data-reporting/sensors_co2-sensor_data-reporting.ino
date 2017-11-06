@@ -17,7 +17,8 @@ double getCo2Value(int sensorIn, short printOn){
   double sensorVoltage, concentrationPpm;
   
   //Read sensor report.
-  short sensorValue = analogRead(sensorIn); 
+  //Consider converting int to uint_16 (See stdint.h)
+  int sensorValue = analogRead(sensorIn); 
 
   // Convert analog signal to voltage.
   sensorVoltage = sensorValue * ( REFERENCE_VOLTAGE_mV / 1024.0 ); 
@@ -42,7 +43,7 @@ double getCo2Value(int sensorIn, short printOn){
   }    
     
   //Calculate the voltage difference and, by extension, the CO2 concentration.
-  short voltage_diference = sensorVoltage - MIN_VOLTAGE_mV;
+  int voltage_diference = sensorVoltage - MIN_VOLTAGE_mV;
   concentrationPpm = voltage_diference * 50.0 / 16.0;
 
   //Determine if data should be printed to the serial monitor.
