@@ -41,6 +41,10 @@ double getO2Concentration(int sensorIn, short printOn){
 
   //Print out O2 concentration data.
   if(printOn == 1){
+    Serial.print("Voltage: ");
+    Serial.print(voltage);
+    Serial.println("mv");
+    
     Serial.print("Concentration: ");
     Serial.print(concentrationPercentage);
     Serial.println("%");
