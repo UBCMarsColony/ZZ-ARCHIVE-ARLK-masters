@@ -116,8 +116,8 @@ int getCO2(char sensorIn){
     voltage = (sensorValue / 1024.0) * CO2_REFERENCE_VOLTAGE ; 
   
     //Choose action to perform given the voltage.
-    if(voltage < MIN_VOLTAGE){
-      return PREHEAT; //return PREHEAT value for function, for handling in master function
+    if(voltage < CO2_MIN_VOLTAGE){
+      return CODE_PREHEAT; //return PREHEAT value for function, for handling in master function
     } 
     
     short voltage_diference = voltage - CO2_MIN_VOLTAGE;
