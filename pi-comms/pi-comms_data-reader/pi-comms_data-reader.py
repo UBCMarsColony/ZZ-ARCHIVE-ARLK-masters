@@ -4,7 +4,7 @@
 import serial
 import json
 
-#function de
+#function defined to read json
 def getDecodedJsonString(encodedJson):
     return json.loads(encodedJson)
 
@@ -14,8 +14,12 @@ ser.readline()
 while True:
     ser.readline()
     truedata=ser.readline()
-    print("Next line: "+truedata)
     decodedString=getDecodedJsonString(truedata)
-    print("CO2: "+truedata[])
-    
-    
+    print("CO2: "),
+    print(truedata["GasComposition"]["CO2"])
+    print("O2: "),
+    print(truedata["GasComposition"]["O2"])
+    print("Temperature: "),
+    print(truedata["Temperature"])
+    print("Pressure: "),
+    print(+truedata["Pressure"])
