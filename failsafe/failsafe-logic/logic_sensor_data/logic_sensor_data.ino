@@ -16,6 +16,7 @@ All code licensed under GNU GPL V3
 #define ENV_TEMP 0
 #define ENV_PRES 1
 
+//array indices for everything array
 #define DATA_CONC_O2 0
 #define DATA_CONC_CO2 1
 #define DATA_TEMP 2
@@ -53,8 +54,8 @@ void loop() {
   //declare vars
   int conc_o2 = SENTINAL;
   int conc_co2 = SENTINAL;
-  int environment_array [2]; //2 row array of environment conditions: [TEMPERATURE|PRESSURE]
-  int everything_array [4];
+  int environment_array [2]; //2 row array of environment conditions: [TEMPERATURE|PRESSURE], required for function to return 2 values
+  int everything_array [4];//4 row array of every condition in order: [CO2|O2|TEMPERATURE|PRESSURE]
   char JSONBourne [1024]; //check string possible length and overflow behavior
 
   //assigning data into vars
@@ -69,21 +70,15 @@ void loop() {
   //}
 
   //compile everything into array
-  // everything_array[DATA_CONC_O2]=conc_o2;
-  // everything_array[DATA_CONC_CO2]=conc_co2;
-  // everything_array[DATA_TEMP]=environment_array[ENV_TEMP];
-  // everything_array[DATA_PRES]=environment_array[ENV_PRES];
+  everything_array[DATA_CONC_O2]=conc_o2;
+  everything_array[DATA_CONC_CO2]=conc_co2;
+  everything_array[DATA_TEMP]=environment_array[ENV_TEMP];
+  everything_array[DATA_PRES]=environment_array[ENV_PRES];
 
   //printing into JSON variable then transmitting to serial
-  sprintf(JSONBourne, "{GasComposition:{CO2:%d O2:%d}Temperature:%d Pressure:%d}", conc_co2, conc_o2, environment_array[ENV_TEMP], environment_array[ENV_PRES]);
+  sprintf(JSONBourne, "{\"GasComposition\":{\"CO2\":%d, \"O2\":%d},\"Temperature\":%d, \"Pressure\":%d}", conc_co2, conc_o2, environment_array[ENV_TEMP], environment_array[ENV_PRES]);
   Serial.println(JSONBourne);
-  
-  //debugging printer
-  // int i;
-  // for(i=0;i>=3;i++){
-  //   Serial.print(everything_array[i]);
-  // }
-  // i=0;
+
 }
 
 //Subroutine functions

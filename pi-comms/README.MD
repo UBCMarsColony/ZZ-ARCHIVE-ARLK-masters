@@ -1,2 +1,2 @@
-# Pi Playground
+# pi-communication
 Experimenting with Pi communications
