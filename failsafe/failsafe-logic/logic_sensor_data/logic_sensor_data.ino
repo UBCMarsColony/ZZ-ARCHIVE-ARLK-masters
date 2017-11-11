@@ -106,7 +106,7 @@ int getOxygen(char sensorIn){
 int getCO2(char sensorIn){
     double voltage, concentrationPpm;
     //Read sensor report.
-    short sensorValue = analogRead(sensorIn); 
+    int sensorValue = analogRead(sensorIn); 
     // Convert analog signal to voltage.
     voltage = (sensorValue / 1024.0) * CO2_REFERENCE_VOLTAGE ; 
   
@@ -115,7 +115,7 @@ int getCO2(char sensorIn){
       return CODE_PREHEAT; //return PREHEAT value for function, for handling in master function
     } 
     
-    short voltage_diference = voltage - CO2_MIN_VOLTAGE;
+    int voltage_diference = voltage - CO2_MIN_VOLTAGE;
     concentrationPpm = voltage_diference*50.0/16.0;
   
     return concentrationPpm;
