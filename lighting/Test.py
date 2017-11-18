@@ -13,7 +13,7 @@ import os
 class LightScheme(dict):
 	
 	#ALL VALID LIGHT SCHEME KEYS MUST BE INCLUDED IN THE ARRAY BELOW
-	scheme_keys = ["L1", "L2", "L3"]
+	scheme_keys = ["L1", "L2", "L3", "L4"]
 	
 	def __init__(self, val_type = int):
 		for key in LightScheme.scheme_keys:
@@ -41,7 +41,8 @@ def generateLightingScheme():
 	
 def controlLights(light_scheme = LightScheme):
 	print(light_scheme)
+	return 1
 	
-controlLights(generateLightingScheme())
-
+print(controlLights(generateLightingScheme()))
+	
 os.system("PAUSE")
