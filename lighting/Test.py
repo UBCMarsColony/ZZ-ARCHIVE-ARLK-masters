@@ -10,6 +10,9 @@
 
 import os
 
+
+
+# The LightScheme object contains data about how to turn lights on and off1
 class LightScheme(dict):
 	
 	#ALL VALID LIGHT SCHEME KEYS MUST BE INCLUDED IN THE ARRAY BELOW
@@ -24,25 +27,27 @@ class LightScheme(dict):
 		if key not in LightScheme.scheme_keys:
 			raise KeyError
 		dict.__setitem__(self, key, val)
- 
-def generateLightingScheme():
-	lighting_scheme = LightScheme()
-	
+
+		
+#
+def generateLightScheme():
+	lightScheme = LightScheme()
 	# Check if the passed in errorCode.
 		# If the errorCode supports a valid error, return error to flash the lights 3 times.
 		
+	lightScheme["L3"] = 1
 	# Get PIR sensor data
 		#If somebody is in range of the PIR sensor, return lights on scheme.
 
 	#If nobody is detected, check the time since somebody was last seen.
 		#If it is greater than the time limit, return lights off scheme.
 		
-	return lighting_scheme
+	return lightScheme
 	
 def controlLights(light_scheme = LightScheme):
 	print(light_scheme)
-	return 1
+	return 0
 	
-print(controlLights(generateLightingScheme()))
+print(controlLights(generateLightScheme()))
 	
 os.system("PAUSE")
