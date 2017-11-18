@@ -36,11 +36,16 @@ double getO2Concentration(int sensorIn, short printOn){
   sensorValue >>= 5;
   
   //Convert received sensorValue to voltage, and concentrationPercentage.
-  float voltage = ( sensorValue / 1024.0 ) * REFERENCE_VOLTAGE_V;
-  float concentrationPercentage = (voltage * 0.21 / 2.0) * 100;
+  float voltage = sensorValue * (REFERENCE_VOLTAGE_V / 1024.0);
+  voltage = voltage * (10000 / 201);
+  float concentrationPercentage = voltage / 7.43; //(voltage * 0.21 / 2.0) * 100;
 
   //Print out O2 concentration data.
   if(printOn == 1){
+    Serial.print("Voltage: ");
+    Serial.print(voltage);
+    Serial.println("mv");
+    
     Serial.print("Concentration: ");
     Serial.print(concentrationPercentage);
     Serial.println("%");
@@ -62,5 +67,3 @@ void setup(){
 void loop(){
   getO2Concentration(ADC_PORT, PRINT_ON);
 }
-
-
