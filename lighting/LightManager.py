@@ -8,9 +8,6 @@
 #
 # In the event of an error, lights may flash. This has yet to be implemented.
 
-import os
-import time
-
 #Some constant
 ON = 1
 OFF = 0
@@ -59,17 +56,3 @@ def generateLightScheme():
 def controlLights(light_scheme = LightScheme):
 	print(light_scheme)
 	return 0
-	
-counter = 0
-while counter < 100:
-	try:
-		nextScheme = generateLightScheme()
-	except KeyError:
-		print("Error in task - Invalid LightScheme key reference")
-	else:
-		controlLights(nextScheme)
-	counter += 1
-	
-	time.sleep(0.1)
-
-os.system("PAUSE")
