@@ -8,6 +8,10 @@
 
 [Controlling motor with Pi](http://www.instructables.com/id/Controlling-a-stepper-motor-with-the-Raspberry-Pi-/)
 
+[Stepper motor Pi tutorial](https://www.rototron.info/raspberry-pi-stepper-motor-tutorial/)
+
+[Adafruit Controlling DC motor](https://learn.adafruit.com/adafruit-raspberry-pi-lesson-9-controlling-a-dc-motor/software)
+
 ## Stepper Motor
 [The Motor](https://www.omc-stepperonline.com/geared-stepper-motor/nema-23-stepper-motor-bipolar-l56mm-w-gear-raio-471-planetary-gearbox-23hs22-2804s-pg47.html)
 
