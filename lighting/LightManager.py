@@ -31,8 +31,12 @@ class LightScheme(dict):
 
 def generateLightScheme():
 	lightScheme = LightScheme()
+
+	try:
+		lightScheme["OVERHEAD_1"] = ON
+	except KeyError:
+		print("ERROR: Invalid key accessed.")
 	
-	lightScheme["OVERHEAD_1"] = ON
 	#PIR_data = get PIR sensor data
 	#door_data = get door data
 	
