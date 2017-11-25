@@ -6,6 +6,8 @@
 
 [Driver Manual](https://www.omc-stepperonline.com/download/DM542T.pdf)
 
+[Controlling motor with Pi](http://www.instructables.com/id/Controlling-a-stepper-motor-with-the-Raspberry-Pi-/)
+
 ## Stepper Motor
 [The Motor](https://www.omc-stepperonline.com/geared-stepper-motor/nema-23-stepper-motor-bipolar-l56mm-w-gear-raio-471-planetary-gearbox-23hs22-2804s-pg47.html)
 
