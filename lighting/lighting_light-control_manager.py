@@ -9,17 +9,18 @@
 # In the event of an error, lights may flash. This has yet to be implemented.
 
 from random import *
+#LightScheme library
+ls = __import__('lighting_light-control_light-scheme')	
+
+#GPIO Library
+try:
+    import gpio
+except:
+    print("TODO: FIX ME")
 
 # Some constants
 ON = 1
 OFF = 0
-
-#LightScheme library
-ls = __import__('lighting_light-control_light-scheme')	
-#import gpio
-
-#GPIO Library
-
 
 def generate_light_scheme():
     light_scheme = ls.LightScheme()
@@ -30,6 +31,8 @@ def generate_light_scheme():
     except KeyError:
         print("ERROR: Invalid key accessed.")
 	
+    #IMPLEMENT BELOW
+    
     # PIR_data = get PIR sensor data
     # door_data = get door data
 
@@ -57,10 +60,9 @@ def update_lights(light_scheme):
         raise TypeError
 		
     print(light_scheme)
+#UNCOMMENT WHEN READY
     #for light_ID in light_scheme:
-       # print(str(light_ID) + " : " + str(light_scheme.get_gpio(light_ID)))
-       # print("\tValue: " + str(light_scheme[light_ID]) + "\n")
-        #gpio.write(light_scheme.getGPIO(light_ID), ON)
+        #gpio.write(light_scheme.getGPIO(light_ID), light_scheme[light_ID])
 	
     print("---")
     return 0
