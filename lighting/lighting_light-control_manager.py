@@ -14,16 +14,10 @@ ON = 1
 OFF = 0
 
 #LightScheme library
-ls = __import__('lighting_light-control_light-scheme')
+ls = __import__('lighting_light-control_light-scheme')	
 
 #GPIO Library
-try:
-    import RPi.GPIO as GPIO
-    print("Success")
-except ImportError:
-    print("ERROR: RPi.GPIO library could not be imported. Program may not work as expected.")
-except RuntimeError:
-    print("ERROR: RPi.GPIO library encountered an error while importing. Make sure you have superuser privileges")
+
 
 def generate_light_scheme():
     light_scheme = ls.LightScheme()
@@ -54,7 +48,7 @@ def generate_light_scheme():
     return light_scheme
 
 
-def control_lights(light_scheme=ls.LightScheme):
+def update_lights(light_scheme=ls.LightScheme):
     print(light_scheme)
     #GPIO.output(25, GPIO.HIGH)
 
