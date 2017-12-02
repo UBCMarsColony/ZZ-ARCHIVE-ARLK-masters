@@ -7,6 +7,7 @@ For a complete list of sensors, refer to the list below:
   • <a href="co2-sensor">Gravity IR CO₂ Sensor</a> <br/>
   • <a href="o2-sensor">Grove O₂ Sensor</a><br/>
   • <a href="temperature-pressure-sensor">Temperature/Pressure Sensor</a><br/>
+  • <a href="PIR-motion-sensor">Passive IR Sensor</a><br/>
 </details>
 
 ## Sensor Ports
@@ -18,6 +19,7 @@ To interface with the main system, each sensor will take an ADC port on the ardu
   • <b>AO</b>: CO₂ Sensor </br>
   • <b>A1</b>: O₂ Sensor </br>
   • <b>A3</b>: T/P Sensor </br>
+  • <b>A4</b>: PIR Sensor
 </details>
 
 ## Universal Sensor Details
@@ -38,7 +40,7 @@ All sensors and logic systems should use data expressed in the same, standardize
 Oftentimes, sensors encountering an expected situation will relay the situation to the master using a raw integer value. These values are listed below:
 
 <details>
-  <summary>Sensor List</summary>
+  <summary>Report Codes</summary>
   • <b>-555</b>: Generic error<br/>
   • <b>-600</b>: Preheating in progress<br/>
   • <b>-666</b>: Initialization Error
