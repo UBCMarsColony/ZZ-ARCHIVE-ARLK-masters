@@ -18,20 +18,20 @@ ls = __import__('lighting_light-control_light-scheme')
 
 #GPIO Library
 try:
-	import RPi.GPIO as GPIO
-	print("Success")
+    import RPi.GPIO as GPIO
+    print("Success")
 except ImportError:
-	print("ERROR: RPi.GPIO library could not be imported. Program may not work as expected.")
+    print("ERROR: RPi.GPIO library could not be imported. Program may not work as expected.")
 except RuntimeError:
-	print("ERROR: RPi.GPIO library encountered an error while importing. Make sure you have superuser privileges")
+    print("ERROR: RPi.GPIO library encountered an error while importing. Make sure you have superuser privileges")
 
 def generate_light_scheme():
-	light_scheme = ls.LightScheme()
+    light_scheme = ls.LightScheme()
 	
-	try:
-		light_scheme["OVERHEAD_1"] = ON
-	except KeyError:
-		print("ERROR: Invalid key accessed.")
+    try:
+        light_scheme["OVERHEAD_1"] = ON
+    except KeyError:
+        print("ERROR: Invalid key accessed.")
 
     # PIR_data = get PIR sensor data
     # door_data = get door data
@@ -51,7 +51,7 @@ def generate_light_scheme():
     # if time_elapsed == 20 seconds
     # Generate scheme for lights off
 
-	return light_scheme
+    return light_scheme
 
 
 def control_lights(light_scheme=ls.LightScheme):
