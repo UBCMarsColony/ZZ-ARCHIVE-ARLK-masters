@@ -3,7 +3,7 @@
 
 #include <Wire.h>
 
-#define SLAVE_ADDRESS 5
+#define SLAVE_ADDRESS 12345
 #define N 3
 void setup()
 {

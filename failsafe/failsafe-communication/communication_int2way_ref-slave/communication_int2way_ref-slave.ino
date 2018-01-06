@@ -3,7 +3,7 @@
 #include <Wire.h>
 
 #define N 3
-#define SLAVE_ADDRESS 5
+#define SLAVE_ADDRESS 12345
 
 int numsent[N]={7,0,1};
 int numrecieved[N];
