@@ -12,16 +12,17 @@ def getDecodedJsonString(encodedJson):
 		return None
 
 #initialization
-ser=serial.Serial('/dev/ttyACM1',9600)
+ser = serial.Serial('/dev/ttyACM1',9600)
 
 #loop
 while True:
-	decodedString = getDecodedJsonString(truedata)
+    next_line = ser.readline()
+	json_data = getDecodedJsonString(next_line)
 	
-	if decodedString != None:
-		print("CO2: " + str(decodedString["GasComposition"]["CO2"]))
-		print("O2: " + str(decodedString["GasComposition"]["O2"]))
-		print("Temperature: " + str(decodedString["Temperature"]))
-		print("Pressure: " + str(decodedString["Pressure"]))
-	else
-		print("Failed to parse JSON data. Skipping line...")
+	try:
+		print("CO2: " + str(json_data["GasComposition"]["CO2"]))
+		print("O2: " + str(json_data["GasComposition"]["O2"]))
+		print("Temperature: " + str(json_data["Temperature"]))
+		print("Pressure: " + str(json_data["Pressure"]))
+	except Exception as e:
+		print("Failed to parse JSON data.\n\tStack Trace: " + e + "\n\tSkipping line...")
