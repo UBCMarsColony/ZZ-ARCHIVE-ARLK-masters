@@ -20,9 +20,9 @@ class LightPlan(dict):
     _keys = ["OVERHEAD_1", "OVERHEAD_2", "DOOR_COLN1", "DOOR_MARS1"]
     
     #LightPlan constructor
-    def __init__(self, val_type = int):
+    def __init__(self):
         for key in LightPlan._keys:
-            self[key] = val_type()
+            self[key] = "Undefined"
             
     #Modifies default dict element assignment to ensure the specified key is valid
     def __setitem__(self, key, val):
