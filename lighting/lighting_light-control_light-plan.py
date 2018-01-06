@@ -1,3 +1,13 @@
+#Can be used for precision lighting later on.
+class LightData():
+    def __init__(self):
+        red = 0
+        blue = 0
+        green = 0
+        alpha = 0
+        brightness = 0
+
+
 # The LightPlan dict object contains data about how to turn lights on and off.
 # It is limited to keys defined in the _keys variable
 class LightPlan(dict):
@@ -10,19 +20,16 @@ class LightPlan(dict):
     _keys = ["OVERHEAD_1", "OVERHEAD_2", "DOOR_COLN1", "DOOR_MARS1"]
     
     #LightPlan constructor
-    @classmethod
-    def __init__(self, val_type=LightData):
+    def __init__(self, val_type = int):
         for key in LightPlan._keys:
             self[key] = val_type()
-
+            
     #Modifies default dict element assignment to ensure the specified key is valid
-    @classmethod
     def __setitem__(self, key, val):
         if key not in LightPlan._keys:
             raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
         dict.__setitem__(self, key, val)
     
-    @classmethod
     def __getitem__(self, key):
         if key not in LightPlan._keys:
             raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
@@ -30,24 +37,13 @@ class LightPlan(dict):
 	
     
     #Returns the index associated with the key, or raises an error if the key is invalid
-    @classmethod
+    @staticmethod
     def get_gpio(self, key):
         if key not in LightPlan._keys:
             raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
         return LightPlan._keys.index(key)
 	
     #Return the list of valid keys
-    @classmethod
+    @staticmethod
     def get_keys(self):
-        return LightPlan._keys
-
-
-#Can be used for precision lighting later on.
-class LightData():
-    def __init__(self):
-        red = 0
-        blue = 0
-        green = 0
-        alpha = 0
-        brightness = 0
-        
+        return LightPlan._keys        

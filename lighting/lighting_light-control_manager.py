@@ -25,13 +25,13 @@ except:
 ls = __import__('lighting_light-control_light-plan')
 
 
-def generate_light_scheme():
-    light_plan = ls.LightPlan(int)
+def generate_light_plan():
+    light_plan = ls.LightPlan()
 	
     # Temporary code to populate light_plan with some nonzero values
     try:
-		for light_key in light_plan:
-			light_plan[light_key] = randint(0,1)
+        for light_key in light_plan:
+            light_plan[light_key] = randint(0,1)
     except KeyError as ke:
         print(ke)
 	
@@ -62,10 +62,10 @@ def generate_light_scheme():
 
 
 def update_lights(light_plan):
-    if not isinstance(light_plan, ls.LightScheme):
+    if not isinstance(light_plan, ls.LightPlan):
         raise TypeError("ERROR: The parameter <light_plan> has type " + 
             str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
-            " when it should be of type LightScheme!")
+            " when it should be of type LightPlan!")
 		
     print(light_plan)
     
