@@ -8,23 +8,27 @@
 #
 # In the event of an error, lights may flash. This has yet to be implemented.
 
-from random import *
-#LightScheme library
-ls = __import__('lighting_light-control_light-scheme')	
+####################
+# IMPORTS
+####################
 
-#GPIO Library
+from random import *
+
 try:
     import gpio
 except:
     print("TODO: FIX ME")
 
-# Some constants
-ON = 1
-OFF = 0
+# LightScheme library is imported with the __import__ method 
+# due to some issues with how dash (-) characters interact 
+# with the standard importing method used above
+ls = __import__('lighting_light-control_light-scheme')
+
 
 def generate_light_scheme():
     light_scheme = ls.LightScheme()
 	
+    # Temporary code to populate the lightscheme with some nonzero values
     try:
 		for light_ID in light_scheme:
 			light_scheme[light_ID] = randint(0,1)
@@ -35,29 +39,33 @@ def generate_light_scheme():
     
     # PIR_data = get PIR sensor data
     # door_data = get door data
+    
+    # if PIR_data && door_data has not significantly changed
+        # break
 
     # if PIR_data == person in room
-
+    
     # if door_data = closed
-    # Generate scheme for bright lights
+        # Generate scheme for bright lights
 
     # elif door_data = open_colony
-    # Generate scheme for dim lights
+        # Generate scheme for dim lights
 
     # elif door_data = open_mars
-    # Generate scheme for bright lights
+        #Generate scheme for bright lights
 
     # else
-    # if time_elapsed == 20 seconds
-    # Generate scheme for lights off
+        # if time_elapsed == 20 seconds
+            # Generate scheme for lights off
 
     return light_scheme
 
 
 def update_lights(light_scheme):
     if not isinstance(light_scheme, ls.LightScheme):
-        print("ERROR: The parameter <light_scheme> passed into update_lights() should be of type LightScheme!")
-        raise TypeError
+        raise TypeError("ERROR: The parameter <light_scheme> has type " + 
+            str(type(light_scheme))[7 : len(str(type(light_scheme))) - 2] + 
+            " when it should be of type LightScheme!")
 		
     print(light_scheme)
 #UNCOMMENT WHEN READY
