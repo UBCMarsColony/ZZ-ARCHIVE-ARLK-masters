@@ -22,7 +22,7 @@ except:
 # LightScheme library is imported with the __import__ method 
 # due to some issues with how dash (-) characters interact 
 # with the standard importing method used above
-ls = __import__('lighting_light-control_light-scheme')
+ls = __import__('lighting_light-control_light-plan')
 
 
 def generate_light_scheme():
