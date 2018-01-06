@@ -26,14 +26,14 @@ ls = __import__('lighting_light-control_light-scheme')
 
 
 def generate_light_scheme():
-    light_scheme = ls.LightScheme()
+    light_plan = ls.LightPlan(int)
 	
-    # Temporary code to populate the lightscheme with some nonzero values
+    # Temporary code to populate light_plan with some nonzero values
     try:
-		for light_ID in light_scheme:
-			light_scheme[light_ID] = randint(0,1)
-    except KeyError:
-        print("ERROR: Invalid key accessed.")
+		for light_key in light_plan:
+			light_plan[light_key] = randint(0,1)
+    except KeyError as ke:
+        print(ke)
 	
     #IMPLEMENT BELOW
     
@@ -58,19 +58,20 @@ def generate_light_scheme():
         # if time_elapsed == 20 seconds
             # Generate scheme for lights off
 
-    return light_scheme
+    return light_plan
 
 
-def update_lights(light_scheme):
-    if not isinstance(light_scheme, ls.LightScheme):
-        raise TypeError("ERROR: The parameter <light_scheme> has type " + 
-            str(type(light_scheme))[7 : len(str(type(light_scheme))) - 2] + 
+def update_lights(light_plan):
+    if not isinstance(light_plan, ls.LightScheme):
+        raise TypeError("ERROR: The parameter <light_plan> has type " + 
+            str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
             " when it should be of type LightScheme!")
 		
-    print(light_scheme)
+    print(light_plan)
+    
 #UNCOMMENT WHEN READY
-    #for light_ID in light_scheme:
-        #gpio.write(light_scheme.getGPIO(light_ID), light_scheme[light_ID])
+    #for light_ID in light_plan:
+        #gpio.write(light_plan.getGPIO(light_ID), light_plan[light_ID])
 	
     print("---")
     return 0
