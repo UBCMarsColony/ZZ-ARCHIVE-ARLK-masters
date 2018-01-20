@@ -13,16 +13,17 @@
 ####################
 
 from random import *
+import importlib
 
 try:
     import gpio
 except:
     print("TODO: FIX ME")
 
-# LightScheme library is imported with the __import__ method 
-# due to some issues with how dash (-) characters interact 
-# with the standard importing method used above
-ls = __import__('lighting_light-control_light-plan')
+# LightScheme library is imported with importlib due 
+# to some issues with how dash (-) characters interact 
+# with the standard importing method (as used above)
+ls = importlib.import_module('lighting_light-control_light-plan')
 
 
 def generate_light_plan():
