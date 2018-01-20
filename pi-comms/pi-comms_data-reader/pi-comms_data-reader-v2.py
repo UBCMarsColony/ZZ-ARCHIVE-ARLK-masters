@@ -4,7 +4,7 @@ import serial
 import json
 import time
 
-#function defined to read json
+#function defined to read JSON
 def getDecodedJsonString(encodedJson):
 	try:
 		return json.loads(encodedJson)
@@ -46,3 +46,4 @@ while True:
     print(str(get_sensor_data))
     
     time.sleep(0.1)
+
