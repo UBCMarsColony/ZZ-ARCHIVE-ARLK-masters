@@ -1,10 +1,9 @@
 # Pi Systems
 
-This folder includes all code related to the systems that will run in the airlock.
+This folder contains all systems that will be running on the main airlock computer
 
-# Systems
+## Current Systems
 
-Currently, systems include:
-
- - Doors
- - Pressurization
+Currently, systems in place include:
+ - Door
+  - Pressurization
