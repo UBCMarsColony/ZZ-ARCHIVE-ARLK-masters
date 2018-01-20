@@ -6,4 +6,4 @@ This folder contains all systems that will be running on the main airlock comput
 
 Currently, systems in place include:
  - Door
-  - Pressurization
+ - Pressurization

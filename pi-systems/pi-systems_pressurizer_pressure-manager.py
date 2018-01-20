@@ -3,6 +3,7 @@ import importlib
 sysThread = importlib.import_module('pi-systems_service-base')
 
 
+
 """
 Run a sequence based on a preset end state. This will
 be the easiest way to run the system.
@@ -26,10 +27,10 @@ def run_sequence():
     
     # return the start state of the sequence.
 
-class PressureThread(sysThread.SystemThread):
-
+class PressureThread(sysThread.Service):
     def thread_task(self):
-        print("ThreadTask is running!")
-    
-        
-    
+        print(self.name + " is running!")
+
+thread1 = PressureThread(1, "Thread_Pressure")
+thread1.start()
+thread1.join()
