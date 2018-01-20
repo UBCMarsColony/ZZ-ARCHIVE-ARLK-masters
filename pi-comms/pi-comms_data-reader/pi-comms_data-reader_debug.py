@@ -33,6 +33,6 @@ while True:
 		print("Temperature: " + temperature)
 		print("Pressure: " + pressure)
 		#we write to file for analysis purposes, csv for category newline per entry
-		file.write(gasCO2+','+gasO2+','+temperature+','+pressure+'\n')
+		#file.write(gasCO2+','+gasO2+','+temperature+','+pressure+'\n')
 	else:
 		print("Failed to parse JSON data. Skipping line...")

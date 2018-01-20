@@ -1,35 +1,48 @@
-#JSON raspberry pi data reader code, take sserial data from python 
+#JSON raspberry pi data reader code, take serial data from python 
 
-#imports
 import serial
 import json
+import time
 
 #function defined to read json
 def getDecodedJsonString(encodedJson):
 	try:
 		return json.loads(encodedJson)
 	except ValueError as e:
-		return None
+		raise ValueError
 
-#initialization
-ser = serial.Serial('/dev/ttyACM1',9600)
+#TODO Relocate lines 14-34 into own file
 
-#loop
-while True:
-	try:
-    
+sensor_data = {}
+
+def get_sensor_data():
+    return sensor_data
+
+def update_sensor_data():
+    try:    
         next_line = ser.readline()
         json_data = getDecodedJsonString(next_line)
-        
-        #Get some info
-		print("CO2: " + str(json_data["GasComposition"]["CO2"]))
-		print("O2: " + str(json_data["GasComposition"]["O2"]))
-		print("Temperature: " + str(json_data["Temperature"]))
-		print("Pressure: " + str(json_data["Pressure"]))
-        #get PIR sensor data
+
+        sensor_data = json_data
     
         #if its time to update lights
             # update lights based on sensor data
         
+    except ValueError as ve:
+    	print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
     except Exception as e:
-		print("Failed to parse JSON data.\n\tStack Trace: " + e + "\n\tSkipping line...")
+        print("Unexpected exception has occurred. \n\tStack Trace: " + str(e))
+    
+        
+#initialization
+ser = serial.Serial('/dev/ttyACM1',9600)
+
+# MAIN LOOPS
+
+while True:
+    
+    update_sensor_data()
+    
+    print(str(get_sensor_data))
+    
+    time.sleep(0.1)
