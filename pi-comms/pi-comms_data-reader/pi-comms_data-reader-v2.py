@@ -17,6 +17,7 @@ ser = serial.Serial('/dev/ttyACM1',9600)
 #loop
 while True:
 	try:
+    
         next_line = ser.readline()
         json_data = getDecodedJsonString(next_line)
         
