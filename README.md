@@ -17,23 +17,30 @@ Folders should be broken up into logical parts, to ensure code can be found as q
 #### Artwork
 Contains all visuals used in the repository. See wiki for information on how to use them.
 
+
 #### Documentation
 Contains documentation, datasheets and more for hardware and software used in the project.
+
 
 #### Failsafe
 Contains the code used to process sensor data on the Arduino board and send it via I2C to the main Raspberry Pi system. 
 
+
 #### Lighting
 Contains code and data about lighting systems in the airlock.
+
 
 #### Motors
 Contains code and data about the motors in the airlock.
 
+
 #### Pi-Comms
 Contains the code used by the Raspberry Pi to process and store sensor data received from the Arduino.
 
+
 #### Pi-Systems
 Contains code used by the Raspberry Pi to run services within the airlock. Such services may include pressurization, lighting and door management.
+
 
 #### Sensors
 Contains embedded systems code related to sensor functionality.
