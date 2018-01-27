@@ -22,7 +22,17 @@ class MyServiceThread(service_base.Service):
           
           # Your code here
 
+</code></pre>
+
+To create an instance of this Service and its associated thread task, simply create a new variable of the Service's class:
+
+<code><pre>
 threadID = 2 # or any other unique number
 myThread = MyServiceThread("ThreadName", threadID)
+</code></pre>
+
+To start this Service, simply type:
+
+<code><pre>
 myThread.start()
 </code></pre>
