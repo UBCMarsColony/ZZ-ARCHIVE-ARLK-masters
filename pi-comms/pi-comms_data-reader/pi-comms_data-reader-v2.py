@@ -39,6 +39,9 @@ ser = serial.Serial('/dev/ttyACM1',9600)
 
 # MAIN LOOPS
 
+# Note that we are probably going to move the main loops to a dedicated
+# file to improve readability and clarity of structure
+
 while True:
     
     update_sensor_data()
