@@ -38,7 +38,7 @@ Folders should be broken up into logical parts, to ensure code can be found as q
 </details>
 
 <details>
-<summary><b>Motos</b></summary>
+<summary><b>Motors</b></summary>
   Contains code and data about the motors in the airlock. /br>
 </details>
 
