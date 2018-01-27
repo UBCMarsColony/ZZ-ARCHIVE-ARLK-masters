@@ -1,6 +1,8 @@
 # airlock-masters <img align="right" src="artwork/ubcmc-logo-transparent_small.png">
 UBC Mars Colony airlock repository. All source code, datasheets, and other materials related to the airlock are found here.
 
+[Directories](#Directories)
+
 ## Naming convention
 To ensure the repository is quick to navigate, all Mars Colony files should follow a standardized naming convention. This naming convention extends to both files and folders, as outlined below:
 
