@@ -2,11 +2,14 @@
 UBC Mars Colony airlock repository. All source code, datasheets, and other materials related to the airlock are found here.
 
 ## Naming convention
+To ensure the repository is quick to navigate, all Mars Colony files should follow a standardized naming convention. This naming convention extends to both files and folders, as outlined below:
 
 ### Files
-To ensure the repository is quick to navigate, all Mars Colony files follow a naming convention, which include the project, subproject, functionality, etc. Separate components using underscores, and use hypens instead of spaces. The base file name convention is below:
+All code, documentation, and other files related to the project follow a standardized naming convention. They should follow a general structure, as outlined below:
 
-*Project-Module_Project-Part_Description(_Sample).codetype*.
+*Project-Module_Project-Part_Description(_Sample).extension*.
+
+Separate the descrete name elements using underscores, and use hypens instead of spaces. (Although this may cause errors in importing, it is generally avoidable through a bit of fanagling - see the wiki for more details.)
 
 ### Folders
 Folders should be broken up into logical parts, to ensure code can be found as quickly as possible. Use hyphens instead of spaces in folder names. Additionally, avoid the use of capital letters in the folder names unless absolutely necessary. For instance, the path to a CO2 Sensor file may be:
