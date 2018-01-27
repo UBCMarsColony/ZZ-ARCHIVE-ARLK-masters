@@ -31,17 +31,17 @@ Directories are split up into logical chunks to be easily navigated. Description
 
 <details>
 <summary><b>Failsafe</b></summary>
-  Contains the code used to process sensor data on the Arduino board and send it via I2C to the main Raspberry Pi system. /br>
+  Contains the code used to process sensor data on the Arduino board and send it via I2C to the main Raspberry Pi system. </br>
 </details>
 
 <details>
 <summary><b>Lighting</b></summary>
-  Contains code and data about lighting systems in the airlock. /br>
+  Contains code and data about lighting systems in the airlock. </br>
 </details>
 
 <details>
 <summary><b>Motors</b></summary>
-  Contains code and data about the motors in the airlock. /br>
+  Contains code and data about the motors in the airlock. </br>
 </details>
 
 <details>
