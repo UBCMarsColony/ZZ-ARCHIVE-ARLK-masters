@@ -32,21 +32,4 @@ def update_sensor_data():
     	print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
     except Exception as e:
         print("Unexpected exception has occurred. \n\tStack Trace: " + str(e))
-    
-        
-#initialization
-ser = serial.Serial('/dev/ttyACM1',9600)
-
-# MAIN LOOPS
-
-# Note that we are probably going to move the main loops to a dedicated
-# file to improve readability and clarity of structure
-
-while True:
-    
-    update_sensor_data()
-    
-    print(str(get_sensor_data))
-    
-    time.sleep(0.1)
 
