@@ -17,6 +17,8 @@ Folders should be broken up into logical parts, to ensure code can be found as q
 *airlock-masters/sensors/co2-sensor/co2file.py*
 
 ## Directories
+Directories are split up into logical chunks to be easily navigated. Descriptions of each directory are included below.
+
 <details>
 <summary><b>Artwork</b></summary>
   Contains all visuals used in the repository. See wiki for information on how to use them.</br>
