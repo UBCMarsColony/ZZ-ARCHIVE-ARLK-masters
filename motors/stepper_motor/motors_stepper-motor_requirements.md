@@ -9,6 +9,8 @@ Open: +90 deg from closed
 ON HOLD, due to lokcing mechanism incompletion. No testing done yet, so can't accurately add a time.
 	Temp time to check back: 1 week
 
+(^Kevin) +2 degrees overdrive for secure sealing
+
 ### Circumstancial Failsafe Measures & Behaviours:
 
 In event that closing encounters error, motor SHOULD NOT HOLD POSITION
