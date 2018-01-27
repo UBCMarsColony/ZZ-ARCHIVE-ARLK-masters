@@ -1,9 +1,16 @@
 import threading
 from abc import ABC, abstractmethod
 
-
+"""
+The purpose of the Service class is to ease system thread management.
+In general, we would like airlock services to function under a similar
+command flow.
+"""
 class Service(ABC):
-    def __init__(self, threadID, name):
+    def __init__(self, name, threadID = None):
+        if(threadID = None):
+            pass#generate a valid number
+            
         self.service_thread = self.ServiceThread(self, threadID, name)
 
     class ServiceThread(threading.Thread):
