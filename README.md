@@ -11,7 +11,7 @@ To ensure the repository is quick to navigate, all Mars Colony files follow a na
 ### Folders
 Folders should be broken up into logical parts, to ensure code can be found as quickly as possible. Use hyphens instead of spaces in folder names. Additionally, avoid the use of capital letters in the folder names unless absolutely necessary. For instance, the path to a CO2 Sensor file may be:
 
-*airlock-masters/sensors/co2-sensor/sensors-co2-data-reporting/sensors-co2-data-reporting*
+*airlock-masters/sensors/co2-sensor/co2file.py*
 
 ## Directories
 #### Artwork
