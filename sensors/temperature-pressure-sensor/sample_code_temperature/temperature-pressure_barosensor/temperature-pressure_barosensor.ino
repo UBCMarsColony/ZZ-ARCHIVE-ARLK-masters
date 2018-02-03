@@ -33,7 +33,7 @@ void loop()
     //Error checking:
     //Temp range of sensor: -40 to +85 degrees celcius
     if(temp <-40 || temp >85){
-      Serial.println(-555);
+      Serial.println(-556);
     }
     else { 
       Serial.println(temp);
@@ -42,7 +42,7 @@ void loop()
     //Error checking:
     //Pressure range of sensor: 10 to 2000 mbar
     if(pressure <10 || pressure >2000){
-      Serial.println(-555);
+      Serial.println(-500);
     }
     else {
       Serial.println(pressure);
