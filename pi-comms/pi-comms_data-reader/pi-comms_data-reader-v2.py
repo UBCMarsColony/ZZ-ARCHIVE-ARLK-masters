@@ -1,17 +1,20 @@
-#JSON raspberry pi data reader code, take serial data from python 
+# JSON raspberry pi data reader code, take serial data from python
 
-import serial
+try:
+    import serial
+except ModuleNotFoundError:
+    print("Could not import serial.")
 import json
 import time
 
-#THE VARIABLE THAT MATTERS
+# THE VARIABLE THAT MATTERS
 sensor_data = {}
 
 
 def get_sensor_data(string_name = None):
-    if string_name = None:
+    if string_name is None:
         return sensor_data
-    else
+    else:
         try:
             return sensor_data[string_name]
         except KeyError as ve:
@@ -20,18 +23,20 @@ def get_sensor_data(string_name = None):
         except Exception as e:
             print("An unexpected exception occurred while trying to retrieve sensor data.\n\tStack Trace: " + str(e))
 
+
 def update_sensor_data():
     try:    
-        sensor_data = getDecodedJsonString(next_line)
-    
+        sensor_data = __get_decoded_json_string(next_line)
+
     except ValueError as ve:
-    	print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
+        print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
     except Exception as e:
         print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
 
-#function that securely decodes a JSON string
-def __getDecodedJsonString(encodedJson):
-	try:
-		return json.loads(encodedJson)
-	except ValueError as e:
-		raise ValueError
+
+# function that securely decodes a JSON string
+def __get_decoded_json_string(encoded_json):
+    try:
+        return json.loads(encoded_json)
+    except ValueError:
+        raise ValueError

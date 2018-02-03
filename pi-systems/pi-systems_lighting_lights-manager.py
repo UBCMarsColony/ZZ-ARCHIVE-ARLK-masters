@@ -8,26 +8,32 @@
 #
 # In the event of an error, lights may flash. This has yet to be implemented.
 
-#--------------------
+# --------------------
 # IMPORTS
-#--------------------
+# --------------------
 
 from random import *
+import sys
 import importlib
 
 try:
     import gpio
-except:
-    print("TODO: FIX ME")
+except ImportError or ImportWarning or ModuleNotFoundError:
+    print("TODO: FIX ME - GPIO import")
 
 # LightScheme library is imported with importlib due 
 # to some issues with how dash (-) characters interact 
 # with the standard importing method (as used above)
+sys.path.insert(0, '../lighting')
 ls = importlib.import_module('lighting_light-control_light-plan')
+
+sys.path.insert(0, '../pi-comms/pi-comms_data-reader')
+data_manager = importlib.import_module('pi-comms_data-reader-v2')
+
 
 def generate_light_plan():
     light_plan = ls.LightPlan()
-	
+
     # Temporary code to populate light_plan with some nonzero values
     try:
         for light_key in light_plan:
@@ -35,9 +41,9 @@ def generate_light_plan():
     except KeyError as ke:
         print(str(ke))
     
-    #IMPLEMENT BELOW
+    # IMPLEMENT BELOW
     
-    pir_data = get_sensor_data("Motion Detector")
+    pir_data = data_manager.get_sensor_data("Motion Detector")
     # door_data = get door data
     
     # if PIR_data && door_data has not significantly changed
@@ -66,12 +72,11 @@ def update_lights(light_plan):
         raise TypeError("ERROR: The parameter <light_plan> has type " + 
             str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
             " when it should be of type LightPlan!")
-		
     print(light_plan)
     
-#UNCOMMENT WHEN READY
+# UNCOMMENT WHEN READY
     #for light_ID in light_plan:
         #gpio.write(light_plan.getGPIO(light_ID), light_plan[light_ID])
-	
+
     print("---")
     return 0
