@@ -41,6 +41,7 @@ Oftentimes, sensors encountering an expected situation will relay the situation 
 
 <details>
   <summary>Report Codes</summary>
+  • <b>-500</b>: Data out of bounds<br/>
   • <b>-555</b>: Generic error<br/>
   • <b>-600</b>: Preheating in progress<br/>
   • <b>-666</b>: Initialization Error
