@@ -128,7 +128,7 @@ void loop()
   sprintf(JSONBourne, "{\"GasComposition\":{\"CO2\":%d, \"O2\":%d},\"Temperature\":%d, \"Pressure\":%d, \"Motion Detector\":%d }", conc_co2, conc_o2, environment_array[ENV_TEMP], environment_array[ENV_PRES], detected);
   Serial.println(JSONBourne);
   
-
+/*
   //sending slave data. All data elements from all sensors must be stored in numsent array by this point
   Wire.beginTransmission(SLAVE_ADDRESS);   
   for(int i=0; i<SIZE; i++){
@@ -139,7 +139,7 @@ void loop()
   Wire.endTransmission();   
   delay(500);
 
-/*
+
   //requesting data from slave
   for(int k=0; k<SIZE; k++){
   Serial.println("Requesting Data"); 
