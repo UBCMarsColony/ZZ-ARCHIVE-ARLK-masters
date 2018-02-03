@@ -4,32 +4,34 @@ import serial
 import json
 import time
 
-#function defined to read JSON
-def getDecodedJsonString(encodedJson):
+#THE VARIABLE THAT MATTERS
+sensor_data = {}
+
+
+def get_sensor_data(string_name = None):
+    if string_name = None:
+        return sensor_data
+    else
+        try:
+            return sensor_data[string_name]
+        except KeyError as ve:
+            print("Failed to find a value associated with the key " + string_name + ". Returning entire dictionary instead...")
+            return sensor_data
+        except Exception as e:
+            print("An unexpected exception occurred while trying to retrieve sensor data.\n\tStack Trace: " + str(e))
+
+def update_sensor_data():
+    try:    
+        sensor_data = getDecodedJsonString(next_line)
+    
+    except ValueError as ve:
+    	print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
+    except Exception as e:
+        print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
+
+#function that securely decodes a JSON string
+def __getDecodedJsonString(encodedJson):
 	try:
 		return json.loads(encodedJson)
 	except ValueError as e:
 		raise ValueError
-
-#TODO Relocate lines 14-34 into own file
-
-sensor_data = {}
-
-def get_sensor_data():
-    return sensor_data
-
-def update_sensor_data():
-    try:    
-        next_line = ser.readline()
-        json_data = getDecodedJsonString(next_line)
-
-        sensor_data = json_data
-    
-        #if its time to update lights
-            # update lights based on sensor data
-        
-    except ValueError as ve:
-    	print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
-    except Exception as e:
-        print("Unexpected exception has occurred. \n\tStack Trace: " + str(e))
-
