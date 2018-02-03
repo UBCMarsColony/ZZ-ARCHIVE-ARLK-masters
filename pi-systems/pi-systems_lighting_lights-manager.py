@@ -8,9 +8,9 @@
 #
 # In the event of an error, lights may flash. This has yet to be implemented.
 
-####################
+#--------------------
 # IMPORTS
-####################
+#--------------------
 
 from random import *
 import importlib
@@ -25,7 +25,6 @@ except:
 # with the standard importing method (as used above)
 ls = importlib.import_module('lighting_light-control_light-plan')
 
-
 def generate_light_plan():
     light_plan = ls.LightPlan()
 	
@@ -34,11 +33,11 @@ def generate_light_plan():
         for light_key in light_plan:
             light_plan[light_key] = randint(0,1)
     except KeyError as ke:
-        print(ke)
-	
+        print(str(ke))
+    
     #IMPLEMENT BELOW
     
-    # PIR_data = get PIR sensor data
+    pir_data = get_sensor_data("Motion Detector")
     # door_data = get door data
     
     # if PIR_data && door_data has not significantly changed
