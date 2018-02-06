@@ -1,6 +1,6 @@
 import threading
 import importlib
-sys_thread = importlib.import_module('pi-systems_service-base')
+subsys = importlib.import_module('pi-systems_subsystem-base')
 
 """
 Run a sequence based on a preset end state. This will
@@ -25,9 +25,9 @@ def run_sequence():
     
     # return the start state of the sequence.
 
-class PressureThread(sys_thread.Service):
+class PressureThread(subsys.Subsystem):
     def thread_task(self):
-        print(self.service_thread.name + " is running!")
+        print(self.subsystem_thread.name + " is running!")
 
 thread1 = PressureThread("Thread_Pressure", 1)
 thread1.start()

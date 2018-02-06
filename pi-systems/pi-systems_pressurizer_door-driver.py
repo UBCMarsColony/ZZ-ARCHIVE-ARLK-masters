@@ -1,9 +1,9 @@
-sysThread = importlib.import_module('pi-systems_service-base')
+subsys = importlib.import_module('pi-systems_subsystem-base')
 
-class DoorThread(sysThread.Service):
+class DoorThread(subsys.Subsystem):
 
     def thread_task(self):
-        print(self.service_thread.name + " is running!")
+        print(self.subsystem_thread.name + " is running!")
         
         #WARNING: MASS PSEUDOCODE
         #-------------------------
