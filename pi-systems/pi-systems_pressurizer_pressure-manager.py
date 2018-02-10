@@ -26,6 +26,9 @@ def run_sequence():
     # return the start state of the sequence.
 
 class PressureThread(subsys.Subsystem):
+    def __init__(self, name, threadID = None):
+        super().__init__(name, threadID)
+
     def thread_task(self):
         print(self.subsystem_thread.name + " is running!")
 
