@@ -2,14 +2,17 @@ import sys
 import os
 import importlib
 import argparse
+import configparser
 
+# COMMAND LINE SETUP
 parser = argparse.ArgumentParser(description="Mars Colony Airlock Emulator by The Electrical Team!", epilog="See https://github.com/UBCMarsColony/airlock-masters for the full documentation!")
-parser.add_argument("--simulator", choices=[0,1], default=0, help="Simulation versions: 0 = Hardware Only, 1 = Fully Simulated")
+parser.add_argument("--simulator", choices=['0','1'], default=0, help="Simulation versions: 0 = Hardware Only, 1 = Fully Simulated")
     
-parser.add_argument("--spoof_sensor_data", choices=[0,1], default=0, help="Choose to spoof polled sensor data (temperature, pressure, o2 concentration) or not. 0 = No, 1 = Yes")
-parser.add_argument("--gui", type=int, choices=[0,1], default=0, help="Use GUI: 0 = No, 1 = Yes. NOTE: By using GUI, all other command link arguments are overwritten!")
+parser.add_argument("--spoof_sensor_data", choices=['0','1'], default=0, help="Choose to spoof polled sensor data (temperature, pressure, o2 concentration) or not. 0 = No, 1 = Yes")
+parser.add_argument("--gui", type=int, choices=['0','1'], default=0, help="Use GUI: 0 = No, 1 = Yes. NOTE: By using GUI, all other command link arguments are overwritten!")
 parser.add_argument("--loop_delay", type=int, default = 100, help="Time delay between system loops, in milliseconds.")
 
+# CL ARG PARSING
 args = parser.parse_args()
 
 if args.gui != None and int(args.gui) == 1:
@@ -19,10 +22,20 @@ else:
     config_data["Simulator"] = int(args.simulator)
     config_data["Spoof_Sensor_Data"] = int(args.spoof_sensor_data)
     config_data["Loop_Delay"] = int(args.loop_delay) / 1000
-    
+ 
+#CLI SETUP
+"""
+import signal
+def signal_handler(signal, frame):
+        print('You pressed Ctrl+C!')
+        sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
+signal.pause()"""
 
+# SYSTEM STARTUP
 print("\n-----------------------\n")
-print("Mars Colony Airlock will begin initializing momentarily...")
+print("Mars Colony Airlock will begin initializing momentarily...\n")
+print("WARNING: THE LIGHT THREAD RUNS FOREVER AT THE MOMENT! NEEDS TO BE CLOSED. LOOK INTO USING THE Python multiprocessing LIBRARY")
 os.system("PAUSE")
 
 # Go to main system loop
