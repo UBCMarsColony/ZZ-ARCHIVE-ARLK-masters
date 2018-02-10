@@ -15,6 +15,7 @@
 from random import *
 import sys
 import importlib
+import time
 
 try:
     import gpio
@@ -24,26 +25,30 @@ except ImportError or ImportWarning or ModuleNotFoundError:
 # LightScheme library is imported with importlib due 
 # to some issues with how dash (-) characters interact 
 # with the standard importing method (as used above)
+subsys = importlib.import_module('pi-systems_subsystem-base')
+
 sys.path.insert(0, '../lighting')
 ls = importlib.import_module('lighting_light-control_light-plan')
 
 sys.path.insert(0, '../pi-comms/pi-comms_data-reader')
-data_manager = importlib.import_module('pi-comms_data-reader-v2')
+data_mgr = importlib.import_module('pi-comms_data-reader-v2')
 
+class LightingThread(subsys.Subsystem):
+    def __init__(self, name, threadID = None):
+        super().__init__(name, threadID)
+
+    def thread_task(self):
+        while True:
+            light_plan = generate_light_plan()
+            update_lights(light_plan)
+            time.sleep(2)
+        
 
 def generate_light_plan():
     light_plan = ls.LightPlan()
-
-    # Temporary code to populate light_plan with some nonzero values
-    try:
-        for light_key in light_plan:
-            light_plan[light_key] = randint(0,1)
-    except KeyError as ke:
-        print(str(ke))
     
     # IMPLEMENT BELOW
-    
-    pir_data = data_manager.get_sensor_data("Motion Detector")
+    pir_data = data_mgr.get_sensor_data("Motion Detector")
     # door_data = get door data
     
     # if PIR_data && door_data has not significantly changed
@@ -64,6 +69,13 @@ def generate_light_plan():
         # if time_elapsed == 20 seconds
             # Generate scheme for lights off
 
+        # Temporary code to populate light_plan with some nonzero values
+    try:
+        for light_key in light_plan:
+            light_plan[light_key] = randint(0,1)
+    except KeyError as ke:
+        print(str(ke))
+    
     return light_plan
 
 
