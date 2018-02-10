@@ -2,28 +2,21 @@ import threading
 from abc import ABC, abstractmethod
 
 """
-The purpose of the Service class is to ease system thread management.
-In general, we would like airlock services to function under a similar
-command flow.
+The purpose of the Subsystem class is to ease system thread management.
+In general, we would like airlock subsystems to function under a similar
+command flow. This enables better subsystem management in the future.
 """
 class Subsystem(ABC):
+    @attribute
+    isRunning = False
+
     def __init__(self, name, threadID = None):
-        if(threadID = None):
-            pass#generate a valid number
+        if(threadID is None):
+            threadID = 5
         
-        self.subsystem_thread = self.ServiceThread(self, threadID, name)
-        print("Initialized new subservice:\n\tName=" + str(name) + "\n\tID=" + str(threadID))
-        
-    class SubsystemThread(threading.Thread):
-        def __init__(self, subsystem, threadID, name):
-            threading.Thread.__init__(self)
-            self.subsystem = subsystem
-            self.threadID = threadID
-            self.name = name
-            
-        def run(self):
-            print("Thread started:\n\t" + self.name)
-            self.subsystem.thread_task()
+        self.name = name
+        self.subsystem_thread = SubsystemThread(self, threadID, name)
+        print("Initialized new subsystem:\n\tName=" + str(name) + "\n\tID=" + str(threadID))
         
     def start(self):
         self.subsystem_thread.start()
@@ -37,3 +30,15 @@ class Subsystem(ABC):
     @abstractmethod
     def thread_task(self):
         pass
+
+class SubsystemThread(threading.Thread):
+    def __init__(self, subsystem, threadID, name): 
+        threading.Thread.__init__(self)
+        self.subsystem = subsystem
+        self.threadID = threadID
+        self.name = name
+        
+    def run(self):
+        print("Subsystem thread started: <" + self.name + ">\n")
+        self.subsystem.thread_task()
+        self.subsystem.isRunning = True
