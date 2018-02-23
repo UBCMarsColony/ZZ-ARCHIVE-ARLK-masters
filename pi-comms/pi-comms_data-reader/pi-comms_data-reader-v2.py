@@ -29,6 +29,7 @@ def get_sensor_data(string_name = None):
     
     return None
 
+    
 def update_sensor_data():
     try:    
         next_line = serial_conn.readline()
