@@ -13,6 +13,10 @@ sleepTime=0.04 #seconds
 #motor properties
 gearRatio=47 #gear ratio, we multiply angle gearRatio times to get wanted rotation
 
+#setting datum for reset switch
+datumAngle_start=
+datumAngle_finish=
+
 def main():
     
     #gpio pin setup routines

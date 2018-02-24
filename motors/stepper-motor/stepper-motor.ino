@@ -4,7 +4,6 @@ const int DIRpinH = 12;
 const int DIRpinL = 13;
 // const int ENApinH = 998;
 // const int ENApinL = 999;
-const int stepSpeed = 255; //input value between 0-255
 const int gearRatio = 47;
 
 void setup() {
@@ -28,11 +27,11 @@ void loop() {
   // put your main code here, to run repeatedly:
   //starting definitions
   char rotateDirection='L';
-  int rotateAngle=360;
+  int rotateAngle=90;
 
-  stepperAngleRotate(360,'L');
+  stepperAngleRotate(rotateAngle,'L');
   delay(3000);
-  stepperAngleRotate(360,'R');
+  stepperAngleRotate(rotateAngle,'R');
   delay(3000);
 
   //debug pulser
@@ -52,22 +51,24 @@ void stepperAngleRotate(int angle, char direction){
 
   //direction switching routine
   if (direction=='R'){
-    digitalWrite(DIRpinH,LOW);
     digitalWrite(DIRpinL,HIGH);
+  }
+  else{
+    digitalWrite(DIRpinL,LOW)
   }
 
   //beware of low side switching, PULpinL MUST BE LOW to enable
   while(index<=requiredPulses){
     digitalWrite(PULpinL,LOW); //MOVING PULSE HIGH
-    delay(4);//i need a routine for pulse width etc
+    delay(1);//i need a routine for pulse width etc
     digitalWrite(PULpinL,HIGH); //STOPPING PULSE LOW
-    delay(4);
+    delay(1);
 
-    //print debugging is the only debugging
-    Serial.print("This is increment: ");
-    Serial.print(index);
-    Serial.print(" out of: ");
-    Serial.println(requiredPulses);
+    // print debugging is the only debugging
+    // Serial.print("This is increment: ");
+    // Serial.print(index);
+    // Serial.print(" out of: ");
+    // Serial.println(requiredPulses);
     
     index++;
   }
