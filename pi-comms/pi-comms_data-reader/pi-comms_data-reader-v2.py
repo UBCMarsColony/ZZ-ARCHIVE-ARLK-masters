@@ -18,7 +18,7 @@ except NameError:
 def get_sensor_data(string_name = None):
     if string_name is None:
         return __sensor_data
-    else:
+    else:   
         try:
             return __sensor_data[string_name]
         except KeyError as ve:
