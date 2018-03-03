@@ -15,7 +15,7 @@ def system_begin():
         pi_main_sys = importlib.import_module('pi-main_simulated')
 
     pi_main_sys.begin(config_data)
-    
+
     
 def run_gui():
     import tkinter as tk
