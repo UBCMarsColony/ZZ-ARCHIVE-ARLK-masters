@@ -1,17 +1,23 @@
 def begin(config_data_dict):
     log.print_config(config_data_dict["log_level"])
-
+    
     light_thread = light_ss.LightingThread("LightThread", 3)
     light_thread.start()
     
-    loop(config_data_dict)
+    #Set GPIO mode to Broadcom SOC Channel
+    gpio.setmode(gpio.bcm)
+    
+    try:
+        loop(config_data_dict)
+    except KeyboardInterrupt:
+        print("Shutting down colony...")
+        ss_pool.stopAll()
+        exit(0)
 
 def loop(config_data):
     while True:
         data_reader.update_sensor_data()
         print(str(data_reader.get_sensor_data))
-        
-        #updateLights()
         
         time.sleep(config_data["loop_delay"])
 
@@ -21,7 +27,8 @@ TAG = "pi-main_simulated"
 import sys
 import importlib
 import time
-
+import RPi.GPIO as gpio
+    
 print("STARTING SYSTEM")
 
 #Data Reader

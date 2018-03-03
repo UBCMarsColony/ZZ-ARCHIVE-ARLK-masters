@@ -5,27 +5,26 @@ def begin(config_data_dict):
     
     light_thread.start()
     
-    loop(config_data_dict)
+    try:
+        loop(config_data_dict)
+    except KeyboardInterrupt:
+        print("Shutting down colony...")
+        ss_pool.stopAll()
+        exit(0)
 
     
 def loop(config_data):
     
     while True:
-        try:
-            if config_data["ssd"] == 0:
-                data_reader.update_sensor_data()
-            else:
-                #Access the local variable to write directly to it
-                data_reader.__sensor_data = {"GasComposition":{"CO2":450, "O2":21.3},"Temperature":25, "Pressure":100000000000, "Motion Detector":0}
-                
-            log.d(TAG, str(data_reader.get_sensor_data()))
+        if config_data["ssd"] == 0:
+            data_reader.update_sensor_data()
+        else:
+            #Access the local variable to write directly to it
+            data_reader.__sensor_data = {"GasComposition":{"CO2":450, "O2":21.3},"Temperature":25, "Pressure":100000000000, "Motion Detector":0}
             
-            time.sleep(config_data["loop_delay"])
-
-        except KeyboardInterrupt:
-            print("Shutting down colony...")
-            ss_pool.stopAll()
-            exit(0)
+        log.d(TAG, str(data_reader.get_sensor_data()))
+        
+        time.sleep(config_data["loop_delay"])
             
 #initialization
 TAG = "pi-main_simulated"
