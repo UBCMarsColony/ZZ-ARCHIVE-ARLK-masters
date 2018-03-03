@@ -28,15 +28,22 @@ sys.path.insert(0,"../pi-comms")
 log = importlib.import_module("pi-comms_log")
 
 sys.path.insert(0, '../lighting')
-ls = importlib.import_module('lighting_light-control_light-plan')
+lp = importlib.import_module('lighting_light-control_light-plan')
 
 sys.path.insert(0, '../pi-comms/pi-comms_data-reader')
 data_mgr = importlib.import_module('pi-comms_data-reader-v2')
 
 try:
-    import gpio
+    import RPi.GPIO as GPIO
 except ImportError or ImportWarning or ModuleNotFoundError:
     log.w(TAG, "TODO: FIX ME - GPIO import")
+
+#DELETE ME LATER
+GPIO.setmode(gpio.bcm)
+GPIO.setup(lp.get_pin("OVERHEAD_1"), GPIO.OUT)
+GPIO.setup(lp.get_pin("OVERHEAD_2"), GPIO.OUT)
+GPIO.setup(lp.get_pin("DOOR_MARS1"), GPIO.OUT)
+GPIO.setup(lp.get_pin("DOOR_COLN1"), GPIO.OUT)
 
 class LightingThread(subsys.Subsystem):
     def __init__(self, name, threadID = None):
@@ -50,48 +57,42 @@ class LightingThread(subsys.Subsystem):
         
 
 def generate_light_plan():
-    light_plan = ls.LightPlan()
+    light_plan = lp.LightPlan()
     
     # IMPLEMENT BELOW
     pir_data = data_mgr.get_sensor_data("Motion Detector")
     # door_data = get door data
+    door_colony = 0
+    door_mars = 0
     
-    # if PIR_data && door_data has not significantly changed
-        # break
+     if pir_data: #or GPIO.input(gas):
+        light_plan["OVERHEAD_1"] = 1
+        light_plan["OVERHEAD_2"] = 1
 
-    # if PIR_data == person in room
-    
-    # if door_data = closed
-        # Generate scheme for bright lights
+    elif door_colony and not door_mars:
+        light_plan["OVERHEAD_1"] = 1
+        light_plan["OVERHEAD_2"] = 1
+        light_plan["DOOR_COLN1"] = 1
 
-    # elif door_data = open_colony
-        # Generate scheme for dim lights
+    elif door_mars and not door_colony:
+        light_plan["OVERHEAD_1"] = 1
+        light_plan["OVERHEAD_2"] = 1
+        light_plan["DOOR_MARS1"] = 1
 
-    # elif door_data = open_mars
-        #Generate scheme for bright lights
-
-    # else
-        # if time_elapsed == 20 seconds
-            # Generate scheme for lights off
-
-        # Temporary code to populate light_plan with some nonzero values
-    try:
-        for light_key in light_plan:
-            light_plan[light_key] = randint(0,1)
-    except KeyError as ke:
-        print(str(ke))
+    #elif GPIO.input(lights):
+        #lights_on = GPIO.wait_for_edge(pir, GPIO_RISING, timeout=30000)
     
     return light_plan
 
 
 def update_lights(light_plan):
-    if not isinstance(light_plan, ls.LightPlan):
+    if not isinstance(light_plan, lp.LightPlan):
         raise TypeError("ERROR: The parameter <light_plan> has type " + 
             str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
             " when it should be of type LightPlan!")
     log.d(TAG, str(light_plan))
     
-# UNCOMMENT WHEN READY
-    #for light_ID in light_plan:
-        #gpio.write(light_plan.getGPIO(light_ID), light_plan[light_ID])
+    for key in lp.get_keys():
+        GPIO.output(lp.get_pin(key), light_plan[key])
+        
     return 0
