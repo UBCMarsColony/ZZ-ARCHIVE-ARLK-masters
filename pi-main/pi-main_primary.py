@@ -5,7 +5,6 @@ def begin(config_data_dict):
     light_thread.start()
     
     #Set GPIO mode to Broadcom SOC Channel
-    gpio.setmode(gpio.bcm)
     
     try:
         loop(config_data_dict)
