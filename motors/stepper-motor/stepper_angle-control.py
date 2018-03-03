@@ -14,8 +14,9 @@ sleepTime=0.04 #seconds
 gearRatio=47 #gear ratio, we multiply angle gearRatio times to get wanted rotation
 
 #setting datum for reset switch
-datumAngle_start=
-datumAngle_finish=
+datumAngle_closed= #the closed reference angle
+datumAngle_open= #the open reference angle
+currentAngle=-666 #current angle
 
 def main():
     
@@ -27,6 +28,7 @@ def main():
     rotateDirection='R'
     rotateAngle=90 #angle in degrees
 
+#debugging snippets
 while true:
     stepperAngularRotation(rotateAngle,motorMode,rotateDirection)
     time.sleep(5)

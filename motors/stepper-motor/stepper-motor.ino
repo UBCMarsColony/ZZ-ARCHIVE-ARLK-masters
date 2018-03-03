@@ -1,25 +1,38 @@
-const int PULpinH = 10;
-const int PULpinL = 11;
-const int DIRpinH = 12;
-const int DIRpinL = 13;
-// const int ENApinH = 998;
-// const int ENApinL = 999;
+//constants
+const int pinPUL_low = 11;
+const int pinDIR_low = 13;
+const int pinENA_low = 999;
+const int pinSEN_open = ;
+const int pinSEN_closed = ;
+
 const int gearRatio = 47;
+const int ON = 1;
+const int OFF = 0;
+
+const int INDETERMINATE = 404
+const int CLOSED = 500
+const int OPEN = 600
+const int TRANSIT = 700
+
+int currentAngle;
+int datumClosed;
+int datumOpen;
+int doorStatus=INDETERMINATE;
 
 void setup() {
   
   //pin mode setups
   pinMode(PULpinH, OUTPUT);
-  pinMode(PULpinL, OUTPUT);
+  pinMode(pinPUL_low, OUTPUT);
   pinMode(DIRpinH, OUTPUT);
-  pinMode(DIRpinL, OUTPUT);
+  pinMode(pinDIR_low, OUTPUT);
 
   //initial conditions for motor
   digitalWrite(DIRpinH, HIGH);
-  digitalWrite(DIRpinL, LOW);
+  digitalWrite(pinDIR_low, LOW);
 
   digitalWrite(PULpinH, HIGH);
-  digitalWrite(PULpinL, LOW);
+  digitalWrite(pinPUL_low, LOW);
   Serial.begin(9600);
 }
 
@@ -34,14 +47,47 @@ void loop() {
   stepperAngleRotate(rotateAngle,'R');
   delay(3000);
 
-  //debug pulser
-  // delay(2000);
-  // digitalWrite(PULpinL,LOW);
-  // delay(2000);
-  // digitalWrite(PULpinL,HIGH);
 }
 
 //motor is low side switching! 5V from arduino 5v rail. logical disable is pulling the L pin to 5V.
+
+void doorCalibratePosition(void){
+
+}
+
+void doorOpen(void){
+    if(doorStatus!=CLOSED){
+        while(digitalRead(pinSEN_closed==LOW)){
+            stepperAngleRotate(90,'R');
+            delay(3000);
+            doorStatus=CLOSED;
+        }
+    }
+    else
+        if(doorStatus==OPEN){
+            break;
+    }
+    else 
+        while(digitalRead(pinSEN_open==LOW){
+            stepperAngleRotate(90,'L');
+            delay(3000);
+            doorStatus=OPEN;
+    }
+}
+
+void doorClose(void){
+    if(doorStatus==OPEN){
+        break;
+    }
+    else 
+        while(digitalRead(pinSEN_closed==LOW){
+            stepperAngleRotate(90,'R');
+            delay(3000);
+            doorStatus=OPEN;
+    }
+}
+
+//function stepperAngleRotate takes int angle, char direction, rotates angle degrees in specified direction. 
 void stepperAngleRotate(int angle, char direction){
   
   //defins
@@ -51,34 +97,26 @@ void stepperAngleRotate(int angle, char direction){
 
   //direction switching routine
   if (direction=='R'){
-    digitalWrite(DIRpinL,HIGH);
+    digitalWrite(pinDIR_low,HIGH);
   }
-  else{
+  else{pinDIR_low
     digitalWrite(DIRpinL,LOW)
   }
 
-  //beware of low side switching, PULpinL MUST BE LOW to enable
-  while(index<=requiredPulses){
-    digitalWrite(PULpinL,LOW); //MOVING PULSE HIGH
-    delay(1);//i need a routine for pulse width etc
-    digitalWrite(PULpinL,HIGH); //STOPPING PULSE LOW
-    delay(1);
-
-    // print debugging is the only debugging
-    // Serial.print("This is increment: ");
-    // Serial.print(index);
-    // Serial.print(" out of: ");
-    // Serial.println(requiredPulses);
+  //beware of low side switching, pinPUL_low,HIGH); //STOPPING PULSE LOW
+    delay(2);
     
     index++;
   }
 }
 
-/* void motorPower(string power){
-  if (power=='ON'){
-    digitalWrite(ENApinL,LOW)
+//Function motorPower takes integer status and switches the motor on or off
+void motorPower(int status){
+  if (status==ON){
+    digitalWrite(pinENA_low,HIGH)
   }
-  else{
-    digitalWrite(ENApinL,HIGH)
-  }
-} */
+}
+
+int modeLUT(string mode){
+    return stepsToRev_raw
+}
