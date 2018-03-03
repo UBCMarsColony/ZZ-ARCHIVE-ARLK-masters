@@ -17,12 +17,12 @@ class LightPlan(dict):
     # ALL VALID LIGHT SCHEME KEYS MUST BE INCLUDED IN THE STATIC ARRAY BELOW
     #
     #############################################    
-    _keys = ["OVERHEAD_1", "OVERHEAD_2", "DOOR_COLN1", "DOOR_MARS1"]
+    _keys = {"OVERHEAD_1":27, "OVERHEAD_2":22, "DOOR_COLN1":17, "DOOR_MARS1":19}
     
     #LightPlan constructor
     def __init__(self):
         for key in LightPlan._keys:
-            self[key] = "Undefined"
+            self[key] = 0
             
     #Modifies default dict element assignment to ensure the specified key is valid
     def __setitem__(self, key, val):
@@ -38,12 +38,12 @@ class LightPlan(dict):
     
     #Returns the index associated with the key, or raises an error if the key is invalid
     @staticmethod
-    def get_gpio(self, key):
+    def get_pin(self, key):
         if key not in LightPlan._keys:
             raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
-        return LightPlan._keys.index(key)
+        return LightPlan._keys[key]
 	
     #Return the list of valid keys
     @staticmethod
-    def get_keys(self):
-        return LightPlan._keys        
+    def get_keys():
+        return LightPlan._keys
