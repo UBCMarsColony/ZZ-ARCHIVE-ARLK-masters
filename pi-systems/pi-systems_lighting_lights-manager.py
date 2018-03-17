@@ -27,9 +27,6 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 sys.path.insert(0,"../pi-comms")
 log = importlib.import_module("pi-comms_log")
 
-sys.path.insert(0, '../lighting')
-lp = importlib.import_module('lighting_light-control_light-plan')
-
 sys.path.insert(0, '../pi-comms/pi-comms_data-reader')
 data_mgr = importlib.import_module('pi-comms_data-reader-v2')
 
@@ -57,7 +54,7 @@ class LightingThread(subsys.Subsystem):
         
 
 def generate_light_plan():
-    light_plan = lp.LightPlan()
+    light_plan = LightPlan()
     
     # IMPLEMENT BELOW
     pir_data = data_mgr.get_sensor_data("Motion Detector")
@@ -86,7 +83,7 @@ def generate_light_plan():
 
 
 def update_lights(light_plan):
-    if not isinstance(light_plan, lp.LightPlan):
+    if not isinstance(light_plan, LightPlan):
         raise TypeError("ERROR: The parameter <light_plan> has type " + 
             str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
             " when it should be of type LightPlan!")
@@ -96,3 +93,54 @@ def update_lights(light_plan):
         GPIO.output(lp.get_pin(key), light_plan[key])
         
     return 0
+
+
+#Can be used for precision lighting later on.
+class LightData():
+    def __init__(self):
+        red = 0
+        blue = 0
+        green = 0
+        alpha = 0
+        brightness = 0
+
+
+# The LightPlan dict object contains data about how to turn lights on and off.
+# It is limited to keys defined in the _keys variable
+class LightPlan(dict):
+    
+    ###############--PLEASE NOTE--###############
+    #
+    # ALL VALID LIGHT SCHEME KEYS MUST BE INCLUDED IN THE STATIC ARRAY BELOW
+    #
+    #############################################    
+    _keys = {"OVERHEAD_1":27, "OVERHEAD_2":22, "DOOR_COLN1":17, "DOOR_MARS1":19}
+    
+    #LightPlan constructor
+    def __init__(self):
+        for key in LightPlan._keys:
+            self[key] = 0
+            
+    #Modifies default dict element assignment to ensure the specified key is valid
+    def __setitem__(self, key, val):
+        if key not in LightPlan._keys:
+            raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
+        dict.__setitem__(self, key, val)
+    
+    def __getitem__(self, key):
+        if key not in LightPlan._keys:
+            raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
+        return dict.__getitem__(self, val)
+	
+    
+    #Returns the index associated with the key, or raises an error if the key is invalid
+    @staticmethod
+    def get_pin(self, key):
+        if key not in LightPlan._keys:
+            raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
+        return LightPlan._keys[key]
+	
+    #Return the list of valid keys
+    @staticmethod
+    def get_keys():
+        return LightPlan._keys
