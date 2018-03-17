@@ -95,7 +95,8 @@ def update_lights(light_plan):
     return 0
 
 
-#Can be used for precision lighting later on.
+    
+#Can be used for precision lighting later on. Currently not in use
 class LightData():
     def __init__(self):
         red = 0
