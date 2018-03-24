@@ -7,6 +7,11 @@ subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 The purpose of the Subsystem class is to ease system thread management.
 In general, we would like airlock subsystems to function under a similar
 command flow. This enables better subsystem management in the future.
+
+Param: gpio - The RPi.GPIO reference that will be used by the subsystem to control pins
+Param: name - The thread's unique name
+Param: threadID - The thread's unique ID that will be used to reference it
+Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool
 """
 class Subsystem(ABC):
 
@@ -23,6 +28,7 @@ class Subsystem(ABC):
         self.subsystem_thread = SubsystemThread(self, threadID, name)
         print("Initialized new subsystem:\n\tName=" + str(name) + "\n\tID=" + str(threadID))
         
+        # By default, add the subsystem to the pool.
         if add_to_pool is True:
             subsys_pool.add(self)
                 
@@ -54,5 +60,6 @@ class SubsystemThread(threading.Thread):
         
     def run(self):
         self.subsystem.isRunning = True
-        print("Subsystem <" + self.name + "> started on thread: <" + str(self.threadID) + ">\n")
+        print("Subsystem <" + self.name + "> started as thread: <" + str(self.threadID) + ">\n")
+        
         self.subsystem.thread_task()
