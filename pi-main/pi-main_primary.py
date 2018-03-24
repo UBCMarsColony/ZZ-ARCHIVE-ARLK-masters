@@ -21,7 +21,7 @@ def loop(config_data):
         time.sleep(config_data["loop_delay"])
 
 #initialization
-TAG = "pi-main_simulated"
+TAG = "pi-main_primary"
 
 import sys
 import importlib
