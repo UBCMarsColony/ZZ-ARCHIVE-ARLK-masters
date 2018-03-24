@@ -43,8 +43,8 @@ GPIO.setup(lp.get_pin("DOOR_MARS1"), GPIO.OUT)
 GPIO.setup(lp.get_pin("DOOR_COLN1"), GPIO.OUT)
 
 class LightingThread(subsys.Subsystem):
-    def __init__(self, name, threadID = None):
-        super().__init__(name, threadID)
+    def __init__(self, gpio, name=None, threadID=None):
+        super().__init__(gpio, name=name, threadID=threadID)
 
     def thread_task(self):
         while self.is_running:

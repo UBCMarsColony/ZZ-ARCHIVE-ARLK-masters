@@ -10,15 +10,21 @@ command flow. This enables better subsystem management in the future.
 """
 class Subsystem(ABC):
 
-    def __init__(self, name, threadID = None):
-        if(threadID is None):
+    def __init__(self, gpio, name=None, threadID=None, add_to_pool = True):
+        if threadID is None:
             threadID = 5
             
+        if name is None:
+            name = "Thread_%s" + str(threadID)
+            
         self.is_running = False
+        self.gpio = gpio
         self.name = name
         self.subsystem_thread = SubsystemThread(self, threadID, name)
         print("Initialized new subsystem:\n\tName=" + str(name) + "\n\tID=" + str(threadID))
-        subsys_pool.add(self)
+        
+        if add_to_pool is True:
+            subsys_pool.add(self)
                 
                 
     def start(self):

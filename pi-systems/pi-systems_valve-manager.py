@@ -26,8 +26,8 @@ class ValveManager(subsys.Subsystem):
     _num_valves = 3
     _valve_ports = (23,24,25)
 
-    def __init__(self, name, threadID=None):
-        super().__init__(name, threadID)
+    def __init__(self, gpio, name=None, threadID=None):
+        super().__init__(name,gpio, name=name, threadID=threadID)
         
         self.next_state = None
     
@@ -40,6 +40,7 @@ class ValveManager(subsys.Subsystem):
                 
                 #If there is a new state, apply it
                 for i in range(_num_valves):
+                
                     #Write to each GPIO port to set the valve state
                     gpio.output(_valve_ports[i], next_state(i))
                 
