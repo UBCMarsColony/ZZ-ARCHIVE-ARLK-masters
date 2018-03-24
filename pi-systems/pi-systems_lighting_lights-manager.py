@@ -30,22 +30,20 @@ log = importlib.import_module("pi-comms_log")
 sys.path.insert(0, '../pi-comms/pi-comms_data-reader')
 data_mgr = importlib.import_module('pi-comms_data-reader-v2')
 
-try:
-    import RPi.GPIO as GPIO
-except ImportError or ImportWarning or ModuleNotFoundError:
-    log.w(TAG, "TODO: FIX ME - GPIO import")
-
 #DELETE ME LATER
-GPIO.setmode(gpio.bcm)
-GPIO.setup(lp.get_pin("OVERHEAD_1"), GPIO.OUT)
-GPIO.setup(lp.get_pin("OVERHEAD_2"), GPIO.OUT)
-GPIO.setup(lp.get_pin("DOOR_MARS1"), GPIO.OUT)
-GPIO.setup(lp.get_pin("DOOR_COLN1"), GPIO.OUT)
+
 
 class LightingThread(subsys.Subsystem):
     def __init__(self, gpio, name=None, threadID=None):
         super().__init__(gpio, name=name, threadID=threadID)
+        
+        #Register all pins
+        self.gpio.setup(lp.get_pin("OVERHEAD_1"), self.gpio.OUT)
+        self.gpio.setup(lp.get_pin("OVERHEAD_2"), self.gpio.OUT)
+        self.gpio.setup(lp.get_pin("DOOR_MARS1"), self.gpio.OUT)
+        self.gpio.setup(lp.get_pin("DOOR_COLN1"), self.gpio.OUT)
 
+        
     def thread_task(self):
         while self.is_running:
             light_plan = generate_light_plan()
@@ -99,22 +97,22 @@ def update_lights(light_plan):
 #Can be used for precision lighting later on. Currently not in use
 class LightData():
     def __init__(self):
-        red = 0
-        blue = 0
-        green = 0
-        alpha = 0
-        brightness = 0
+        self.red = 0
+        self.blue = 0
+        self.green = 0
+        self.alpha = 0
+        self.brightness = 0
 
 
 # The LightPlan dict object contains data about how to turn lights on and off.
 # It is limited to keys defined in the _keys variable
 class LightPlan(dict):
     
-    ###############--PLEASE NOTE--###############
+    # ##############--PLEASE NOTE--###############
     #
     # ALL VALID LIGHT SCHEME KEYS MUST BE INCLUDED IN THE STATIC ARRAY BELOW
     #
-    #############################################    
+    # ############################################    
     _keys = {"OVERHEAD_1":27, "OVERHEAD_2":22, "DOOR_COLN1":17, "DOOR_MARS1":19}
     
     #LightPlan constructor
