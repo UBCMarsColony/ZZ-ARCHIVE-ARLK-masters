@@ -51,46 +51,46 @@ class LightingThread(subsys.Subsystem):
             time.sleep(2)
         
 
-def generate_light_plan():
-    light_plan = LightPlan()
-    
-    # IMPLEMENT BELOW
-    pir_data = data_mgr.get_sensor_data("Motion Detector")
-    # door_data = get door data
-    door_colony = 0
-    door_mars = 0
-    
-     if pir_data: #or GPIO.input(gas):
-        light_plan["OVERHEAD_1"] = 1
-        light_plan["OVERHEAD_2"] = 1
-
-    elif door_colony and not door_mars:
-        light_plan["OVERHEAD_1"] = 1
-        light_plan["OVERHEAD_2"] = 1
-        light_plan["DOOR_COLN1"] = 1
-
-    elif door_mars and not door_colony:
-        light_plan["OVERHEAD_1"] = 1
-        light_plan["OVERHEAD_2"] = 1
-        light_plan["DOOR_MARS1"] = 1
-
-    #elif GPIO.input(lights):
-        #lights_on = GPIO.wait_for_edge(pir, GPIO_RISING, timeout=30000)
-    
-    return light_plan
-
-
-def update_lights(light_plan):
-    if not isinstance(light_plan, LightPlan):
-        raise TypeError("ERROR: The parameter <light_plan> has type " + 
-            str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
-            " when it should be of type LightPlan!")
-    log.d(TAG, str(light_plan))
-    
-    for key in lp.get_keys():
-        GPIO.output(lp.get_pin(key), light_plan[key])
+    def generate_light_plan():
+        light_plan = LightPlan()
         
-    return 0
+        # IMPLEMENT BELOW
+        pir_data = data_mgr.get_sensor_data("Motion Detector")
+        # door_data = get door data
+        door_colony = 0
+        door_mars = 0
+        
+         if pir_data: #or GPIO.input(gas):
+            light_plan["OVERHEAD_1"] = 1
+            light_plan["OVERHEAD_2"] = 1
+
+        elif door_colony and not door_mars:
+            light_plan["OVERHEAD_1"] = 1
+            light_plan["OVERHEAD_2"] = 1
+            light_plan["DOOR_COLN1"] = 1
+
+        elif door_mars and not door_colony:
+            light_plan["OVERHEAD_1"] = 1
+            light_plan["OVERHEAD_2"] = 1
+            light_plan["DOOR_MARS1"] = 1
+
+        #elif GPIO.input(lights):
+            #lights_on = GPIO.wait_for_edge(pir, GPIO_RISING, timeout=30000)
+        
+        return light_plan
+
+
+    def update_lights(light_plan):
+        if not isinstance(light_plan, LightPlan):
+            raise TypeError("ERROR: The parameter <light_plan> has type " + 
+                str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
+                " when it should be of type LightPlan!")
+        log.d(TAG, str(light_plan))
+        
+        for key in lp.get_keys():
+            GPIO.output(lp.get_pin(key), light_plan[key])
+            
+        return 0
 
 
     
