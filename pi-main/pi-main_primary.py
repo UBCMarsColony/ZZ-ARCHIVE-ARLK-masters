@@ -1,10 +1,13 @@
 def begin(config_data_dict):
     log.print_config(config_data_dict["log_level"])
     
-    light_thread = light_ss.LightingThread("LightThread", 3)
+    #Set GPIO mode to Broadcom SOC Channel
+    gpio.setmode(gpio.bcm)
+    
+    #Initialize various systems
+    light_thread = light_ss.LightingThread(gpio, "LightThread", 3)
     light_thread.start()
     
-    #Set GPIO mode to Broadcom SOC Channel
     
     try:
         loop(config_data_dict)
