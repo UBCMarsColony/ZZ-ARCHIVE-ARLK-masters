@@ -34,7 +34,7 @@ import pi-systems_subsystem-base as subsys
 
 Then, you can define your child subsystem:
 
-<code><pre> 
+<pre><code> 
  # ...
 
 # Create a child of the Subsystem class specifically tailored to your task. Don't forget to extend Subsystem!
