@@ -7,7 +7,7 @@ def add(subsys, overwrite=False):
     else:
         print("WARNING: Key <" + subsys.name + "> already exists in the subsystem pool. Entry skipped.")
 
-def stopAll():
+def stop_all():
     print("Closing all subsystems.")
     for subsys in subsys_pool.values():
         subsys.join()
