@@ -38,7 +38,7 @@ class LightingSubsystem(subsys.Subsystem):
 
         
     def thread_task(self):
-        while self.is_running:
+        while self.is_running():
             light_plan = generate_light_plan()
             update_lights(light_plan)
             time.sleep(2)
