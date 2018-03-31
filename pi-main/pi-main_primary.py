@@ -8,18 +8,13 @@ import RPi.GPIO as gpio
     
 print("STARTING SYSTEM")
 
-#Data Reader
-sys.path.insert(0, '../pi-comms')
-log = importlib.import_module("pi-comms_log")
-
-sys.path.insert(0, '../pi-comms/pi-comms_data-reader')
-data_reader = importlib.import_module('pi-comms_data-reader-v2')
-
-#Lighting
+# Begin systems get
 sys.path.insert(0, '../pi-systems/')
 
+# Import the pool
 ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
+sensor_ss = importlib.import_module('pi-systems_sensor-reader')
 light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
 valve_ss = importlib.import_module('pi-systems_valve-manager')
 
@@ -31,7 +26,6 @@ print("SYSTEM READY\n-------------\n-------------\n\n")
 # Based on the Arduino setup
 
 def begin(config_data_dict):
-    log.print_config(config_data_dict["log_level"])
     
     #Set GPIO mode to Broadcom SOC Channel
     gpio.setmode(gpio.bcm)
@@ -43,14 +37,18 @@ def begin(config_data_dict):
     try:
         loop(config_data_dict)
     except KeyboardInterrupt:
-        print("Shutting down colony...")
-        ss_pool.stopAll()
-        exit(0)
+        input = input("Shut down colony? (y/n)")
+        if input == "y" or input == "Y":
+            ss_pool.stop_all()
+            exit(0)
+        else:
+            print("Airlock shutdown cancelled")
 
         
 def loop(config_data):
     while True:
-        data = data_reader.update_sensor_data()
+        data = sensor_ss.update_sensor_data()
+        
         #door_state = (door_col, door_mars)
         
         #Check data safety
