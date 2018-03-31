@@ -26,7 +26,7 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 
 
 
-class LightingThread(subsys.Subsystem):
+class LightingSubsystem(subsys.Subsystem):
     def __init__(self, gpio, name=None, threadID=None):
         super().__init__(gpio, name=name, threadID=threadID)
         
