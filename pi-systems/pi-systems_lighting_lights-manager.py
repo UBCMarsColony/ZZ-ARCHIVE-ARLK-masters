@@ -24,13 +24,6 @@ import importlib
 # with the standard importing method (as used above)
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
-sys.path.insert(0,"../pi-comms")
-log = importlib.import_module("pi-comms_log")
-
-sys.path.insert(0, '../pi-comms/pi-comms_data-reader')
-data_mgr = importlib.import_module('pi-comms_data-reader-v2')
-
-#DELETE ME LATER
 
 
 class LightingThread(subsys.Subsystem):
@@ -53,9 +46,6 @@ class LightingThread(subsys.Subsystem):
 
     def generate_light_plan():
         light_plan = LightPlan()
-        
-        # IMPLEMENT BELOW
-        pir_data = data_mgr.get_sensor_data("Motion Detector")
         # door_data = get door data
         door_colony = 0
         door_mars = 0
@@ -85,7 +75,7 @@ class LightingThread(subsys.Subsystem):
             raise TypeError("ERROR: The parameter <light_plan> has type " + 
                 str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
                 " when it should be of type LightPlan!")
-        log.d(TAG, str(light_plan))
+        print(str(light_plan))
         
         for key in lp.get_keys():
             GPIO.output(lp.get_pin(key), light_plan[key])
