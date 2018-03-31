@@ -16,9 +16,9 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
 light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
+input_ss = importlib.import_module('pi-systems_lighting_input-manager')
 valve_ss = importlib.import_module('pi-systems_valve-manager')
 
-_current_state = None
 print("SYSTEM READY\n-------------\n-------------\n\n")
 
 
@@ -32,11 +32,16 @@ def begin(config_data_dict):
     
     #Initialize various systems
     
-    sensors = sensor_ss.SensorSubsystem(gpio, "Sensors_Subsystem", 4)
+    sensors = sensor_ss.SensorSubsystem(gpio, "Sensors_Subsystem", 3)
     sensor.start()
     
-    lights = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 3)
+    lights = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 4)
     lights.start() 
+    
+    input = input_ss.InputManager(gpio, "Input_Subsystem", 5)
+    input.start()
+    
+    valves = valve_ss.ValveManager(gpio, "Valve_Subsystem", 6)
     
     try:
         loop(config_data_dict)
@@ -53,17 +58,7 @@ def loop(config_data):
     while True:
         data = sensors.get_data()
         
-        lights.update_lights()
-        
-        #door_state = (door_col, door_mars)
-        
-        #Check data safety
-        
-        # Process user input
-            #Handle user input
-        
-        
-        
+
         time.sleep(config_data["loop_delay"])
 
 """
