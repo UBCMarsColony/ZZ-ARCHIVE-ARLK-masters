@@ -37,7 +37,7 @@ class SensorSubsystem(subsys.Subsystem):
     
     
     def thread_task(self):
-        while self.is_running()
+        while self.is_running:
             self.__update_sensor_data()
     
 
