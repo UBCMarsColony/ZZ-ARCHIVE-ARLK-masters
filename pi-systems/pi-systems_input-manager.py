@@ -11,4 +11,4 @@ class InputManager(subsys.Subsystem):
         #IMPLEMENT ME
         
     def send_instructions(self):
-        
+        pass
