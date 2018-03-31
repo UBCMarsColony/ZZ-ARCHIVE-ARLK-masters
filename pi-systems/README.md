@@ -4,13 +4,17 @@ This folder contains all subsystems that will be running on the main airlock com
 ## Creating a Subsystems
 Each subsystem should be an extension of the abstract `Subsystem` class and should implement its associated methods. We do this, as making all subsystems an extension of a unified class:
 
+
 A) Enables super easy setup and cleanup of systems at runtime.
+
 B) Maintains convention across all subsystems, improving maintainability and scaleability.
+
 C) Allows simple monitoring of systems throughout the life cycle
 
 If you are unsure about Classes, Class Extensions or Abstract classes, refer to the official docs:
 
 [Classes & Extension](https://docs.python.org/3/tutorial/classes.html)
+
 [Abstract Classes](https://www.python-course.eu/python3_abstract_classes.php)
 
 Subsystems are defined by the following traits:
