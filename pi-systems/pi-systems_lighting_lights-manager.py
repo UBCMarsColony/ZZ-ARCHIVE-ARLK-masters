@@ -50,7 +50,7 @@ class LightingSubsystem(subsys.Subsystem):
         door_colony = 0
         door_mars = 0
         
-         if pir_data: #or GPIO.input(gas):
+        if pir_data: #or GPIO.input(gas):
             light_plan["OVERHEAD_1"] = 1
             light_plan["OVERHEAD_2"] = 1
 
