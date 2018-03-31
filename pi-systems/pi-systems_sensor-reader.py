@@ -27,7 +27,7 @@ class SensorSubsystem(subsys.Subsystem):
         else:   
             try:
                 return SensorSubsystem.__sensor_data[string_name]
-            except KeyError as ve:
+            except KeyError as ke:
                 print("Failed to find a value associated with the key " + string_name + ". Returning entire dictionary instead...")
                 return SensorSubsystem.__sensor_data
             except Exception as e:
