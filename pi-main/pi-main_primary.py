@@ -35,8 +35,8 @@ def begin(config_data_dict):
     sensors = sensor_ss.SensorSubsystem(gpio, "Sensors_Subsystem", 4)
     sensor.start()
     
-    light_thread = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 3)
-    light_thread.start() 
+    lights = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 3)
+    lights.start() 
     
     try:
         loop(config_data_dict)
@@ -52,6 +52,8 @@ def begin(config_data_dict):
 def loop(config_data):
     while True:
         data = sensors.get_data()
+        
+        lights.update_lights()
         
         #door_state = (door_col, door_mars)
         
