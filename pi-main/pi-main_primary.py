@@ -31,13 +31,17 @@ def begin(config_data_dict):
     gpio.setmode(gpio.bcm)
     
     #Initialize various systems
-    light_thread = light_ss.LightingThread(gpio, "LightThread", 3)
+    
+    sensors = sensor_ss.SensorSubsystem(gpio, "Sensors_Subsystem", 4)
+    sensor.start()
+    
+    light_thread = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 3)
     light_thread.start() 
     
     try:
         loop(config_data_dict)
     except KeyboardInterrupt:
-        input = input("Shut down colony? (y/n)")
+        input = input("Shut down colony? (y/n)\n")
         if input == "y" or input == "Y":
             ss_pool.stop_all()
             exit(0)
@@ -47,7 +51,7 @@ def begin(config_data_dict):
         
 def loop(config_data):
     while True:
-        data = sensor_ss.update_sensor_data()
+        data = sensors.get_data()
         
         #door_state = (door_col, door_mars)
         
