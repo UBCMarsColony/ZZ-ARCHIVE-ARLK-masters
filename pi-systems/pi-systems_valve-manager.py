@@ -39,10 +39,10 @@ class ValveManager(subsys.Subsystem):
             if self.next_state is not None:
                 
                 #If there is a new state, apply it
-                for i in range(_num_valves):
+                for i in range(ValveManager._num_valves):
                 
                     #Write to each GPIO port to set the valve state
-                    gpio.output(_valve_ports[i], next_state(i))
+                    gpio.output(ValveManager._valve_ports[i], ValveManager.next_state(i))
                 
                 #Reset the valve state so this doesn't run again
                 self.next_state = None

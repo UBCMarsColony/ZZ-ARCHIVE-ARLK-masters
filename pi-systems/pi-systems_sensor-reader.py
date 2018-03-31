@@ -1,3 +1,4 @@
+import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
 try:
@@ -43,7 +44,7 @@ class SensorSubsystem(subsys.Subsystem):
         try:    
             next_line = self.serial_in.readline()
             
-            SensorSubsystem.__sensor_data = __get_decoded_json_string(next_line)
+            SensorSubsystem.__sensor_data = self.__get_decoded_json_string(next_line)
 
         except ValueError as ve:
             print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
