@@ -36,7 +36,7 @@ class ValveManager(subsys.Subsystem):
         while self.is_running():
         
             # Check if a new valve state has been requested
-            if self.next_state not None:
+            if self.next_state is not None:
                 
                 #If there is a new state, apply it
                 for i in range(_num_valves):
