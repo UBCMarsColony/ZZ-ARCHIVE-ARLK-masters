@@ -13,13 +13,14 @@ class SensorSubsystem(subsys.Subsystem):
     
     __sensor_data = {}
     
-    def __init__(self, gpio, name=None, threadID=None)
-        
+    def __init__(self, gpio, name=None, threadID=None):
+
         self.serial_in = serial.Serial('/dev/ttyACM1',9600)
-        
+
         super().__init__(gpio, name, threadID)
+
     
-     def get_data(self, string_name = None):
+    def get_data(self, string_name = None):
         if string_name is None:
             return SensorSubsystem.__sensor_data
         else:   
