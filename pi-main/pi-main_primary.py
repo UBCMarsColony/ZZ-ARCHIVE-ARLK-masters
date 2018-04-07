@@ -76,6 +76,7 @@ def loop(config_data):
             pass
         
         lights.input_data(data)
+        #input.update_UI()
         
         time.sleep(config_data["loop_delay"])
         
