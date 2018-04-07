@@ -11,9 +11,9 @@ class InputManager(subsys.Subsystem):
             
         
     def check_buttons(self):
-        for pin in InputManager._input_pins:
+        for button in InputManager._input_pins:
             if self.gpio.input(pin)
-                return pin
+                return button
         
         return None
         
