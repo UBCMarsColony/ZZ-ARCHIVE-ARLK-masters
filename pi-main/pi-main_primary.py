@@ -5,8 +5,6 @@ import sys
 import importlib
 import time
 import RPi.GPIO as gpio
-    
-print("STARTING SYSTEM")
 
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
@@ -19,37 +17,41 @@ input_ss = importlib.import_module('pi-systems_input-manager')
 light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
 valve_ss = importlib.import_module('pi-systems_valve-manager')
 
-print("SYSTEM READY\n-------------\n-------------\n\n")
-
-
 # MAIN SYSTEM FUNCTIONS
 # Based on the Arduino setup
 
-def begin(config_data_dict):
+def begin(runtime_params):
+    print("Performing systems initialization...\n")
     
     #Set GPIO mode to Broadcom SOC Channel
     gpio.setmode(gpio.bcm)
     
     #Initialize various systems
     
+    print("Initializing Sensors...\n")
     global sensors
     sensors = sensor_ss.SensorSubsystem(gpio, "Sensors_Subsystem", 3)
     sensor.start()
+    print("Sensors Initialized!\n")
     
-    global lights
-    lights = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 4)
-    lights.start() 
-    
+    print("Initializing UI...\n")
     global input
     input = input_ss.InputManager(gpio, "Input_Subsystem", 5)
     input.start()
     
+    print("Initializing Valves...\n")
     global valves
     valves = valve_ss.ValveManager(gpio, "Valve_Subsystem", 6)
     valves.start()
     
+    print("Initializing Lights...\n")
+    global lights
+    lights = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 4)
+    lights.start() 
+    
+    print("Beginning Main Loop Sequence...\n")
     try:
-        loop(config_data_dict)
+        loop(runtime_params)
     except KeyboardInterrupt:
         cmd_input = cmd_input("Shut down colony? (y/n)\n")
         if cmd_input == "y" or cmd_input == "Y":
@@ -59,7 +61,7 @@ def begin(config_data_dict):
             print("Airlock shutdown cancelled")
 
         
-def loop(config_data):
+def loop(runtime_params):
     # TODO find a nicer way to do this
     global sensors
     global lights
@@ -78,7 +80,7 @@ def loop(config_data):
         lights.input_data(data)
         #input.update_UI()
         
-        time.sleep(config_data["loop_delay"])
+        time.sleep(runtime_params.loop_delay)
         
 """
 INIT
