@@ -66,12 +66,12 @@ class MyServiceThread(subsys.Subsystem):
 ### Creating and Running an Instance of your Subsystem
 You'll need to create a new instance of this task to be run in the main loop. To do this, simply create a new instance of the Subsystem's class in your initialization method:
 
-<code><pre>
+<pre><code>
 threadID = 2 # or any other unique number
 mySubsys = MySubsysThread("ThreadName", threadID)
 </code></pre>
 
 To start this Subsystem, simply `start()` it:
-<code><pre>
+<pre><code>
 mySubsys.start()
 </code></pre>
