@@ -25,22 +25,25 @@ import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
 
-
 class LightingSubsystem(subsys.Subsystem):
     def __init__(self, gpio, name=None, threadID=None):
         super().__init__(gpio, name=name, threadID=threadID)
         
-        #Register all pins
+        self._sensor_dict = None
+
+        
+    def register_pins(self):
         self.gpio.setup(lp.get_pin("OVERHEAD_1"), self.gpio.OUT)
         self.gpio.setup(lp.get_pin("OVERHEAD_2"), self.gpio.OUT)
         self.gpio.setup(lp.get_pin("DOOR_MARS1"), self.gpio.OUT)
-        self.gpio.setup(lp.get_pin("DOOR_COLN1"), self.gpio.OUT)
-
+        self.gpio.setup(lp.get_pin("DOOR_COLN1"), self.gpio.OUT)        
+        
         
     def thread_task(self):
         while self.is_running():
-            light_plan = generate_light_plan()
-            update_lights(light_plan)
+            if self._sensor_dict = None:
+                light_plan = generate_light_plan()
+                update_lights(light_plan)
             time.sleep(2)
         
 
@@ -81,8 +84,11 @@ class LightingSubsystem(subsys.Subsystem):
             GPIO.output(lp.get_pin(key), light_plan[key])
             
         return 0
-
-
+        
+        
+    def input_data(self, sensor_dict):
+        self._sensor_dict = sensor_dict
+    
     
 #Can be used for precision lighting later on. Currently not in use
 class LightData():
