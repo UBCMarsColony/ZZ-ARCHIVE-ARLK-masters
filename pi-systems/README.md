@@ -13,6 +13,7 @@ Each subsystem should be an extension of the abstract `Subsystem` class and shou
 If you are unsure about Classes, Class Extensions or Abstract classes, refer to the official docs linked below. To fully understand the implementation, you should be familiar with the concepts of object-oriented programming, parent and child classes, constructors, inheritance, overriding and polymorphism. (Note that you can still use the code without knowing these things - this will just help if you need to add code to the subsystem base)
 
 [Classes & Extension](https://docs.python.org/3/tutorial/classes.html)
+
 [Abstract Classes](https://www.python-course.eu/python3_abstract_classes.php)
 
 
