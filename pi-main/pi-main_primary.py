@@ -1,6 +1,3 @@
-#initialization
-TAG = "pi-main_primary"
-
 import sys
 import importlib
 import time
@@ -9,27 +6,32 @@ import RPi.GPIO as gpio
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
 
-# Import the pool
+# Import the subsystem pool for use
 ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
+# Import all subsystems for use
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
 input_ss = importlib.import_module('pi-systems_input-manager')
 light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
 valve_ss = importlib.import_module('pi-systems_valve-manager')
 
-# MAIN SYSTEM FUNCTIONS
-# Based on the Arduino setup
 
+"""
+Purpose: Performs initial system setup and begins airlock loop cycle. Handles any breakouts within the loop cycle.
+Parameter: runtime_params - The Namespace returned by the argument parser in init.py
+"""
 def begin(runtime_params):
     print("Performing systems initialization...\n")
     
-    #Set GPIO mode to Broadcom SOC Channel
+    # Set GPIO mode to Broadcom SOC Channel (Mars Colony Default)
     gpio.setmode(gpio.bcm)
     
-    #Initialize various systems
+    # Start initializing the vital airlock systems
     
-    print("Initializing Sensors...\n")
-    global sensors
+    # TODO Need to rework this. Remove global calls, make it reference the subsystem pool instead,
+    # as all the systems will already be stored there.
+    print("Initializing Sensors...\n") 
+    global sensors                     
     sensors = sensor_ss.SensorSubsystem(gpio, "Sensors_Subsystem", 3)
     sensor.start()
     print("Sensors Initialized!\n")
