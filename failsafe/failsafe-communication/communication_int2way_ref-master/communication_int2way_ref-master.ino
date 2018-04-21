@@ -43,7 +43,7 @@
 //PIN DEF for IR sensor
 #define MotionSensor 4
 int ledPin = 13;                // choose the pin for the LED
-int inputPin = 2;               // choose the input pin (for PIR sensor)
+int inputPin = 4;               // choose the input pin (for PIR sensor)
 int pirState = LOW;             // we start, assuming no motion detected
 int val = 0;                    // variable for reading the pin status
 int detected = 1;               //variable to send to PI that encodes if motion is detected (1=detected, 0=not detected)
