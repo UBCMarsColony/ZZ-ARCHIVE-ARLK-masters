@@ -7,6 +7,7 @@ subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 The purpose of the Subsystem class is to ease system thread management.
 In general, we would like airlock subsystems to function under a similar
 command flow. This enables better subsystem management in the future.
+More information on this is included in the README file in this directory.
 
 Param: gpio - The RPi.GPIO reference that will be used by the subsystem to control pins
 Param: name - The thread's unique name
