@@ -8,9 +8,9 @@ Each subsystem should be an extension of the abstract `Subsystem` class and shou
 
 &nbsp;&nbsp;&nbsp;*A)* Enables super easy setup and cleanup of systems at runtime.<br/>
 &nbsp;&nbsp;&nbsp;*B)* Maintains convention across all subsystems, improving maintainability and scaleability.<br/>
-&nbsp;&nbsp;&nbsp;*C)* Allows simple monitoring of systems throughout the life cycle.<br/><br/>
+&nbsp;&nbsp;&nbsp;*C)* Allows simple monitoring of systems throughout the life cycle.<br/>
 
-If you are unsure about Classes, Class Extensions or Abstract classes, refer to the official docs linked below. To fully understand the implementation, you should be familiar with the concepts of object-oriented programming, parent and child classes, constructors, inheritance, overriding and polymorphism. (Note that you can still use the code without knowing these things - this will just help if you need to add code to the subsystem base)
+If you are unsure about Classes, Class Extensions or Abstract classes, refer to the official docs linked below. To fully understand the implementation, you should be familiar with the concepts of object-oriented programming, parent and child classes, constructors, abstract classes, abstract methods, inheritance, overriding and polymorphism. (Note that you can still use the code without knowing these things - this will just help if you need to add code to the subsystem base)
 
 [Classes & Extension](https://docs.python.org/3/tutorial/classes.html)
 
