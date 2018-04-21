@@ -19,9 +19,9 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 class ValveManager(subsys.Subsystem):
 
     #Standard states: 
-    #ip = initial pressurization, eafc = enter airlock from colony, emfa = enter mars from airlock, 
+    #init = initialization, eafc = enter airlock from colony, emfa = enter mars from airlock, 
     #eafm = enter airlock from mars, ecfa = enter colony from airlock
-    std_state = {"ip":(1,0,0), "eafc":(0,1,0), "emfa":(0,0,1), "eafm":(0,0,1), "ecfa":(0,1,0), "close":(0,0,0)}
+    std_state = {"init":(1,0,0), "eafc":(0,1,0), "emfa":(0,0,1), "eafm":(0,0,1), "ecfa":(0,1,0), "close":(0,0,0)}
 
     _num_valves = 3
     _valve_ports = (23,24,25)
