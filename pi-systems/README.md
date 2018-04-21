@@ -2,7 +2,7 @@
 This folder contains all subsystems that will be running on the main airlock computer, such as lighting, pressurization, and sensor subsystems.
  
 ## Subsystems Explained.
-A subsystem contains all the code related to a certain subroutine pertaining to airlock operation.
+A subsystem contains all the code related to a certain subroutine in the airlock's life cycle. This could be lighting, valve control, and basically anything the airlock will do repeatedly.
 
 Each subsystem should be an extension of the abstract `Subsystem` class and should implement its associated methods. We do this, as making all subsystems an extension of a unified class:
 
