@@ -26,7 +26,7 @@ Subsystems are defined by the following traits:
 ## Creating a Subsystem
 
 ### Intial Setup
-To create a new subsystem, we must first make a child of *Abstract Subsystem Base Class* (The parent of all Subsystem objects) and use that to build the foundation of the subsystem. First, we must make sure to import the subsystem base class:
+To create a new subsystem, we must first make a child of the *Subsystem Base* class (The parent of all Subsystem objects) and use that to build the foundation of the subsystem. First, we must make sure to import the subsystem base class:
 
 <pre><code>
 # Import the Subsystem class file for use.
