@@ -9,7 +9,7 @@ sys.path.insert(0, '../pi-systems/')
 # Import the subsystem pool for use
 ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
-# Import all subsystems for use
+# Import all subsystem files so we can create new instances of each one.
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
 input_ss = importlib.import_module('pi-systems_input-manager')
 light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
@@ -31,24 +31,21 @@ def begin(runtime_params):
     # TODO Need to rework this. Remove global calls, make it reference the subsystem pool instead,
     # as all the systems will already be stored there.
     print("Initializing Sensors...\n") 
-    global sensors                     
-    sensors = sensor_ss.SensorSubsystem(gpio, "Sensors_Subsystem", 3)
+    sensors = sensor_ss.SensorSubsystem(gpio, "sensors", 3)
     sensor.start()
     print("Sensors Initialized!\n")
     
     print("Initializing UI...\n")
-    global input
-    input = input_ss.InputManager(gpio, "Input_Subsystem", 5)
+    input = input_ss.InputManager(gpio, "input", 5)
     input.start()
     
     print("Initializing Valves...\n")
-    global valves
-    valves = valve_ss.ValveManager(gpio, "Valve_Subsystem", 6)
+    valves = valve_ss.ValveManager(gpio, "valves", 6)
     valves.start()
+    #subsystems["valves"].request_new_state(valve_ss.ValveManager.std_state["init"])
     
     print("Initializing Lights...\n")
-    global lights
-    lights = light_ss.LightingSubsystem(gpio, "Lights_Subsystem", 4)
+    lights = light_ss.LightingSubsystem(gpio, "lights", 4)
     lights.start() 
     
     print("Beginning Main Loop Sequence...\n")
@@ -65,21 +62,18 @@ def begin(runtime_params):
         
 def loop(runtime_params):
     # TODO find a nicer way to do this
-    global sensors
-    global lights
-    global input
-    global valves
+    subsystems = ss_pool.get_all()
     
     while True:
-        data = sensors.get_data()
-        next_button = input.check_buttons()
+        data = subsystems["sensors"].get_data()
+        next_button = subsystems["input"].check_buttons()
         
         if next_button == 16:
             #This is placeholder code
-            valves.request_new_state(valve_ss.ValveManager.std_state["close"])
+            subsystems["valves"].request_new_state(valve_ss.ValveManager.std_state["close"])
             pass
         
-        lights.input_data(data)
+        subsystems["lights"].input_data(data)
         #input.update_UI()
         
         time.sleep(runtime_params.loop_delay)
