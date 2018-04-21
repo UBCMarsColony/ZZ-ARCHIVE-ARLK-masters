@@ -13,8 +13,8 @@ def system_begin(runtime_params):
     elif runtime_params.simulator == 1:
         pi_main_sys = importlib.import_module('pi-main_simulated')
 
-    print("Preliminary setup completed.\n")
-    os.system("PAUSE")
+    print("Preliminary setup completed.\nSYSTEM READY")
+    os.system("PAUSE")/
     
     pi_main_sys.begin(runtime_params)
 
