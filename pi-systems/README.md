@@ -74,7 +74,7 @@ mySubsys.start()
 </code></pre>
 
 
-### Template
+## Template
 To get started, here's a template for creating a new subsystem.
 <details>
 <summary><b>Template</b></summary>
