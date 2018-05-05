@@ -16,7 +16,7 @@ void setup()
 
 }
 void loop(){
-        sendchar('Z'); //O2 gas: 20030 -> 20.030 % (? double check)
+        sendchar('Z'); //O2 gas: 20030 -> 20.030 % 
 
     delay(2000);
     return_char();
@@ -35,7 +35,7 @@ void loop(){
     return_char();
     Serial.println(response);
 
-        sendchar('B'); //Pressure: 01011 -> 101.1 kpa (?)
+        sendchar('B'); //Pressure: 01011 -> 101.1 kpa 
 
     delay(2000);
     return_char();
