@@ -52,6 +52,15 @@ class Subsystem(ABC):
     @abstractmethod
     def thread_task(self):
         pass
+        
+    
+    # A decorator for ensuring the thread is active
+    def run_only_if_active(func):
+        def wrapper(self):
+            if self.is_running:
+                func(self)
+            
+        return wrapper
 
 
 class SubsystemThread(threading.Thread):
