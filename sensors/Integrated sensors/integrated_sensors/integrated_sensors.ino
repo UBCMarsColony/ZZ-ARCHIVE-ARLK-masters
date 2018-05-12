@@ -17,10 +17,14 @@ int valMultiplier = 1;
 char response_O2 [100];
 char value[maxval];
 int count = 0;
+
 char O2_string[10];
 char temperature_string[10];
 char humidity_string[10];
 char pressure_string[10];
+char CO2_string[10];
+
+
 
 void setup()
 {
@@ -33,16 +37,7 @@ void setup()
 }
 void loop(){
     if( count > 1){
-        O2_Serial.listen();
-        poll_all();
-
-         K_30_Serial.listen();
-         sendRequest(readCO2);
-         unsigned long valCO2 = getValue(response);
-         Serial.print("Co2 ppm = ");
-         Serial.println(valCO2);
-         delay(2000);
-
+         poll_all();
     }
     else{
         Serial.println("Please wait...");
@@ -90,6 +85,8 @@ unsigned long getValue(byte packet[])
 
 
 void poll_all(void){
+    O2_Serial.listen();
+
     get_O2();
     Serial.print("Oxygen: ");
     Serial.print(O2_string);
@@ -109,6 +106,16 @@ void poll_all(void){
     Serial.print("Pressure: ");
     Serial.print(pressure_string);
     Serial.print(" KPa \n");
+
+         K_30_Serial.listen();
+         delay(2000);
+         sendRequest(readCO2);
+         unsigned long valCO2 = getValue(response);
+         dtostrf(valCO2,3,0,CO2_string);
+         Serial.print("CO2: ");
+         Serial.print(CO2_string);
+         Serial.print(" ppm \n");
+         
 
     Serial.println("_________________________");
 }
