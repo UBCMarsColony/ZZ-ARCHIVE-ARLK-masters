@@ -45,8 +45,8 @@ Directories are split up into logical chunks to be easily navigated. Description
 </details>
 
 <details>
-<summary><b>Pi-Comms</b></summary>
-   Contains the code used by the Raspberry Pi to process and store sensor data received from the Arduino. </br>
+<summary><b>Pi-Main</b></summary>
+   Contains the Raspberry Pi code for system setup and mainloop. </br>
 </details>
 
 <details>
