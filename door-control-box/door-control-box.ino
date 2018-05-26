@@ -2,12 +2,16 @@
 #include <SoftwareSerial.h>
 #include <LiquidCrystal.h>
 #include <SPI.h>
-#include <../../cJSON/cJSON.h>
+#include <cJSON.h>
 
-SoftwareSerial COML0(10,11); //(Rx,Tx)
+#define pin_RX 10
+#define pin_TX 11
 
-double env_conc.O2;
-double env_conc.CO2;
+
+SoftwareSerial COML0(pin_RX,pin_TX); //(pin for Rx,Tx)
+
+double env_conc_O2;
+double env_conc_CO2;
 double env_temp;
 double env_pres;
 int stringLength_required; //beware of global variables
@@ -22,7 +26,7 @@ void loop(){
     //conditioning string for the cJSON parser
     stringLength_required=stringReader(serialInput_raw[]);
     char serialInput_forParser[stringLength_required+1];
-    strncpy
+    strncpy(serialInput_forParser[],serialInput_raw[],stringLength_required);
     // int stringLength_index=0;
     // for(stringLength_index<stringLength_required){ //copy string char by char
     //     serialInput_forParser[stringLength_index]=serialInput_forParser[stringLength_index];
