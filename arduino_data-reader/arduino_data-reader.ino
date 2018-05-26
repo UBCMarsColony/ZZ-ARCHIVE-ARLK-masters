@@ -1,42 +1,49 @@
 //constants and libs
 #include <SoftwareSerial.h>
 #include <SPI.h>
-
-
-//SoftwareSerial Serial(10,11); //(Rx,Tx)
-
-SoftwareSerial Serial(pin_RX,pin_TX); //(pin for Rx,Tx)
+#define pin_RX 10
+#define pin_TX 11
+SoftwareSerial COML0 (pin_RX,pin_TX,false);
 
 void setup(){
-Serial.begin(9600);// begin physical uart comms via USB
-Serial.begin(9600);// begin logical serial port Serial at pins above
+    SoftwareSerial(pin_RX,pin_TX,false);
+    Serial.begin(9600);// begin physical uart comms via USB
+    COML0.begin(9600);//begin COML0, which is the software UART on pins 10 and 11
+    Serial.println("Begin logical serial COM0");
+    Serial.println("Begin hardware serial at USB");
+    delay(5000);
 }
 
 void loop(){
     //conditioning string for the cJSON parser
     //stringLength_required=stringReader(serialInput_raw[]);
-    Serial.println("Program start!");
+    char readChar_TEST="k";//ISSUE: sample character "k" isn't being read as "k" in the Pi
+    Serial.print("Sample char: ");
+    Serial.println(readChar_TEST);
     // set vars
-    int stringLength_index=0;
-    int stringLength_required; //beware of global variables
-    char serialInput_raw[1024]="{\"title\":\"Person\",\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"},\"age\":{\"description\":\"Age in years\",\"type\":\"integer\",\"minimum\": 0}},\"required\":[\"firstName\", \"lastName\"]}";
+    // int stringLength_index=0;
+    // int stringLength_required; //beware of global variables
+    // char serialInput_raw[1024]="{\"title\":\"Person\",\"type\":\"object\",\"properties\":{\"firstName\":{\"type\":\"string\"},\"lastName\":{\"type\":\"string\"},\"age\":{\"description\":\"Age in years\",\"type\":\"integer\",\"minimum\": 0}},\"required\":[\"firstName\", \"lastName\"]}";
 
-    Serial.print("JSON string to be decoded is: ");
-    Serial.println(serialInput_raw);
+    // Serial.print("JSON string to be decoded is: ");
+    // Serial.println(serialInput_raw);
+    readChar_TEST=COML0.read();//ISSUE: Not reading properly
+    Serial.print("COML0 byte read: ");
+    Serial.println(readChar_TEST);
 
-    stringLength_required=strlen(serialInput_raw);
+    // stringLength_required=strlen(serialInput_raw);
 
-    char serialInput_forParser[stringLength_required+1];
+    // char serialInput_forParser[stringLength_required+1];
 
-    for(stringLength_index=0;stringLength_index<stringLength_required;stringLength_index++){ //copy string char by char
-        serialInput_forParser[stringLength_index]=serialInput_raw[stringLength_index];
-    }
-    serialInput_forParser[stringLength_index+1]='\0'; //string terminator with null
+    // for(stringLength_index=0;stringLength_index<stringLength_required;stringLength_index++){ //copy string char by char
+    //     serialInput_forParser[stringLength_index]=serialInput_raw[stringLength_index];
+    // }
+    // serialInput_forParser[stringLength_index+1]='\0'; //string terminator with null
     
-    Serial.print("JSON string on smaller array is: ");
-    Serial.println("serialInput_forParser");
+    // Serial.print("JSON string on smaller array is: ");
+    // Serial.println("serialInput_forParser");
     
-    delay(1000);
+    // delay(1000);
 
 }
 
@@ -74,3 +81,4 @@ int stringReader(char stringInput[]){
 
     return readLength;
 }
+
