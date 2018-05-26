@@ -2,10 +2,21 @@
 #include <SoftwareSerial.h>
 #include <LiquidCrystal.h>
 #include <SPI.h>
+<<<<<<< HEAD
 //#include <../../cJSON/cJSON.h>
 
 //SoftwareSerial COML0(10,11); //(Rx,Tx)
 
+=======
+#include <cJSON.h>
+
+#define pin_RX 10
+#define pin_TX 11
+
+
+SoftwareSerial COML0(pin_RX,pin_TX); //(pin for Rx,Tx)
+
+>>>>>>> 96e1e90d191dfec422c6e857c3a1b3b384090d4b
 double env_conc_O2;
 double env_conc_CO2;
 double env_temp;
@@ -31,6 +42,15 @@ void loop(){
     stringLength_required=strlen(serialInput_raw);
 
     char serialInput_forParser[stringLength_required+1];
+<<<<<<< HEAD
+=======
+    strncpy(serialInput_forParser[],serialInput_raw[],stringLength_required);
+    // int stringLength_index=0;
+    // for(stringLength_index<stringLength_required){ //copy string char by char
+    //     serialInput_forParser[stringLength_index]=serialInput_forParser[stringLength_index];
+    // }
+    // serialInput_forParser[stringLength_index+1]='\0'; //string terminator with null
+>>>>>>> 96e1e90d191dfec422c6e857c3a1b3b384090d4b
 
     for(stringLength_index=0;stringLength_index<stringLength_required;stringLength_index++){ //copy string char by char
         serialInput_forParser[stringLength_index]=serialInput_raw[stringLength_index];
