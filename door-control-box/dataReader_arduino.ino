@@ -1,27 +1,15 @@
 //constants and libs
 #include <SoftwareSerial.h>
-#include <LiquidCrystal.h>
 #include <SPI.h>
 //#include <../../cJSON/cJSON.h>
 
-//SoftwareSerial COML0(10,11); //(Rx,Tx)
+//SoftwareSerial Serial(10,11); //(Rx,Tx)
 
-#include <cJSON.h>
-
-#define pin_RX 10
-#define pin_TX 11
-
-
-SoftwareSerial COML0(pin_RX,pin_TX); //(pin for Rx,Tx)
-
-double env_conc_O2;
-double env_conc_CO2;
-double env_temp;
-double env_pres;
+SoftwareSerial Serial(pin_RX,pin_TX); //(pin for Rx,Tx)
 
 void setup(){
 Serial.begin(9600);// begin physical uart comms via USB
-COML0.begin(9600);// begin logical serial port COML0 at pins above
+Serial.begin(9600);// begin logical serial port Serial at pins above
 }
 
 void loop(){
@@ -70,7 +58,7 @@ int stringReader(char stringInput[]){
     
     //does blank reads from strim until alert character \a is found. fused so it runs at most once
     while(COM_readChar!=frame_start && TRIGGER!=1){
-        COM_readChar=COML0.read(); //run continuously to discard from strim
+        COM_readChar=Serial.read(); //run continuously to discard from strim
         if(COM_readChar==frame_start){
             TRIGGER=1; //fuse if frame_start detected
             break;
@@ -79,7 +67,7 @@ int stringReader(char stringInput[]){
 
     //read until end of frame
     while(COM_readChar!=frame_end){
-        COM_readChar=COML0.read();
+        COM_readChar=Serial.read();
         stringInput[readLength]=COM_readChar;
         readLength++;
     }
