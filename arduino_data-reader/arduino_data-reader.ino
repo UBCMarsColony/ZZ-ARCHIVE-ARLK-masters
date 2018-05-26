@@ -1,7 +1,7 @@
 //constants and libs
 #include <SoftwareSerial.h>
 #include <SPI.h>
-//#include <../../cJSON/cJSON.h>
+
 
 //SoftwareSerial Serial(10,11); //(Rx,Tx)
 
