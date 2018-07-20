@@ -1,10 +1,12 @@
 //Motor heater assembly using TMP36 temperature sensor.
+
 //pin assignments
 #define PIN_HEATER_MOTOR 1
 #define PIN_HEATER_GEARB 2
 
 #define PIN_SENSOR_MOTOR 11
 #define PIN_SENSOR_GEARB 12
+
 // temperature thresholds
 const int tempMax=80;
 const int tempMin=0;
@@ -28,11 +30,10 @@ void loop(){
     int tempMotor=getTemperature(PIN_SENSOR_MOTOR);
 
     getTempStatus(tempStatus,tempGears,tempMotor);
-
-    
+    motorHeatRoutine(tempStatus);
 }
 
-//Temperature polling on each sensor
+//Temperature polling on each sensor from TMP36 sensor
 int getTemperature(int sensorAddress){
     double voltageRaw=analogRead(sensorAddress)*5/1024.0;
 
@@ -59,3 +60,18 @@ void getTempStatus(int tempStatus, int tempGears, int tempMotor){
         tempStatus[1]=tempStatusLow;
     }
 }
+
+void motorHeatRoutine(int tempStatus)
+    if(tempStatus[0]=tempStatusLow){
+        digitalWrite(PIN_HEATER_GEARB,HIGH);
+    }
+    else{
+        digitalWrite(PIN_HEATER_GEARB,LOW);
+    }
+    if(tempStatus[1]=tempStatusLow){
+        digitalWrite(PIN_HEATER_MOTOR,HIGH);
+    }
+    else{
+        digitalWrite(PIN_HEATER_MOTOR,LOW);
+    }
+)

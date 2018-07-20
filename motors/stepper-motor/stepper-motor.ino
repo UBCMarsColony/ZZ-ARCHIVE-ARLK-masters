@@ -15,10 +15,15 @@ const int CLOSED = 500;
 const int OPEN = 600;
 const int TRANSIT = 700;
 
+//special enum of type state, to report on door status
+enum state{
+    open=1,closed=2,transit=3,unknown=-1
+    };
+enum state doorStatus;
+
 int currentAngle;
 int datumClosed;
 int datumOpen;
-int doorStatus;
 int shake;
 
 void setup() {
@@ -36,7 +41,7 @@ void setup() {
     Serial.begin(9600);
 
     //statuses
-    doorStatus=INDETERMINATE;
+    doorStatus=unknown;
 
 }
 
