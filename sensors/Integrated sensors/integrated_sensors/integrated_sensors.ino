@@ -1,11 +1,13 @@
 #include "SoftwareSerial.h"
 #include "string.h"
+#include <EEPROM.h>
 
 SoftwareSerial K_30_Serial(12,13);  //Sets up a virtual serial port
                                     //Using pin 12 for Rx and pin 13 for Tx
 SoftwareSerial O2_Serial(8,9); //Software Serial port with pin 8 as Rx
                             //and pin 9 as Tx
 #define SIZE 100
+#define strsize 10
 #define maxval 6
 //Setup is all good
 
@@ -14,15 +16,15 @@ byte response[] = {0,0,0,0,0,0,0};  //create an array to store the response
 
 //multiplier for value. default is 1. set to 3 for K-30 3% and 10 for K-33 ICB
 int valMultiplier = 1;
-char response_O2 [100];
+char response_O2 [SIZE];
 char value[maxval];
 int count = 0;
 
-char O2_string[10];
-char temperature_string[10];
-char humidity_string[10];
-char pressure_string[10];
-char CO2_string[10];
+char O2_string[strsize];
+char temperature_string[strsize];
+char humidity_string[strsize];
+char pressure_string[strsize];
+char CO2_string[strsize];
 
 
 
@@ -33,15 +35,20 @@ void setup()
     Serial.begin(9600);
     O2_Serial.begin(9600);
     K_30_Serial.begin(9600);    //Opens the virtual serial port with a baud of 9600
-
+    Serial.println("Setup Complete");
 }
 void loop(){
-    if( count > 1){
-         poll_all();
+    if( count > 2){
+        poll_all();
+        count += 1;
+        if(count > 3){
+            EEPROM_readall(4);
+        }
     }
     else{
         Serial.println("Please wait...");
         count += 1;
+        delay(1000);
     }
 
 }
@@ -91,21 +98,25 @@ void poll_all(void){
     Serial.print("Oxygen: ");
     Serial.print(O2_string);
     Serial.print(" % \n");  
+    EEPROMstore(0, O2_string, strsize);
 
     get_Temp();
     Serial.print("Temperature: ");
     Serial.print(temperature_string);
     Serial.print(" C \n");
+    EEPROMstore(1, temperature_string, strsize);
 
     get_Humidity();
     Serial.print("Humidity: ");
     Serial.print(humidity_string);
     Serial.print(" % \n");
+    EEPROMstore(2, humidity_string, strsize);
 
     get_Pressure();
     Serial.print("Pressure: ");
     Serial.print(pressure_string);
     Serial.print(" KPa \n");
+    EEPROMstore(3, pressure_string, strsize);
 
          K_30_Serial.listen();
          delay(2000);
@@ -115,6 +126,7 @@ void poll_all(void){
          Serial.print("CO2: ");
          Serial.print(CO2_string);
          Serial.print(" ppm \n");
+         EEPROMstore(4, CO2_string, strsize);
          
 
     Serial.println("_________________________");
@@ -205,4 +217,58 @@ char* byte_temp(char bytes[]){
         value[i-4] = bytes [i];
     }
     return value;
+}
+
+bool EEPROMstore(int t, char str[], int size){
+    for (int i = size*t; i < size*(t+1); i++){
+        EEPROM.write(i, str[i-size*t]);
+        //Serial.print("EEPROM written to address:\t");
+        //Serial.println(i);
+    }
+    return true;
+}
+
+bool EEPROM_readall(int t){
+    int value;
+    for(int l = 0; l <= t; l++){
+        switch(l){
+            case 0:
+                Serial.print("O2: ");
+                break;
+            case 1:
+                Serial.print("Temperature: ");
+                break;
+            case 2:
+                Serial.print("Humidity: ");
+                break;
+            case 3:
+                Serial.print("Pressure: ");
+                break;
+            case 4:
+                Serial.print("CO2: ");
+        }
+        for (int i = strsize*l; i < strsize*(l+1); i++){
+            value = EEPROM.read(i);
+            Serial.print(char(value));
+        }
+        switch(l){
+            case 0:
+                Serial.println("%");
+                break;
+            case 1:
+                Serial.println("C");
+                break;
+            case 2:
+                Serial.println("%");
+                break;
+            case 3:
+                Serial.println("Kpa");
+                break;
+            case 4:
+                Serial.print("ppm");
+        }
+    Serial.println();
+    Serial.println("_____________________");
+    delay(500);
+    }
 }

@@ -1,58 +1,54 @@
 #include <Wire.h>
+#include <string.h>
 
 #define SLAVE_ADDRESS 10
+typedef unsigned char   BYTE;
+int send_index;
+int send_length;
+BYTE recieved_cmd;
 
-int number = 0;
-int state = 0;
-
+String send_string;
+BYTE send_val;
 void setup()
 {
-    //Serial.begin(9600);
-    //Wire.begin(addr);
-
-    pinMode(13, OUTPUT);
-    pinMode(7, OUTPUT);
     Serial.begin(9600); // start serial for output
-    // initialize i2c as slave
-    Wire.begin(SLAVE_ADDRESS);
+    Wire.begin(SLAVE_ADDRESS); // initialize i2c as slave
 
-    // define callbacks for i2c communication
+    /* define callbacks for i2c communication*/
     Wire.onReceive(receiveData);
     Wire.onRequest(sendData);
+    send_index = 0; //Initialize the index for I2C sending strings
+    send_length = 0; //Initialize length of I2C send string
+    recieved_cmd = byte(0); //initialized the I2C recieved cmd byte
 
     Serial.println("Ready!");
 
 }
 void loop()
-{
-    delay(100);
+{   
+    send_string = "Hello!";
+    send_length = send_string.length();
+    if(send_index >= send_length)   //resets the index and loops the msg
+        send_index = 0;
+    
+    delay(1000);
 }
 
 void receiveData(int byteCount)
 {
+    Serial.println("receiving data");
     while(Wire.available())
     {
-        number = Wire.read();
+        recieved_cmd = Wire.read();
         Serial.print("data received: ");
-        Serial.println(number);
-        if (number == 1)
-        {
-            if (state == 0)
-            {
-            digitalWrite(13, HIGH); // set the LED on
-            state = 1;
-            }
-            else
-            {
-            digitalWrite(13, LOW); // set the LED off
-            state = 0;
-            }
-        }
+        Serial.println(recieved_cmd);
     }
 }
 
 // callback for sending data
 void sendData()
 {
-    Wire.write(number);
+    send_val = byte(send_string[send_index]);
+    Wire.write(send_val);     
+    send_index++; 
 }
