@@ -10,10 +10,10 @@ const int pulseWidth = 1;
 const int ON = 1;
 const int OFF = 0;
 
-const int INDETERMINATE = 404;
-const int CLOSED = 500;
-const int OPEN = 600;
-const int TRANSIT = 700;
+// const int INDETERMINATE = 404;
+// const int CLOSED = 500;
+// const int OPEN = 600;
+// const int TRANSIT = 700;
 
 //Motor heater assembly using TMP36 temperature sensor.
 
@@ -39,7 +39,6 @@ enum doorState doorStatus;
 int currentAngle;
 int datumClosed;
 int datumOpen;
-int shake;
 
 void setup() {
 
@@ -66,7 +65,7 @@ void loop() {
     int rotateAngle=30;
 
     // motorPower(ON);
-    shake=0;
+    int shake=0;
     while(shake<4){
         stepperAngleRotate(rotateAngle,'R');
         stepperAngleRotate(rotateAngle,'L');
@@ -96,7 +95,7 @@ void stepperAngleRotate(int angle, char direction){
     }
     else{
         digitalWrite(pinDIR_low,LOW);
-  }
+    }
 
     //pulse generator routine
     while(index<=requiredPulses){
@@ -111,6 +110,7 @@ void stepperAngleRotate(int angle, char direction){
         // Serial.println(requiredPulses);
         index++;
     }
+    return
 }
 
 //increments the stepper motor by one tick. Can be used for a different function that tracks angle.
@@ -163,6 +163,7 @@ int doorClose(void){
     }
     doorStatus=closed;
     Serial.println("Door closed!");
+    return;
 }
 
 //Function motorPower takes integer status and switches the motor on or off
