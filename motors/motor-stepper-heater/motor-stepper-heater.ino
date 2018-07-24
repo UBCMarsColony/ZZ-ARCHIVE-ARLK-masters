@@ -1,29 +1,22 @@
 //constants
-const int pinPUL_low = 11;
-const int pinDIR_low = 12;
-const int pinENA_low = 13;
-const int pinSEN_open = 10;
-const int pinSEN_closed = 9;
+const int pin_PUL_low = 11;
+const int pin_DIR_low = 12;
+const int pin_ENA_low = 13;
+const int pin_LIM_OPEN = 10;
+const int pin_LIM_CLOSED = 9;
+
+const int pin_HEATER_MOTOR 1
+const int pin_HEATER_GEARS 2
+
+const int pin_SENSOR_MOTOR 11
+const int pin_SENSOR_GEARS 12
 
 const int gearRatio = 47;
 const int pulseWidth = 1;
 const int ON = 1;
 const int OFF = 0;
 
-// const int INDETERMINATE = 404;
-// const int CLOSED = 500;
-// const int OPEN = 600;
-// const int TRANSIT = 700;
-
 //Motor heater assembly using TMP36 temperature sensor.
-
-//pin assignments
-#define PIN_HEATER_MOTOR 1
-#define PIN_HEATER_GEARB 2
-
-#define PIN_SENSOR_MOTOR 11
-#define PIN_SENSOR_GEARB 12
-
 // temperature thresholds
 const int tempMax=80;
 const int tempMin=0;
@@ -42,16 +35,26 @@ int datumOpen;
 
 void setup() {
 
+    //preparation of timer interrupts, we will use timer 1 for 16 bit resolution. some bitwise operations ahead!
+    cli(); //clear interrupts
+    TCCR1A=0; //clear TC control register 0 A (prescaler)
+    TCCR1B=0; //clear TC control register 0 B (prescaler)
+    TCNT1=0; //clear TC tick counter
+    OCR1=15624; //set Output Compare Register to value calculated (see notes)
+    //please check the microcontroller manual for register descriptions!
+    
+    sei(); //set interrupts
+
     //pin mode setups
-    pinMode(pinPUL_low, OUTPUT);
-    pinMode(pinDIR_low, OUTPUT);
-    pinMode(pinSEN_closed, INPUT_PULLUP);
-    pinMode(pinSEN_open, INPUT_PULLUP);
+    pinMode(pin_PUL_low, OUTPUT);
+    pinMode(pin_DIR_low, OUTPUT);
+    pinMode(pin_LIM_CLOSED, INPUT_PULLUP);
+    pinMode(pin_LIM_OPEN, INPUT_PULLUP);
 
     //initial conditions for motor
-    digitalWrite(pinDIR_low, LOW);
-    digitalWrite(pinPUL_low, LOW);
-    digitalWrite(pinENA_low, LOW);
+    digitalWrite(pin_DIR_low, LOW);
+    digitalWrite(pin_PUL_low, LOW);
+    digitalWrite(pin_ENA_low, LOW);
     Serial.begin(9600);
 
     //statuses
@@ -91,18 +94,18 @@ void stepperAngleRotate(int angle, char direction){
 
     //direction switching routine
     if (direction=='R'){
-        digitalWrite(pinDIR_low,HIGH);
+        digitalWrite(pin_DIR_low,HIGH);
     }
     else{
-        digitalWrite(pinDIR_low,LOW);
+        digitalWrite(pin_DIR_low,LOW);
     }
 
     //pulse generator routine
     while(index<=requiredPulses){
-        //beware of low side switching, pinPUL_low,HIGH); //STOPPING PULSE LOW
-        digitalWrite(pinPUL_low, HIGH);
+        //beware of low side switching, pin_PUL_low,HIGH); //STOPPING PULSE LOW
+        digitalWrite(pin_PUL_low, HIGH);
         delay(pulseWidth);
-        digitalWrite(pinPUL_low, LOW);
+        digitalWrite(pin_PUL_low, LOW);
         delay(pulseWidth);
         // Serial.print("This is increment: ");
         // Serial.print(index);
@@ -115,10 +118,10 @@ void stepperAngleRotate(int angle, char direction){
 
 //increments the stepper motor by one tick. Can be used for a different function that tracks angle.
 void stepperAngleIncrement(char direction){
-    digitalWrite(pinDIR_low,direction);
-    digitalWrite(pinPUL_low,LOW);
+    digitalWrite(pin_DIR_low,direction);
+    digitalWrite(pin_PUL_low,LOW);
     delay(pulseWidth);
-    digitalWrite(pinPUL_low,HIGH);
+    digitalWrite(pin_PUL_low,HIGH);
     delay(pulseWidth);
 }
 
@@ -128,7 +131,7 @@ int doorOpen(void){
     delay(1000);
 
     if(doorStatus!=closed){
-        while(digitalRead(pinSEN_closed)==HIGH){
+        while(digitalRead(pin_LIM_CLOSED)==HIGH){
             stepperAngleIncrement('R');
             doorStatus=transit;
             Serial.println("Closing!");
@@ -137,7 +140,7 @@ int doorOpen(void){
         Serial.println("Door closed!");
     }
 
-    while(digitalRead(pinSEN_open)!=LOW){
+    while(digitalRead(pin_LIM_OPEN)!=LOW){
         stepperAngleRotate(1,'L');
         doorStatus=transit;
         Serial.println("Door opening!");
@@ -156,7 +159,7 @@ int doorClose(void){
         Serial.println("Door already closed!");
         return 0;
     }
-    while(digitalRead(pinSEN_closed)!=LOW){
+    while(digitalRead(pin_LIM_CLOSED)!=LOW){
         stepperAngleIncrement('R');
         doorStatus=transit;
         Serial.println("Door closing!");
@@ -169,10 +172,10 @@ int doorClose(void){
 //Function motorPower takes integer status and switches the motor on or off
 void motorPower(int status){
     if(status==ON){
-        digitalWrite(pinENA_low,LOW);
+        digitalWrite(pin_ENA_low,LOW);
     }
     else{
-        digitalWrite(pinENA_low,HIGH);
+        digitalWrite(pin_ENA_low,HIGH);
     }
 }
 
