@@ -35,13 +35,18 @@ int datumOpen;
 
 void setup() {
 
-    //preparation of timer interrupts, we will use timer 1 for 16 bit resolution. some bitwise operations ahead!
+    //preparation of timer interrupts, we will use timer 1 for 16 bit resolution. some bitwise operations ahead!, check the microcontroller manual for register descriptions!
     cli(); //clear interrupts
-    TCCR1A=0; //clear TC control register 0 A (prescaler)
-    TCCR1B=0; //clear TC control register 0 B (prescaler)
+
+    TCCR1A=0; //clear TC control register 0 A (COMn register settings), set all to 0 and never written!
+    TCCR1B=0; //clear TC control register 0 B (prescaler settings)
     TCNT1=0; //clear TC tick counter
+
     OCR1=15624; //set Output Compare Register to value calculated (see notes)
-    //please check the microcontroller manual for register descriptions!
+    TCCR1B|=(1<,WGM12); //enable CTC mode (clear timer on trip) by enabling bits WGM12 on B-register
+    TCCR1B|=(1<CS12)|(1<CS10); //enable prescaler 1024 by enabling bits CS12 and CS10 on B-register
+
+    TIMSK1|=(1<OCIEA); //enable timer by setting mask bit to 1
     
     sei(); //set interrupts
 
@@ -62,9 +67,11 @@ void setup() {
 
 }
 
+ISR
+
 void loop() {
     // put your main code here, to run repeatedly:
-    //starting definitions
+    //starting definitions`
     int rotateAngle=30;
 
     // motorPower(ON);
