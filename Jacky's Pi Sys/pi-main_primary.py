@@ -32,7 +32,7 @@ def begin(runtime_params):
     # as all the systems will already be stored there.
     print("Initializing Sensors...\n") 
     sensors = sensor_ss.SensorSubsystem(gpio, "sensors", 3)
-    sensor.start()
+    sensors.start()
     print("Sensors Initialized!\n")
     
     print("Initializing UI...\n")

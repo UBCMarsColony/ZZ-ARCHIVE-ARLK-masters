@@ -22,6 +22,8 @@ class SensorSubsystem(subsys.Subsystem):
         #self.serial_in = serial.Serial('/dev/ttyACM1',9600)
 
         super().__init__(gpio, name=name, threadID=threadID)
+        self.debug = 'non'
+        self.sensor_dat = {}
 
     
     def get_data(self, string_name = None):
@@ -42,6 +44,11 @@ class SensorSubsystem(subsys.Subsystem):
     def thread_task(self):
         while self.is_running:
             self.__update_sensor_data()
+            if self.debug != '':
+                #print(self.debug)
+                self.sensor_dat = json.loads(self.debug)
+                #print("___________NEWPRINT________________")
+            time.sleep(1)
     
 
     def __update_sensor_data(self):
@@ -49,7 +56,8 @@ class SensorSubsystem(subsys.Subsystem):
             #next_line = self.serial_in.readline()
             next_line = sensorget.get_json_dict()
             #print(next_line)
-            SensorSubsystem.__sensor_data = self.__get_decoded_json_string(next_line)
+            self.debug = next_line
+            #SensorSubsystem.__sensor_data = self.__get_decoded_json_string(next_line)
 
         except ValueError as ve:
             print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
@@ -71,5 +79,12 @@ print("Str:\t" + dict_str)
 
 dict_act = json.loads(dict_str)
 print(str(type(dict_act) )+ str(dict_act))
+
+ss=SensorSubsystem(gpio)
+ss.start()
+
+while True:
+    print(ss.sensor_dat.get('O2'))
+    pass
 
 

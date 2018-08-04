@@ -38,10 +38,10 @@ void loop()
     Serial.println(send_index);
     if(send_index >= send_length)   //resets the index and loops the msg
         send_index = 0;
-    test_CO2 += 20;
-    test_O2 += 15;
-    test_temp += 10;
-    test_pressure += 30;    
+    //test_CO2 += 20;
+    test_O2 += 1;
+    //test_temp += 10;
+    //test_pressure += 30;    
     delay(1000);
 }
 

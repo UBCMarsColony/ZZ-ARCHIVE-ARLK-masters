@@ -40,7 +40,7 @@ class Subsystem(ABC):
         self.is_running = True
         self.subsystem_thread.start() 
         
-        
+
     def join(self):
         print("JOINING THREAD <" + self.name + ">")
         self.is_running = False
