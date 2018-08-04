@@ -1,5 +1,8 @@
 import importlib
+import RPi.GPIO as gpio
+import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
+sensorget = importlib.import_module('get_arduino_sensor')
 
 try:
     import serial
@@ -16,7 +19,7 @@ class SensorSubsystem(subsys.Subsystem):
     
     def __init__(self, gpio, name=None, threadID=None):
 
-        self.serial_in = serial.Serial('/dev/ttyACM1',9600)
+        #self.serial_in = serial.Serial('/dev/ttyACM1',9600)
 
         super().__init__(gpio, name=name, threadID=threadID)
 
@@ -43,8 +46,9 @@ class SensorSubsystem(subsys.Subsystem):
 
     def __update_sensor_data(self):
         try:    
-            next_line = self.serial_in.readline()
-            
+            #next_line = self.serial_in.readline()
+            next_line = sensorget.get_json_dict()
+            #print(next_line)
             SensorSubsystem.__sensor_data = self.__get_decoded_json_string(next_line)
 
         except ValueError as ve:
@@ -59,3 +63,13 @@ class SensorSubsystem(subsys.Subsystem):
             return json.loads(encoded_json)
         except ValueError:
             raise ValueError
+
+
+#The following proves that I am sending sensor data succesffuly from arduino to pi
+dict_str = sensorget.get_json_dict()
+print("Str:\t" + dict_str)
+
+dict_act = json.loads(dict_str)
+print(str(type(dict_act) )+ str(dict_act))
+
+

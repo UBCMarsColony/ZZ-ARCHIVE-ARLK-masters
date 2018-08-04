@@ -9,6 +9,11 @@ BYTE recieved_cmd;
 
 String send_string;
 BYTE send_val;
+
+int test_CO2 = 100;
+int test_O2 = 10;
+int test_temp = 0;
+int test_pressure = 50;
 void setup()
 {
     Serial.begin(9600); // start serial for output
@@ -26,11 +31,17 @@ void setup()
 }
 void loop()
 {   
-    send_string = "Hello!";
+    send_string = "{\"CO2\":" + String(test_CO2) +", \"O2\":"+String(test_O2)+",\"Temperature\":"+String(test_temp)+", \"Pressure\":"+String(test_pressure)+"}";
     send_length = send_string.length();
+    Serial.println(send_length);
+    Serial.print("index: ");
+    Serial.println(send_index);
     if(send_index >= send_length)   //resets the index and loops the msg
         send_index = 0;
-    
+    test_CO2 += 20;
+    test_O2 += 15;
+    test_temp += 10;
+    test_pressure += 30;    
     delay(1000);
 }
 

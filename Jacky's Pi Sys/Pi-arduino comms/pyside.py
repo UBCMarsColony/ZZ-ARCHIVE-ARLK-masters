@@ -29,10 +29,11 @@ while True:
         writeNumber(ord(char))
         print("Pi sending ascii code for: " + str(char))
         time.sleep(1)
-        
-    for index in range(6):
+
+    for index in range(120):
         num = readNumber()
-        return_str.append(chr(num))
+        if num != 0:
+            return_str.append(chr(num))
 
     str_ret = ''.join(return_str)
     print(str_ret)
