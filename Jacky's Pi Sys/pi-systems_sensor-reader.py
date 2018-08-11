@@ -22,69 +22,62 @@ class SensorSubsystem(subsys.Subsystem):
         #self.serial_in = serial.Serial('/dev/ttyACM1',9600)
 
         super().__init__(gpio, name=name, threadID=threadID)
-        self.debug = 'non'
+        self.debug = ''
         self.sensor_dat = {}
+        self.rdy_flag = False
 
     
     def get_data(self, string_name = None):
-        if string_name is None:
-            return SensorSubsystem.__sensor_data
-        else:   
-            try:
-                return SensorSubsystem.__sensor_data[string_name]
-            except KeyError as ke:
-                print("Failed to find a value associated with the key " + string_name + ". Returning entire dictionary instead...")
-                return SensorSubsystem.__sensor_data
-            except Exception as e:
-                print("An unexpected exception occurred while trying to retrieve sensor data.\n\tStack Trace: " + str(e))
-        
-        return None
+        return self.__sensor_data[string_name]
     
     
     def thread_task(self):
         while self.is_running:
             self.__update_sensor_data()
             if self.debug != '':
-                #print(self.debug)
-                self.sensor_dat = json.loads(self.debug)
-                #print("___________NEWPRINT________________")
+                self.__sensor_data = json.loads(self.debug)
+                #print(self.__sensor_data)
+            self.error_check()
             time.sleep(1)
     
 
     def __update_sensor_data(self):
         try:    
-            #next_line = self.serial_in.readline()
-            next_line = sensorget.get_json_dict()
-            #print(next_line)
-            self.debug = next_line
-            #SensorSubsystem.__sensor_data = self.__get_decoded_json_string(next_line)
-
+            self.debug = sensorget.get_json_dict()
         except ValueError as ve:
             print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
         except Exception as e:
             print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
-            
-    
-    # function that securely decodes a JSON string
-    def __get_decoded_json_string(self, encoded_json):
-        try:
-            return json.loads(encoded_json)
-        except ValueError:
-            raise ValueError
 
+    def error_check(self):
+        CO2 = self.get_data('CO2')
+        O2 = self.get_data('O2')
+        TEMP = self.get_data('Temperature')
+        #HUM = self.get_data('Humidity')
+        PRESS = self.get_data('Pressure')
+
+        if(15 < O2 < 25):
+            print("O2 is nominal")
+        if(300 < CO2 < 800):
+            print("CO2 is nominal")
+        if(-15 < TEMP < 40):
+            print("Temperature is nominal")
+        if(80 < PRESS < 140):
+            print("Pressure is nominal")
+            
 
 #The following proves that I am sending sensor data succesffuly from arduino to pi
-dict_str = sensorget.get_json_dict()
-print("Str:\t" + dict_str)
-
-dict_act = json.loads(dict_str)
-print(str(type(dict_act) )+ str(dict_act))
+#dict_str = sensorget.get_json_dict()
+#print("Str:\t" + dict_str)
 
 ss=SensorSubsystem(gpio)
 ss.start()
+time.sleep(2)
 
 while True:
-    print(ss.sensor_dat.get('O2'))
+    t = ss.get_data('O2')
+    print(t)
+    time.sleep(2)
     pass
 
 
