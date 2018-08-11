@@ -28,7 +28,10 @@ class SensorSubsystem(subsys.Subsystem):
 
     
     def get_data(self, string_name = None):
-        return self.__sensor_data[string_name]
+        if string_name == None:
+            return self.__sensor_data
+        else:
+            return self.__sensor_data[string_name]
     
     
     def thread_task(self):
