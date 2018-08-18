@@ -29,24 +29,24 @@ class SensorSubsystem(subsys.Subsystem):
     
     def get_data(self, string_name = None):
         if string_name == None:
+            for key in self.__sensor_data:
+                self.__sensor_data[key] = int(self.__sensor_data[key])
             return self.__sensor_data
         else:
-            return self.__sensor_data[string_name]
+            return int(self.__sensor_data[string_name])
     
     
     def thread_task(self):
         while self.is_running:
             self.__update_sensor_data()
-            if self.debug != '':
-                self.__sensor_data = json.loads(self.debug)
-                #print(self.__sensor_data)
-            self.error_check()
-            time.sleep(1)
+            time.sleep(2)
     
 
     def __update_sensor_data(self):
         try:    
             self.debug = sensorget.get_json_dict()
+            if self.debug != '':
+                self.__sensor_data = json.loads(self.debug)
         except ValueError as ve:
             print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
         except Exception as e:
@@ -70,17 +70,19 @@ class SensorSubsystem(subsys.Subsystem):
             
 
 #The following proves that I am sending sensor data succesffuly from arduino to pi
-#dict_str = sensorget.get_json_dict()
-#print("Str:\t" + dict_str)
+dict_str = sensorget.get_json_dict()
+print("Str:\t" + dict_str)
 
 ss=SensorSubsystem(gpio)
 ss.start()
-time.sleep(2)
+time.sleep(5)
 
-while True:
-    t = ss.get_data('O2')
+for i in range(10):
+    t = ss.get_data()
+    print(t)
+    t = ss.get_data("O2")
     print(t)
     time.sleep(2)
-    pass
+ss.join()
 
 

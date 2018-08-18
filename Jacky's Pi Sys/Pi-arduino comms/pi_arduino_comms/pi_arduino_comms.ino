@@ -9,6 +9,7 @@ BYTE recieved_cmd;
 
 String send_string;
 BYTE send_val;
+int transmission_size = 4;
 
 int test_CO2 = 100;
 int test_O2 = 10;
@@ -31,8 +32,16 @@ void setup()
 }
 void loop()
 {   
-    send_string = "{\"CO2\":" + String(test_CO2) +", \"O2\":"+String(test_O2)+",\"Temperature\":"+String(test_temp)+", \"Pressure\":"+String(test_pressure)+"}";
-    send_length = send_string.length();
+    
+    String c = format_for_transmission(test_CO2,transmission_size);
+    String o = format_for_transmission(test_O2,transmission_size);
+    String t = format_for_transmission(test_temp,transmission_size);
+    String p = format_for_transmission(test_pressure,transmission_size);
+
+
+    send_string = "{\"CO2\":\"" + c +"\",\"O2\":\""+ o +"\",\"Temperature\":\""+ t +"\",\"Pressure\":\""+p+"\"}";
+    //Serial.println(send_string);
+    send_length = send_string.length();     //This value is 64
     Serial.println(send_length);
     Serial.print("index: ");
     Serial.println(send_index);
@@ -62,4 +71,19 @@ void sendData()
     send_val = byte(send_string[send_index]);
     Wire.write(send_val);     
     send_index++; 
+}
+
+String format_for_transmission(int input, int size){
+    String i = String(input);
+    int val = i.length();
+
+    while(val < size){
+        i = "0"+i ;
+        val = i.length();
+    }
+
+    if(val > size){
+        i = "ERROR:" + i;
+    }
+    return i;
 }
