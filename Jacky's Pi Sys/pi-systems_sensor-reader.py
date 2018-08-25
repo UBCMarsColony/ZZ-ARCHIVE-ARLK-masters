@@ -30,10 +30,10 @@ class SensorSubsystem(subsys.Subsystem):
     def get_data(self, string_name = None):
         if string_name == None:
             for key in self.__sensor_data:
-                self.__sensor_data[key] = int(self.__sensor_data[key])
+                self.__sensor_data[key] = float(self.__sensor_data[key])  #int to double
             return self.__sensor_data
         else:
-            return int(self.__sensor_data[string_name])
+            return float(self.__sensor_data[string_name])
     
     
     def thread_task(self):
@@ -56,7 +56,7 @@ class SensorSubsystem(subsys.Subsystem):
         CO2 = self.get_data('CO2')
         O2 = self.get_data('O2')
         TEMP = self.get_data('Temperature')
-        #HUM = self.get_data('Humidity')
+        HUM = self.get_data('Humidity')
         PRESS = self.get_data('Pressure')
 
         if(15 < O2 < 25):
@@ -67,6 +67,8 @@ class SensorSubsystem(subsys.Subsystem):
             print("Temperature is nominal")
         if(80 < PRESS < 140):
             print("Pressure is nominal")
+        if(20 < HUM < 80):
+            print("Humidity is nominal")
             
 
 #The following proves that I am sending sensor data succesffuly from arduino to pi
