@@ -9,8 +9,8 @@ const int pin_LIM_CLOSED = 8;
 
 const int pin_HEATER_MOTOR = 13;
 const int pin_HEATER_GEARS = 13;
-const int pin_SENSOR_MOTOR = 0;
-const int pin_SENSOR_GEARS = 0;
+const int pin_SENSOR_MOTOR = A1;
+const int pin_SENSOR_GEARS = A1;
 
 const int gearRatio = 47;
 const int pulseWidth = 1;
@@ -20,7 +20,7 @@ const int OFF = 0;
 const int address_slave = 45; //address must be in HEX!
 
 //Motor heater assembly using TMP36 temperature sensor.
-// temperature thresholds
+//temperature thresholds
 const int tempMax = 80;
 const int tempMin = 0;
 const int tempStatusLow = -1;
@@ -38,9 +38,7 @@ enum doorState{
     };
 enum doorState doorStatus;
 
-int currentAngle;
-int datumClosed;
-int datumOpen;
+int currentAngle, datumClosed, datumOpen;
 
 void setup() {
     Serial.begin(9600);
@@ -79,7 +77,7 @@ void setup() {
     digitalWrite(pin_PUL_low, LOW);
     digitalWrite(pin_ENA_low, LOW);
     doorStatus=unknown;
-    Serial.println("Door status and pins set");
+    Serial.println("Door status and pins set, testing motor");
     motorTest();
     Serial.println("System setup complete, starting...");
 }
@@ -89,6 +87,10 @@ ISR(TIMER1_COMPA_vect){
 
     temp_motor=getTemperature(pin_SENSOR_MOTOR);
     temp_gears=getTemperature(pin_SENSOR_GEARS);
+    // Serial.print("Motor temperature: ");
+    // Serial.println(temp_motor);
+    // Serial.print("Gearbox temperature: ");
+    // Serial.println(temp_gears);
 
     getTempStatus(tempStatus,temp_gears,temp_motor);
     motorHeatRoutine(tempStatus);
