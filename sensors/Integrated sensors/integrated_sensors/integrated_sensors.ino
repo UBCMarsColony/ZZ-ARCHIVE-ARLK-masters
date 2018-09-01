@@ -1,6 +1,7 @@
 #include "SoftwareSerial.h"
 #include "string.h"
 #include <EEPROM.h>
+#include <Wire.h>
 
 SoftwareSerial K_30_Serial(12,13);  //Sets up a virtual serial port
                                     //Using pin 12 for Rx and pin 13 for Tx
@@ -10,6 +11,15 @@ SoftwareSerial O2_Serial(8,9); //Software Serial port with pin 8 as Rx
 #define strsize 10
 #define maxval 6
 //Setup is all good
+#define SLAVE_ADDRESS 10
+typedef unsigned char   BYTE;
+int send_index;
+int send_length;
+BYTE recieved_cmd;
+
+String send_string;
+BYTE send_val;
+int transmission_size = 6;
 
 byte readCO2[] = {0xFE, 0X44, 0X00, 0X08, 0X02, 0X9F, 0X25};  //Command packet to read Co2 (see app note)
 byte response[] = {0,0,0,0,0,0,0};  //create an array to store the response
@@ -26,6 +36,13 @@ char humidity_string[strsize];
 char pressure_string[strsize];
 char CO2_string[strsize];
 
+String  O2;
+String  temperature;
+String  humidity;
+String  pressure;
+String  CO2;
+
+
 
 
 void setup()
@@ -35,6 +52,16 @@ void setup()
     Serial.begin(9600);
     O2_Serial.begin(9600);
     K_30_Serial.begin(9600);    //Opens the virtual serial port with a baud of 9600
+
+    Wire.begin(SLAVE_ADDRESS); // initialize i2c as slave
+
+    /* define callbacks for i2c communication*/
+    Wire.onReceive(receiveData);
+    Wire.onRequest(sendData);
+    send_index = 0; //Initialize the index for I2C sending strings
+    send_length = 0; //Initialize length of I2C send string
+    recieved_cmd = byte(0); //initialized the I2C recieved cmd byte
+
     Serial.println("Setup Complete");
 }
 void loop(){
@@ -99,24 +126,28 @@ void poll_all(void){
     Serial.print(O2_string);
     Serial.print(" % \n");  
     EEPROMstore(0, O2_string, strsize);
+    O2 = String(O2_string);
 
     get_Temp();
     Serial.print("Temperature: ");
     Serial.print(temperature_string);
     Serial.print(" C \n");
     EEPROMstore(1, temperature_string, strsize);
+    temperature = String(temperature_string);
 
     get_Humidity();
     Serial.print("Humidity: ");
     Serial.print(humidity_string);
     Serial.print(" % \n");
     EEPROMstore(2, humidity_string, strsize);
+    humidity = String(humidity_string);
 
     get_Pressure();
     Serial.print("Pressure: ");
     Serial.print(pressure_string);
     Serial.print(" KPa \n");
     EEPROMstore(3, pressure_string, strsize);
+    pressure = String(pressure_string);
 
          K_30_Serial.listen();
          delay(2000);
@@ -127,9 +158,28 @@ void poll_all(void){
          Serial.print(CO2_string);
          Serial.print(" ppm \n");
          EEPROMstore(4, CO2_string, strsize);
+         CO2 = String(CO2_string);
          
 
     Serial.println("_________________________");
+
+    String c = format_for_transmission(CO2,transmission_size);
+    String o = format_for_transmission(O2,transmission_size);
+    String t = format_for_transmission(temperature,transmission_size);
+    String p = format_for_transmission(pressure,transmission_size);
+    String h = format_for_transmission(humidity,transmission_size);
+
+    send_string = "{\"CO2\":\"" + c +"\",\"O2\":\""+ o +"\",\"Temperature\":\""+ t +"\",\"Pressure\":\""+p+"\",\"Humidity\":\"" + h + "\"}";
+    //Serial.println(send_string);
+    send_length = send_string.length();     //This value is 64
+    Serial.println(send_length);
+    //Serial.print("index: ");
+    //Serial.println(send_index);
+    Serial.print("Python Dict:\t");
+    Serial.println(send_string);
+    if(send_index >= send_length)   //resets the index and loops the msg
+        send_index = 0;  
+    delay(1000);
 }
 
 void get_O2(void){
@@ -271,4 +321,39 @@ bool EEPROM_readall(int t){
     Serial.println("_____________________");
     delay(500);
     }
+}
+
+
+String format_for_transmission(String input, int size){
+    String i = input;
+    int val = i.length();
+
+    while(val < size){
+        i = "0"+i ;
+        val = i.length();
+    }
+
+    if(val > size){
+        i = "ERROR:" + i;
+    }
+    return i;
+}
+
+void receiveData(int byteCount)
+{
+    Serial.println("receiving data");
+    while(Wire.available())
+    {
+        recieved_cmd = Wire.read();
+        Serial.print("data received: ");
+        Serial.println(recieved_cmd);
+    }
+}
+
+// callback for sending data
+void sendData()
+{
+    send_val = byte(send_string[send_index]);
+    Wire.write(send_val);     
+    send_index++; 
 }
