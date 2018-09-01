@@ -1,27 +1,36 @@
+#include <Wire.h>
+
 //constants
-const int pin_PUL_low = 11;
-const int pin_DIR_low = 12;
-const int pin_ENA_low = 13;
-const int pin_LIM_OPEN = 10;
-const int pin_LIM_CLOSED = 9;
+const int pin_PUL_low = 10;
+const int pin_DIR_low = 11;
+const int pin_ENA_low = 12;
+const int pin_LIM_OPEN = 9;
+const int pin_LIM_CLOSED = 8;
 
-const int pin_HEATER_MOTOR 1
-const int pin_HEATER_GEARS 2
-
-const int pin_SENSOR_MOTOR 11
-const int pin_SENSOR_GEARS 12
+const int pin_HEATER_MOTOR = 13;
+const int pin_HEATER_GEARS = 13;
+const int pin_SENSOR_MOTOR = 0;
+const int pin_SENSOR_GEARS = 0;
 
 const int gearRatio = 47;
 const int pulseWidth = 1;
 const int ON = 1;
 const int OFF = 0;
 
+const int address_slave = 45; //address must be in HEX!
+
 //Motor heater assembly using TMP36 temperature sensor.
 // temperature thresholds
-const int tempMax=80;
-const int tempMin=0;
-const int tempStatusLow=1;
-const int tempStatusOK=0;
+const int tempMax = 80;
+const int tempMin = 0;
+const int tempStatusLow = -1;
+const int tempStatusOK = 0;
+
+//motor and gears temperatures
+
+double tempStatus[2];
+double temp_motor;
+double temp_gears;
 
 //special enum of type state, to report on door status
 enum doorState{
@@ -34,59 +43,60 @@ int datumClosed;
 int datumOpen;
 
 void setup() {
+    Serial.begin(9600);
+    Wire.begin(address_slave); //fucking slaves get your ass back here
+    Serial.println("UBC Mars Colony Airlock program");
+    Serial.println("Door control and heater system");
+    delay(2000);
 
+    Serial.println("First time initialization...");
     //preparation of timer interrupts, we will use timer 1 for 16 bit resolution. some bitwise operations ahead!, check the microcontroller manual for register descriptions!
-    cli(); //clear interrupts
+    cli(); //clear interrupts before writing to registers
 
     TCCR1A=0; //clear TC control register 0 A (COMn register settings), set all to 0 and never written!
     TCCR1B=0; //clear TC control register 0 B (prescaler settings)
     TCNT1=0; //clear TC tick counter
 
-    OCR1=15624; //set Output Compare Register to value calculated (see notes)
-    TCCR1B|=(1<,WGM12); //enable CTC mode (clear timer on trip) by enabling bits WGM12 on B-register
-    TCCR1B|=(1<CS12)|(1<CS10); //enable prescaler 1024 by enabling bits CS12 and CS10 on B-register
+    OCR1A=15624; //set Output Compare Register to value calculated (see notes)
+    TCCR1B|=(1<<WGM12); //enable CTC mode (clear timer on trip) by enabling bits WGM12 on B-register
+    TCCR1B|=(1<<CS12)|(1<<CS10); //enable prescaler 1024 by enabling bits CS12 and CS10 on B-register
 
-    TIMSK1|=(1<OCIEA); //enable timer by setting mask bit to 1
+    TIMSK1|=(1<<OCIE1A); //enable timer by setting mask bit to 1
     
     sei(); //set interrupts
+    Serial.println("Interrupts set");
 
     //pin mode setups
     pinMode(pin_PUL_low, OUTPUT);
     pinMode(pin_DIR_low, OUTPUT);
     pinMode(pin_LIM_CLOSED, INPUT_PULLUP);
     pinMode(pin_LIM_OPEN, INPUT_PULLUP);
+    pinMode(13, OUTPUT);
+    Serial.println("Pin modes set");
 
     //initial conditions for motor
     digitalWrite(pin_DIR_low, LOW);
     digitalWrite(pin_PUL_low, LOW);
     digitalWrite(pin_ENA_low, LOW);
-    Serial.begin(9600);
-
-    //statuses
     doorStatus=unknown;
+    Serial.println("Door status and pins set");
+    motorTest();
+    Serial.println("System setup complete, starting...");
+}
+
+//ISR (interrupt service request): poll for temperature then enable heaters as required
+ISR(TIMER1_COMPA_vect){
+
+    temp_motor=getTemperature(pin_SENSOR_MOTOR);
+    temp_gears=getTemperature(pin_SENSOR_GEARS);
+
+    getTempStatus(tempStatus,temp_gears,temp_motor);
+    motorHeatRoutine(tempStatus);
 
 }
 
-ISR
-
 void loop() {
-    // put your main code here, to run repeatedly:
-    //starting definitions`
-    int rotateAngle=30;
-
-    // motorPower(ON);
-    int shake=0;
-    while(shake<4){
-        stepperAngleRotate(rotateAngle,'R');
-        stepperAngleRotate(rotateAngle,'L');
-        shake++;
-        Serial.println("Shaking!");
-    }
-    delay(2000);
-    doorOpen();
-    delay(5000);
-    doorClose();
-
+    Wire.onReceive(commandHandler); //function to call when command received
 }
 
 //motor is low side switching! 5V from arduino 5v rail. logical disable is pulling the L pin to 5V.
@@ -120,7 +130,7 @@ void stepperAngleRotate(int angle, char direction){
         // Serial.println(requiredPulses);
         index++;
     }
-    return
+    return;
 }
 
 //increments the stepper motor by one tick. Can be used for a different function that tracks angle.
@@ -132,8 +142,19 @@ void stepperAngleIncrement(char direction){
     delay(pulseWidth);
 }
 
+void motorTest(void){
+    // Serial.println("Motor self test routine...");
+    int i=0;
+    for(i=0;i<4;i++){
+        int angle=45;
+        stepperAngleRotate(angle, 'R');
+        stepperAngleRotate(angle, 'L');
+    }
+}
+
 int doorOpen(void){
 
+    int i=0;
     Serial.println("Open commanded");
     delay(1000);
 
@@ -143,22 +164,25 @@ int doorOpen(void){
             doorStatus=transit;
             Serial.println("Closing!");
         }
-        doorStatus=CLOSED;
+        doorStatus=closed;
         Serial.println("Door closed!");
     }
 
     while(digitalRead(pin_LIM_OPEN)!=LOW){
         stepperAngleRotate(1,'L');
         doorStatus=transit;
+        for(i=0;i<1;i++){
         Serial.println("Door opening!");
+        }
+        
     }
     doorStatus=open;
     Serial.println("Door opened!");
-    return;
+    return 0;
 }
 
 int doorClose(void){
-
+    int i=0;
     Serial.println("Close commanded");
     delay(1000);
 
@@ -169,11 +193,13 @@ int doorClose(void){
     while(digitalRead(pin_LIM_CLOSED)!=LOW){
         stepperAngleIncrement('R');
         doorStatus=transit;
+        for(i=0;i<1;i++){
         Serial.println("Door closing!");
+        }
     }
     doorStatus=closed;
     Serial.println("Door closed!");
-    return;
+    return 0;
 }
 
 //Function motorPower takes integer status and switches the motor on or off
@@ -186,10 +212,51 @@ void motorPower(int status){
     }
 }
 
-// int modeLUT(string mode){
-//     enum motorMode{
-//         '0111'=400,'1011'=800,'0011'=1600,'1101'=3200,'0101'=6400,'1001'=12800,'0001'=25600,'1110'=1000,'0110'=2000,'1010'=4000,'0010'=5000,'1100'=8000,'0100'=10000,'1000'=20000,'0000'=25000
-//     } motorMode;
-    
-//     return stepsToRev_raw
-// }
+//temperature controls
+double getTemperature(int sensorAddress){
+    double voltageRaw=analogRead(sensorAddress)*5/1024.0;
+    double temperature=(voltageRaw-0.5)*100; //sensor offset inbuilt
+    return temperature;
+}
+
+void getTempStatus(double statusArray[], double tempGears, double tempMotor){
+    if(tempGears>=tempMin){
+        tempStatus[0]=tempStatusOK;
+    }
+    else{
+        tempStatus[0]=tempStatusLow;
+    }
+    if(tempMotor>=tempMin){
+        tempStatus[1]=tempStatusOK;
+    }
+    else{  
+        tempStatus[1]=tempStatusLow;
+    }
+}
+
+void motorHeatRoutine(double tempStatus[]){
+    if(tempStatus[0]==tempStatusLow){
+        digitalWrite(pin_HEATER_GEARS,HIGH);
+    }
+    else{
+        digitalWrite(pin_HEATER_GEARS,LOW);
+    }
+    if(tempStatus[1]==tempStatusLow){
+        digitalWrite(pin_HEATER_MOTOR,HIGH);
+    }
+    else{
+        digitalWrite(pin_HEATER_MOTOR,LOW);
+    }
+}
+
+void commandHandler(int howMany){
+    char command=Wire.read();
+    switch(command){
+        case 'o':
+            doorOpen();
+            break;
+        case 'c':
+            doorClose();
+            break;
+    }
+}
