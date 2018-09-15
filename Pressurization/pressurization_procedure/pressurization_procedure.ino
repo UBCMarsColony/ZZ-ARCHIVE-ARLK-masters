@@ -30,6 +30,12 @@
 #define status_progress         5
 #define status_depress          6
 
+//valve pins
+#define first_valve             8
+#define second_valve            9     
+
+//Door sensor data debug signals
+#define door_close              10
 //DEBUGGING definitions
 float pressure_data = 0; // in kpa
 
@@ -68,6 +74,8 @@ void setup(){
     Serial.begin(9600);
 
     //////////Button and interrupts////////
+    pinMode(first_valve,OUTPUT);
+    pinMode(second_valve,OUTPUT);
     //procedure flag
     cmd_sel = 'x';
     //There's no software debouncing, so build button debouncing circuits
@@ -78,7 +86,7 @@ void setup(){
     pinMode(status_press,OUTPUT);
     pinMode(status_progress,OUTPUT);
     pinMode(status_depress,OUTPUT);
-
+    pinMode(door_close,INPUT_PULLUP);
     //Button interrupts
     attachInterrupt(digitalPinToInterrupt(button_colonyside), colonyside, RISING);
     attachInterrupt(digitalPinToInterrupt(button_marsside), marside, RISING); 
@@ -136,16 +144,20 @@ void procedure(bool select_procedure){
     if(select_procedure == exit){
         PR();
         Serial.println("Opening colony -> airlock door");
+        while(digitalRead(door_close)!= LOW);
         Serial.println("Detect airlock door close");
         DPR();
         Serial.println("Opening airlock -> mars door");
+        while(digitalRead(door_close)!= LOW);
         Serial.println("Detect mars door close");
     }
     else if(select_procedure == entry){
         Serial.println("Opening airlock -> mars door");
+        while(digitalRead(door_close)!= LOW);
         Serial.println("Detect mars door close");
         PR();
         Serial.println("Opening colony -> airlock door");
+        while(digitalRead(door_close)!= LOW);
         Serial.println("Detect airlock door close");
         DPR();
     }
@@ -153,24 +165,34 @@ void procedure(bool select_procedure){
 
 ///////////// Simple Procedures ////////////////
 bool PR(){
+    u_airlock.valve_a = close;
+    digitalWrite(first_valve, LOW);
+    u_airlock.valve_b = open;
+    digitalWrite(second_valve, HIGH);
     while(u_airlock.state != pressurize){
-        u_airlock.valve_a = close;
-        u_airlock.valve_b = open;
-        u_airlock.state = get_airlock_state(pressure_data++);
+        u_airlock.state = get_airlock_state(pressure_data++);  
+        led_status_display(u_airlock.state);
     }
     hold_press();
 }
 bool DPR(){
+    u_airlock.valve_a = open;
+    digitalWrite(first_valve, HIGH);
+    u_airlock.valve_b = close;
+    digitalWrite(second_valve, LOW);
     while(u_airlock.state != depressurize){
-        u_airlock.valve_a = open;
-        u_airlock.valve_b = close;
         u_airlock.state = get_airlock_state(pressure_data--);
+        led_status_display(u_airlock.state);
     }
     hold_press();
 }
 bool hold_press(){
     u_airlock.valve_a = close;
+    digitalWrite(first_valve, LOW);
     u_airlock.valve_b = close;
+    digitalWrite(second_valve, LOW);
+    u_airlock.state = get_airlock_state(pressure_data);
+    led_status_display(u_airlock.state);
 }
 //////////////////////////////////////////////
 
