@@ -1,16 +1,19 @@
 #include <Wire.h>
 
 //constants
-const int pin_PUL_low = 10;
-const int pin_DIR_low = 11;
-const int pin_ENA_low = 12;
-const int pin_LIM_OPEN = 9;
-const int pin_LIM_CLOSED = 8;
 
-const int pin_HEATER_MOTOR = 13;
-const int pin_HEATER_GEARS = 13;
-const int pin_SENSOR_MOTOR = A1;
-const int pin_SENSOR_GEARS = A1;
+struct pin{
+    int PUL=10;
+    int DIR=11;
+    int ENA=12;
+    int LIM_open=9;
+    int LIM_closed=8;
+
+    int HEATER_motor=13;
+    int HEATER_gears=13;
+    int SENSOR_motor=A1;
+    int SENSOR_gears=A1;
+} pinNumber;
 
 const int gearRatio = 47;
 const int pulseWidth = 1;
@@ -35,8 +38,13 @@ double temp_gears;
 //special enum of type state, to report on door status
 enum doorState{
     open=1,closed=2,transit=3,unknown=-1
-    };
+};
 enum doorState doorStatus;
+
+enum tempState{
+    low=-1,ok=0,overheat=1
+};
+enum tempState tempStatusEnum;
 
 int currentAngle, datumClosed, datumOpen;
 
@@ -65,28 +73,30 @@ void setup() {
     Serial.println("Interrupts set");
 
     //pin mode setups
-    pinMode(pin_PUL_low, OUTPUT);
-    pinMode(pin_DIR_low, OUTPUT);
-    pinMode(pin_LIM_CLOSED, INPUT_PULLUP);
-    pinMode(pin_LIM_OPEN, INPUT_PULLUP);
+    pinMode(pinNumber.PUL, OUTPUT);
+    pinMode(pinNumber.DIR, OUTPUT);
+    pinMode(pinNumber.LIM_closed, INPUT_PULLUP);
+    pinMode(pinNumber.LIM_open, INPUT_PULLUP);
     pinMode(13, OUTPUT);
     Serial.println("Pin modes set");
 
     //initial conditions for motor
-    digitalWrite(pin_DIR_low, LOW);
-    digitalWrite(pin_PUL_low, LOW);
-    digitalWrite(pin_ENA_low, LOW);
+    digitalWrite(pinNumber.DIR, LOW);
+    digitalWrite(pinNumber.PUL, LOW);
+    digitalWrite(pinNumber.ENA, LOW);
     doorStatus=unknown;
-    Serial.println("Door status and pins set, testing motor");
+    Serial.println("Door status and pinNumber set, testing motor");
     motorTest();
+    Wire.onRequest(requestHandler);
     Serial.println("System setup complete, starting...");
+
 }
 
 //ISR (interrupt service request): poll for temperature then enable heaters as required
 ISR(TIMER1_COMPA_vect){
 
-    temp_motor=getTemperature(pin_SENSOR_MOTOR);
-    temp_gears=getTemperature(pin_SENSOR_GEARS);
+    temp_motor=getTemperature(pinNumber.SENSOR_motor);
+    temp_gears=getTemperature(pinNumber.SENSOR_gears);
     // Serial.print("Motor temperature: ");
     // Serial.println(temp_motor);
     // Serial.print("Gearbox temperature: ");
@@ -113,18 +123,18 @@ void stepperAngleRotate(int angle, char direction){
 
     //direction switching routine
     if (direction=='R'){
-        digitalWrite(pin_DIR_low,HIGH);
+        digitalWrite(pinNumber.DIR,HIGH);
     }
     else{
-        digitalWrite(pin_DIR_low,LOW);
+        digitalWrite(pinNumber.DIR,LOW);
     }
 
     //pulse generator routine
     while(index<=requiredPulses){
-        //beware of low side switching, pin_PUL_low,HIGH); //STOPPING PULSE LOW
-        digitalWrite(pin_PUL_low, HIGH);
+        //beware of low side switching, pinNumber.PUL,HIGH);
+        digitalWrite(pinNumber.PUL, HIGH);
         delay(pulseWidth);
-        digitalWrite(pin_PUL_low, LOW);
+        digitalWrite(pinNumber.PUL, LOW);
         delay(pulseWidth);
         // Serial.print("This is increment: ");
         // Serial.print(index);
@@ -137,15 +147,15 @@ void stepperAngleRotate(int angle, char direction){
 
 //increments the stepper motor by one tick. Can be used for a different function that tracks angle.
 void stepperAngleIncrement(char direction){
-    digitalWrite(pin_DIR_low,direction);
-    digitalWrite(pin_PUL_low,LOW);
+    digitalWrite(pinNumber.DIR,direction);
+    digitalWrite(pinNumber.PUL,LOW);
     delay(pulseWidth);
-    digitalWrite(pin_PUL_low,HIGH);
+    digitalWrite(pinNumber.PUL,HIGH);
     delay(pulseWidth);
 }
 
 void motorTest(void){
-    // Serial.println("Motor self test routine...");
+    Serial.println("Motor self test routine...");
     int i=0;
     for(i=0;i<4;i++){
         int angle=45;
@@ -156,27 +166,18 @@ void motorTest(void){
 
 int doorOpen(void){
 
-    int i=0;
     Serial.println("Open commanded");
     delay(1000);
 
-    if(doorStatus!=closed){
-        while(digitalRead(pin_LIM_CLOSED)==HIGH){
-            stepperAngleIncrement('R');
-            doorStatus=transit;
-            Serial.println("Closing!");
-        }
-        doorStatus=closed;
-        Serial.println("Door closed!");
+    if(doorStatus==open){
+        Serial.println("Door already open!");
+        return 0;
     }
 
-    while(digitalRead(pin_LIM_OPEN)!=LOW){
+    Serial.println("Door opening!");
+    while(digitalRead(pinNumber.LIM_open)!=LOW){
         stepperAngleRotate(1,'L');
         doorStatus=transit;
-        for(i=0;i<1;i++){
-        Serial.println("Door opening!");
-        }
-        
     }
     doorStatus=open;
     Serial.println("Door opened!");
@@ -184,7 +185,7 @@ int doorOpen(void){
 }
 
 int doorClose(void){
-    int i=0;
+
     Serial.println("Close commanded");
     delay(1000);
 
@@ -192,13 +193,13 @@ int doorClose(void){
         Serial.println("Door already closed!");
         return 0;
     }
-    while(digitalRead(pin_LIM_CLOSED)!=LOW){
+
+    Serial.println("Door closing!");
+    while(digitalRead(pinNumber.LIM_closed)!=LOW){
         stepperAngleIncrement('R');
         doorStatus=transit;
-        for(i=0;i<1;i++){
-        Serial.println("Door closing!");
-        }
     }
+
     doorStatus=closed;
     Serial.println("Door closed!");
     return 0;
@@ -206,15 +207,17 @@ int doorClose(void){
 
 //Function motorPower takes integer status and switches the motor on or off
 void motorPower(int status){
-    if(status==ON){
-        digitalWrite(pin_ENA_low,LOW);
-    }
-    else{
-        digitalWrite(pin_ENA_low,HIGH);
+    switch(status){
+        case ON:
+            digitalWrite(pinNumber.ENA,HIGH);
+            return ON;
+        case OFF:
+            digitalWrite(pinNumber.ENA,LOW);
+            return OFF;
     }
 }
 
-//temperature controls
+//temperature controls for TMP36 sensor
 double getTemperature(int sensorAddress){
     double voltageRaw=analogRead(sensorAddress)*5/1024.0;
     double temperature=(voltageRaw-0.5)*100; //sensor offset inbuilt
@@ -238,16 +241,16 @@ void getTempStatus(double statusArray[], double tempGears, double tempMotor){
 
 void motorHeatRoutine(double tempStatus[]){
     if(tempStatus[0]==tempStatusLow){
-        digitalWrite(pin_HEATER_GEARS,HIGH);
+        digitalWrite(pinNumber.HEATER_gears,HIGH);
     }
     else{
-        digitalWrite(pin_HEATER_GEARS,LOW);
+        digitalWrite(pinNumber.HEATER_gears,LOW);
     }
     if(tempStatus[1]==tempStatusLow){
-        digitalWrite(pin_HEATER_MOTOR,HIGH);
+        digitalWrite(pinNumber.HEATER_motor,HIGH);
     }
     else{
-        digitalWrite(pin_HEATER_MOTOR,LOW);
+        digitalWrite(pinNumber.HEATER_motor,LOW);
     }
 }
 
@@ -261,4 +264,10 @@ void commandHandler(int howMany){
             doorClose();
             break;
     }
+}
+
+void requestHandler(){
+    Wire.beginTransmission();
+    Wire.write()
+    Wire.endTransmission();
 }
