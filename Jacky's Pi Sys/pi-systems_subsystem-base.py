@@ -47,7 +47,7 @@ class Subsystem(ABC):
     def stop(self):
         self.running = False
         print("Subsystem stopping:\n\tName: %s\n\tID: %s", self.name, str(self.thread_id))
-        self.thread.exit()
+        self.thread.join()
     
     """
     Contains the code which will be run during the threads life.
