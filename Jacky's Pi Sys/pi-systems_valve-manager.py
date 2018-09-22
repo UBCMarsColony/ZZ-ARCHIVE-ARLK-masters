@@ -26,13 +26,13 @@ class ValveManager(subsys.Subsystem):
     _num_valves = 3
     _valve_ports = (23,24,25)
 
-    def __init__(self, gpio, name=None, threadID=None):
-        super().__init__(name,gpio, name=name, threadID=threadID)
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name, name=name, thread_id=thread_id)
         
         self.next_state = None
     
     #Task to run in a seperate thread
-    def thread_task(self):
+    def run(self):
         while self.is_running():
         
             # Check if a new valve state has been requested

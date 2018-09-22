@@ -2,10 +2,10 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 
 class DoorSubsystem(subsys.Subsystem):
 
-    def __init__(self, gpio, name=None, threadID=None):
-        super().__init__(gpio, name=name, threadID=threadID)
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name=name, thread_id=thread_id)
 
-    def thread_task(self):
+    def run(self):
         print(self.subsystem_thread.name + " is running!")
         
         #WARNING: MASS PSEUDOCODE

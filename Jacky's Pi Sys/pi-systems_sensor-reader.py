@@ -17,11 +17,8 @@ class SensorSubsystem(subsys.Subsystem):
     
     __sensor_data = {}
     
-    def __init__(self, gpio, name=None, threadID=None):
-
-        #self.serial_in = serial.Serial('/dev/ttyACM1',9600)
-
-        super().__init__(gpio, name=name, threadID=threadID)
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name=name, thread_id=thread_id)
         self.debug = ''
         self.sensor_dat = {}
         self.rdy_flag = False
@@ -36,8 +33,8 @@ class SensorSubsystem(subsys.Subsystem):
             return float(self.__sensor_data[string_name])
     
     
-    def thread_task(self):
-        while self.is_running:
+    def run(self):
+        while self.running:
             self.__update_sensor_data()
             time.sleep(2)
     

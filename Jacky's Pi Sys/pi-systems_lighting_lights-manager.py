@@ -26,8 +26,8 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 
 
 class LightingSubsystem(subsys.Subsystem):
-    def __init__(self, gpio, name=None, threadID=None):
-        super().__init__(gpio, name=name, threadID=threadID)
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name=name, thread_id=thread_id)
         
         self._sensor_dict = None
 
@@ -40,7 +40,7 @@ class LightingSubsystem(subsys.Subsystem):
         
         
     def thread_task(self):
-        while self.is_running():
+        while self.running:
             if self._sensor_dict = None:
                 light_plan = generate_light_plan()
                 update_lights(light_plan)
