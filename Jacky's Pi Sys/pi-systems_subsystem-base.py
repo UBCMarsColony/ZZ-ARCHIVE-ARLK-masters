@@ -73,5 +73,4 @@ class SubsystemThread(threading.Thread):
 
 
     def run(self):
-        with self.lock:
-            self.subsystem.run()
+        self.subsystem.run()
