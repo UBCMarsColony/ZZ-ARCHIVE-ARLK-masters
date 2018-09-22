@@ -1,8 +1,6 @@
 import threading
 from abc import ABC, abstractmethod
 import importlib
-import random
-import time
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
 """
@@ -11,7 +9,6 @@ In general, we would like the airlock tasks to be split up into single,
 maintainable components. This enables better subsystem management in the future.
 More information on this is included in the README file in this directory.
 
-Param: gpio - The RPi.GPIO reference that will be used by the subsystem to control pins
 Param: name - The thread's unique name
 Param: thread_id - The thread's unique ID that will be used to reference it
 Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool
@@ -56,6 +53,9 @@ class Subsystem(ABC):
     def run(self):
         pass
 
+    """
+    Locks the thread while running the method. Useful when accessing data that is modified by the thread.
+    """
     def run_method_async(self, async_method):
         with self.thread.lock:
             async_method()

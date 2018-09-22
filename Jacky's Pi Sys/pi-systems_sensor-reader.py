@@ -19,38 +19,34 @@ class SensorSubsystem(subsys.Subsystem):
     
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id)
-        self.debug = ''
-        self.sensor_dat = {}
-        self.rdy_flag = False
 
-    
-    def get_data(self, string_name = None):
-        if string_name == None:
+
+    def run(self):
+        while self.running:
+            with self.thread.lock:
+                self.__update_sensor_data()
+            time.sleep(2)
+
+
+    def get_data(self, string_name=None):
+        if string_name is None:
             for key in self.__sensor_data:
                 self.__sensor_data[key] = float(self.__sensor_data[key])  #int to double
             return self.__sensor_data
         else:
             return float(self.__sensor_data[string_name])
     
-    
-    def run(self):
-        while self.running:
-            def TEMPORARY():
-                self.__update_sensor_data()
-                time.sleep(2)
-            
-            self.run_method_async(TEMPORARY)
-    
 
     def __update_sensor_data(self):
         try:    
-            self.debug = sensorget.get_json_dict()
-            if self.debug != '':
-                self.__sensor_data = json.loads(self.debug)
+            sensor_json = sensorget.get_json_dict()
+            if sensor_json != '':
+                self.__sensor_data = json.loads(sensor_json)
         except ValueError as ve:
             print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
         except Exception as e:
             print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
+
 
     def error_check(self):
         CO2 = self.get_data('CO2')
@@ -70,21 +66,19 @@ class SensorSubsystem(subsys.Subsystem):
         if(20 < HUM < 80):
             print("Humidity is nominal")
             
+if __name__ == "__main__":
+    #The following proves that I am sending sensor data succesffuly from arduino to pi
+    dict_str = sensorget.get_json_dict()
+    print("Str:\t" + dict_str)
 
-#The following proves that I am sending sensor data succesffuly from arduino to pi
-dict_str = sensorget.get_json_dict()
-print("Str:\t" + dict_str)
+    ss=SensorSubsystem(thread_id=5)
+    ss.start()
+    time.sleep(5)
 
-ss=SensorSubsystem(thread_id=5)
-ss.start()
-time.sleep(5)
-
-for i in range(10):
-    t = ss.get_data()
-    print(t)
-    t = ss.get_data("O2")
-    print(t)
-    time.sleep(2)
-ss.join()
-
-
+    for i in range(10):
+        t = ss.run_method_async(ss.get_data)
+        print(t)
+        t = ss.srun_method_async(lambda: ss.get_data("O2"))
+        print(t)
+        time.sleep(2)
+    ss.stop()

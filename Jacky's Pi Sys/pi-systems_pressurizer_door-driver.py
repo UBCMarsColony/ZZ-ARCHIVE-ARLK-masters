@@ -6,7 +6,6 @@ class DoorSubsystem(subsys.Subsystem):
         super().__init__(name=name, thread_id=thread_id)
 
     def run(self):
-        print(self.subsystem_thread.name + " is running!")
         
         #WARNING: MASS PSEUDOCODE
         #-------------------------
