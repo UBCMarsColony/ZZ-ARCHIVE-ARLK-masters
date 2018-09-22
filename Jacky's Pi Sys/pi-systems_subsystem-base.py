@@ -32,21 +32,21 @@ class Subsystem(ABC):
         if add_to_pool is True:
             subsys_pool.add(self)
 
-        print("Subsystem initialized:\n\tName: %s\n\tID: %s", self.name, str(self.thread_id))
+        print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
 
                 
     def start(self):
         if self.thread is None:
             self.thread = SubsystemThread(self)
         
-        print("Subsystem starting:\n\tName: %s\n\tID: %s", self.name, str(self.thread_id))
+        print("Subsystem starting:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
         self.thread.start() 
         self.running = True
         
 
     def stop(self):
         self.running = False
-        print("Subsystem stopping:\n\tName: %s\n\tID: %s", self.name, str(self.thread_id))
+        print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
         self.thread.join()
     
     """
@@ -56,22 +56,22 @@ class Subsystem(ABC):
     def run(self):
         pass
 
-    def syncGet(self, method):
-        
+    def run_method_async(self, async_method):
+        with self.thread.lock:
+            async_method()
 
-lock = threading.Lock()
 
 class SubsystemThread(threading.Thread):
+
+
     def __init__(self, subsystem): 
         super().__init__()
+
         self.subsystem = subsystem
+        self.lock = threading.Lock()
         self.subsystem.running = True
-        
+
+
     def run(self):
-        self.subsystem.run()
-
-    def runSync(self, method):
-        global lock
-        with lock:
-            method()
-
+        with self.lock:
+            self.subsystem.run()

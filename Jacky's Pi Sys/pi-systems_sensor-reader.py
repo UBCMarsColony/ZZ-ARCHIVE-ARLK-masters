@@ -35,8 +35,11 @@ class SensorSubsystem(subsys.Subsystem):
     
     def run(self):
         while self.running:
-            self.__update_sensor_data()
-            time.sleep(2)
+            def TEMPORARY():
+                self.__update_sensor_data()
+                time.sleep(2)
+            
+            self.run_method_async(TEMPORARY)
     
 
     def __update_sensor_data(self):
