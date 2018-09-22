@@ -2,7 +2,7 @@ import importlib
 import RPi.GPIO as gpio
 import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
-sensorget = importlib.import_module('get_arduino_sensor')
+# sensorget = importlib.import_module('get_arduino_sensor')
 
 try:
     import serial
@@ -13,7 +13,7 @@ import json
     
 # JSON raspberry pi data reader code, take serial data from python
 
-class SensorSubsystem(subsys.Subsystem):
+class SensorSubsystem(subsys.Subsystem, subsys.SerialUser):
     
     __sensor_data = {}
     
@@ -39,8 +39,9 @@ class SensorSubsystem(subsys.Subsystem):
 
     def __update_sensor_data(self):
         try:    
-            sensor_json = sensorget.get_json_dict()
-            if sensor_json != '':
+            # sensor_json = sensorget.get_json_dict()
+            sensor_json = self.get_json_dict()
+            if sensor_json:
                 self.__sensor_data = json.loads(sensor_json)
         except ValueError as ve:
             print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
@@ -68,7 +69,7 @@ class SensorSubsystem(subsys.Subsystem):
             
 if __name__ == "__main__":
     #The following proves that I am sending sensor data succesffuly from arduino to pi
-    dict_str = sensorget.get_json_dict()
+    dict_str = self.get_json_dict()
     print("Str:\t" + dict_str)
 
     ss=SensorSubsystem(thread_id=5)

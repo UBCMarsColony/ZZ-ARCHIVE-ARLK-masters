@@ -1,6 +1,8 @@
 import threading
 from abc import ABC, abstractmethod
 import importlib
+import smbus
+import time
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
 """
@@ -74,3 +76,37 @@ class SubsystemThread(threading.Thread):
 
     def run(self):
         self.subsystem.run()
+
+
+class SerialUser():
+
+    def __init__(self, address):
+        # for RPI version 1, use “bus = smbus.SMBus(0)”
+        self.bus = smbus.SMBus(1)
+    
+        # This is the address we setup in the Arduino Program
+        self.slave_address = 0x0A
+
+
+    def readNumber():
+        return self.bus.read_byte(self.slave_address)
+        # number = bus.read_byte_data(slave_address, 1)
+        
+
+    def get_json_dict():
+        return_str = []
+        # use ord(char a) to turn it to byte
+        # use chr(byte b) to turn it to char
+
+        for index in range(93):
+            num = readNumber()
+            if num:
+                return_str.append(chr(num))
+
+        str_ret = ''.join(return_str)
+        return str_ret
+
+    #t = get_json_dict()
+    #import json
+    #d = json.loads(t)
+    #print(d)
