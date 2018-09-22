@@ -1,6 +1,8 @@
 import threading
 from abc import ABC, abstractmethod
 import importlib
+import random
+import time
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
 """
@@ -19,9 +21,10 @@ class Subsystem(ABC):
 
     def __init__(self, thread_id, name=None, add_to_pool=True):
         if thread_id is None:
-            raise NameError("Subsystem parameter thread_id is not defined!")
+            #raise NameError("Subsystem parameter thread_id is not defined!")
+            self.thread_id = random.seed(int(time.time()))
 
-        self.name = name if name not None else Subsystem.__class__.__name__
+        self.name = name if name is not None else self.__class__.__name__
         self.thread = None
         self.running = False
             
@@ -34,7 +37,7 @@ class Subsystem(ABC):
                 
     def start(self):
         if self.thread is None:
-            self.subsystem_thread = SubsystemThread(self)
+            self.thread = SubsystemThread(self)
         
         print("Subsystem starting:\n\tName: %s\n\tID: %s", self.name, str(self.thread_id))
         self.thread.start() 
@@ -56,7 +59,7 @@ class Subsystem(ABC):
 
 class SubsystemThread(threading.Thread):
     def __init__(self, subsystem): 
-        super().__init__(self)
+        super().__init__()
         self.subsystem = subsystem
         self.subsystem.running = True
         
