@@ -25,6 +25,7 @@ class Subsystem(ABC):
 
         self.name = name if name is not None else self.__class__.__name__
         self.thread = None
+        self.thread_id = thread_id
         self.running = False
             
         # By default, add the subsystem to the pool.
@@ -55,6 +56,10 @@ class Subsystem(ABC):
     def run(self):
         pass
 
+    def syncGet(self, method):
+        
+
+lock = threading.Lock()
 
 class SubsystemThread(threading.Thread):
     def __init__(self, subsystem): 
@@ -64,3 +69,9 @@ class SubsystemThread(threading.Thread):
         
     def run(self):
         self.subsystem.run()
+
+    def runSync(self, method):
+        global lock
+        with lock:
+            method()
+

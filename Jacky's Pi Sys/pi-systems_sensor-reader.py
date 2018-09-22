@@ -72,7 +72,7 @@ class SensorSubsystem(subsys.Subsystem):
 dict_str = sensorget.get_json_dict()
 print("Str:\t" + dict_str)
 
-ss=SensorSubsystem(5)
+ss=SensorSubsystem(thread_id=5)
 ss.start()
 time.sleep(5)
 
