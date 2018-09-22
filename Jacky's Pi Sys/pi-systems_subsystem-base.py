@@ -21,8 +21,7 @@ class Subsystem(ABC):
 
     def __init__(self, thread_id, name=None, add_to_pool=True):
         if thread_id is None:
-            #raise NameError("Subsystem parameter thread_id is not defined!")
-            self.thread_id = random.seed(int(time.time()))
+            raise NameError("Subsystem parameter thread_id is not defined!")
 
         self.name = name if name is not None else self.__class__.__name__
         self.thread = None
