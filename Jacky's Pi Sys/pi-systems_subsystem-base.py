@@ -15,12 +15,12 @@ Param: name - The thread's unique name
 Param: thread_id - The thread's unique ID that will be used to reference it
 Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool
 """
-class Subsystem(ABC):
-    
 
+
+class Subsystem(ABC):
     def __init__(self, thread_id, name=None, add_to_pool=True):
         if thread_id is None:
-            raise NameError("Subsystem parameter thread_id is not defined!")
+            raise ValueError("Subsystem parameter thread_id is not defined!")
 
         self.name = name if name is not None else self.__class__.__name__
         self.thread = None
@@ -33,10 +33,10 @@ class Subsystem(ABC):
 
         print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
 
-                
+
     def start(self):
         if self.thread is None:
-            self.thread = SubsystemThread(self)
+            self.thread = Subsystem.SubsystemThread(self)
         
         print("Subsystem starting:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
         self.thread.start() 
@@ -62,22 +62,23 @@ class Subsystem(ABC):
     #     with self.thread.lock:
     #         async_method()
 
+    class SubsystemThread(threading.Thread):
+        def __init__(self, subsystem): 
+            super().__init__()
 
-class SubsystemThread(threading.Thread):
-
-
-    def __init__(self, subsystem): 
-        super().__init__()
-
-        self.subsystem = subsystem
-        self.lock = threading.Lock()
-        self.subsystem.running = True
+            self.subsystem = subsystem
+            self.lock = threading.Lock()
+            self.subsystem.running = True
 
 
-    def run(self):
-        self.subsystem.run()
+        def run(self):
+            self.subsystem.run()
 
 
+"""
+SerialUser class enables the subsystem to use serial methods. This allows direct data transfer
+between arduino and pi.
+"""
 class SerialUser():
 
     def __init__(self, address):

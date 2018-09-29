@@ -169,7 +169,7 @@ void poll_all(void){
     String p = format_for_transmission(pressure,transmission_size);
     String h = format_for_transmission(humidity,transmission_size);
 
-    send_string = "{\"CO2\":\"" + c +"\",\"O2\":\""+ o +"\",\"Temperature\":\""+ t +"\",\"Pressure\":\""+p+"\",\"Humidity\":\"" + h + "\"}";
+    send_string = "{\"CO2\":\"" + c +"\",\"O2\":\""+ o +"\",\"temperature\":\""+ t +"\",\"pressure\":\""+p+"\",\"humidity\":\"" + h + "\"}";
     //Serial.println(send_string);
     send_length = send_string.length();     //This value is 64
     Serial.println(send_length);

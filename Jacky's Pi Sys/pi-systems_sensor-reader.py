@@ -2,23 +2,22 @@ import importlib
 import RPi.GPIO as gpio
 import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
-# sensorget = importlib.import_module('get_arduino_sensor')
 
-try:
-    import serial
-except ModuleNotFoundError:
-    print("Could not import serial.")
-
+import serial
 import json
+from collections import namedtuple
     
-# JSON raspberry pi data reader code, take serial data from python
 
-class SensorSubsystem(subsys.Subsystem, subsys.SerialUser):
+SensorDataSet = namedtuple("SensorDataSet", "CO2 O2 temperature humidity pressure")
+
+
+class SensorSubsystem(subsys.Subsystem, subsys.SerialUser):    
     
-    __sensor_data = {}
     
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id)
+
+        self.sensor_data = SensorDataSet(0,0,0,0,0)
 
 
     def run(self):
@@ -28,33 +27,30 @@ class SensorSubsystem(subsys.Subsystem, subsys.SerialUser):
             time.sleep(2)
 
 
-    def get_data(self, string_name=None):
-        if string_name is None:
-            for key in self.__sensor_data:
-                self.__sensor_data[key] = float(self.__sensor_data[key])  #int to double
-            return self.__sensor_data
-        else:
-            return float(self.__sensor_data[string_name])
-    
-
     def __update_sensor_data(self):
         try:    
-            # sensor_json = sensorget.get_json_dict()
-            sensor_json = self.get_json_dict()
-            if sensor_json:
-                self.__sensor_data = json.loads(sensor_json)
+            sensor_json = json.loads(self.get_json_dict())
         except ValueError as ve:
             print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
         except Exception as e:
             print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
 
+        self.sensor_data = SensorDataSet(
+            CO2=sensor_json.CO2,
+            O2=sensor_json.O2,
+            temperature=sensor_json.temperature,
+            humidity=sensor_json.humidity,
+            pressure=sensor_json.pressure
+        )
+
 
     def error_check(self):
-        CO2 = self.get_data('CO2')
-        O2 = self.get_data('O2')
-        TEMP = self.get_data('Temperature')
-        HUM = self.get_data('Humidity')
-        PRESS = self.get_data('Pressure')
+        with self.thread.lock:
+            CO2 = self.sensor_data.CO2
+            O2 = self.sensor_data.O2
+            TEMP = self.sensor_data.temperature
+            HUM = self.sensor_data.humidity
+            PRESS = self.sensor_data.pressure
 
         if(15 < O2 < 25):
             print("O2 is nominal")
