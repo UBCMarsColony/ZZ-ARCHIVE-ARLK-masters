@@ -41,12 +41,13 @@ The subsystem can be created and run as follows:
     mySubsys.start()
     mySubsys.stop()
     
-If you want to access some data that is modified from within the thread, you should perform this with the `run_method_async(myMethod)` function. If you do not, the program may crash due to a sync error.
+If you want to access some data that is modified from within the thread, wrap the getter statment in `with mySubsys.thread.lock:`. If you do not, the program may crash due to a sync error.
     
     def get_some_data():
         # Get the data
 
-    mySubsys.run_method_async(get_some_data)
+    with mySubsys.thread.lock:
+        get_some_data()
 
 
 </details>

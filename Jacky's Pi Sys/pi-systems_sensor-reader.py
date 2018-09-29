@@ -77,9 +77,11 @@ if __name__ == "__main__":
     time.sleep(5)
 
     for i in range(10):
-        t = ss.run_method_async(ss.get_data)
-        print(t)
-        t = ss.srun_method_async(lambda: ss.get_data("O2"))
-        print(t)
+        with ss.thread.lock:
+            t = ss.get_data()
+            print(t)
+            t = ss.get_data("O2")
+            print(t)
+        
         time.sleep(2)
     ss.stop()

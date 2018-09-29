@@ -55,12 +55,12 @@ class Subsystem(ABC):
     def run(self):
         pass
 
-    """
-    Locks the thread while running the method. Useful when accessing data that is modified by the thread.
-    """
-    def run_method_async(self, async_method):
-        with self.thread.lock:
-            async_method()
+    # """
+    # Locks the thread while running the method. Useful when accessing data that is modified by the thread.
+    # """
+    # def get_threadsafe(self, async_method):
+    #     with self.thread.lock:
+    #         async_method()
 
 
 class SubsystemThread(threading.Thread):
