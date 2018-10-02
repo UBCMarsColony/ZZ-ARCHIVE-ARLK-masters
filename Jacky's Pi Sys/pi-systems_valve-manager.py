@@ -13,25 +13,40 @@ try:
 except ImportError:
     print("Could not find the GPIO library. Are you on a Pi machine?")
 
+from collections import namedtuple
+
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
+
+Valve = namedtuple("Valve", "state port")
+
+# TODO Change field names (param 2) to something more obvious (ie ColonyValve)
+ValveState = namedtuple("ValveState", "v1 v2 v3")
+
+
 class ValveManager(subsys.Subsystem):
+
+    __valves = {
+        "Valve1": Valve(state=0, port=23),
+        "Valve2": Valve(state=0, port=24)
+        "Valve3": Valve(state=0, port=25)
+    }
+    
 
     #Standard states: 
     #init = initialization, eafc = enter airlock from colony, emfa = enter mars from airlock, 
     #eafm = enter airlock from mars, ecfa = enter colony from airlock
-    _std_state = {
-        "open": (1, 1, 1),
-        "close":(0,0,0),
-        "init":(1,0,0), 
-        "eafc":(0,1,0), 
-        "emfa":(0,0,1), 
-        "eafm":(0,0,1), 
-        "ecfa":(0,1,0)
+    __std_state = {
+        "open": ValveState(1, 1, 1),
+        "close": ValveState(0,0,0),
+        "init": ValveState(1,0,0), 
+        "eafc": ValveState(0,1,0), 
+        "emfa": ValveState(0,0,1), 
+        "eafm": ValveState(0,0,1), 
+        "ecfa": ValveState(0,1,0)
     }
 
-    _valve_ports = (23,24,25)
 
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id)
@@ -68,3 +83,4 @@ class ValveManager(subsys.Subsystem):
             
         else:
             print("Invalid valve state entered in ValveManager - Should be a tuple of length %i" % (len(_valve_ports)))
+
