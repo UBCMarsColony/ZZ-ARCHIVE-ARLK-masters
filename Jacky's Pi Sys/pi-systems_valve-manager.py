@@ -60,10 +60,10 @@ class ValveManager(subsys.Subsystem):
             if self.next_state is not None:
                 
                 #If there is a new state, apply it
-                for i in range(len(ValveManager._valve_ports)):
+                for i in range(len(ValveManager._valves)):
                 
                     #Write to each GPIO port to set the valve state
-                    gpio.output(ValveManager._valve_ports[i], ValveManager.next_state[i])
+                    gpio.output(ValveManager._valves[i], ValveManager.next_state[i])
                 
                 #Reset the valve state so this doesn't run again
                 self.next_state = None
@@ -71,7 +71,7 @@ class ValveManager(subsys.Subsystem):
     
     def request_new_state(self, new_state):
         #Check that new_state is a tuple, is a valid length, and has all valid entries
-        if isinstance(new_state, tuple) and len(new_state) == len(ValveManager._valve_ports):
+        if isinstance(new_state, tuple) and len(new_state) == len(ValveManager._valves):
             for state in new_state:
                 if not isinstance(state, int) or (state == 1 or state == 0):
                     print("Invalid entry in new valve state in ValveManager")
@@ -80,5 +80,5 @@ class ValveManager(subsys.Subsystem):
             self.next_state = new_state
             
         else:
-            print("Invalid valve state entered in ValveManager - Should be a tuple of length %i" % (len(_valve_ports)))
+            print("Invalid valve state entered in ValveManager - Should be a tuple of length %i" % (len(_valves)))
 
