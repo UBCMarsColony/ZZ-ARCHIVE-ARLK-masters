@@ -54,7 +54,7 @@ class ValveManager(subsys.Subsystem):
         self.next_state = None
     
     #Task to run in a seperate thread
-    def run(self):
+    def loop(self):
         while self.running:
         
             # Check if a new valve state has been requested

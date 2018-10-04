@@ -52,7 +52,7 @@ class Subsystem(ABC):
     Contains the code which will be run during the threads life.
     """
     @abstractmethod
-    def run(self):
+    def loop(self):
         pass
 
     # """

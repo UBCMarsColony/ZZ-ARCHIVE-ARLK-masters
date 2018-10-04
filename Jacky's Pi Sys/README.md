@@ -22,7 +22,7 @@ To get started, here's a template for creating a new subsystem:
             # Run initialization here
             
             
-        def run(self):
+        def loop(self):
             # Subsystem's main loop code.
 
             # If you want to perform an action that modifies 
@@ -96,12 +96,12 @@ Then, you can define your child subsystem:
 Note: You don't have to include the `__init__` constructor call in your subsystem code. If you choose to do this, the superclass constructor is implicitly called instead.
 
 ### Define the Main Task
-Each subsystem can run a task on a separate thread. The code to be run is defined in the `run` method - an abstract method in the subsystem base class. **You must make sure to implement this method, or the subsystem will not compile.** If the code should loop, use a `while` loop with `self.running` as its conditional (this enables automatic cleanup, as opposed to `while True`, which causes issues). The method is defined within the child subsystem itself:
+Each subsystem can run a task on a separate thread. The code to be run is defined in the `loop` method - an abstract method in the subsystem base class. **You must make sure to implement this method, or the subsystem will not compile.** If the code should loop, use a `while` loop with `self.running` as its conditional (this enables automatic cleanup, as opposed to `while True`, which causes issues). The method is defined within the child subsystem itself:
 
     class MyServiceThread(subsys.Subsystem):
     #...
     
-    def run(self):
+    def loop(self):
         while self.running:
             # Your code here
 

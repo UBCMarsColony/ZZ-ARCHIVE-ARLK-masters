@@ -5,7 +5,7 @@ class DoorSubsystem(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id)
 
-    def run(self):
+    def loop(self):
         
         #WARNING: MASS PSEUDOCODE
         #-------------------------

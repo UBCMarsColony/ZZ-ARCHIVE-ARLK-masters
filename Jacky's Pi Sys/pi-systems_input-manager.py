@@ -8,7 +8,7 @@ class InputManager(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id)
 
-    def run(self):
+    def loop(self):
         while self.is_running():
             print(str(check_buttons()))
             
@@ -20,7 +20,7 @@ class InputManager(subsys.Subsystem):
         
         return None
         
-        
+
     def send_instructions(self):
         #Implement me
         pass

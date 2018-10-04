@@ -39,7 +39,7 @@ class LightingSubsystem(subsys.Subsystem):
         self.gpio.setup(lp.get_pin("DOOR_COLN1"), self.gpio.OUT)        
         
         
-    def thread_task(self):
+    def loop(self):
         while self.running:
             if self._sensor_dict = None:
                 light_plan = generate_light_plan()
