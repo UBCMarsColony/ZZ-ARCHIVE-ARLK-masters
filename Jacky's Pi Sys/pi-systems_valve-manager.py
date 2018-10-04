@@ -54,21 +54,19 @@ class ValveManager(subsys.Subsystem):
         self.next_state = None
     
     #Task to run in a seperate thread
-    def loop(self):
-        while self.running:
-        
-            # Check if a new valve state has been requested
-            with self.thread.lock:
-                if self.next_state is not None:
-                    
-                    #If there is a new state, apply it
-                    for i in range(len(ValveManager._valve_ports)):
-                    
-                        #Write to each GPIO port to set the valve state
-                        gpio.output(ValveManager._valve_ports[i], ValveManager.next_state[i])
-                    
-                    #Reset the valve state so this doesn't run again
-                    self.next_state = None
+    def loop(self):        
+        # Check if a new valve state has been requested
+        with self.thread.lock:
+            if self.next_state is not None:
+                
+                #If there is a new state, apply it
+                for i in range(len(ValveManager._valve_ports)):
+                
+                    #Write to each GPIO port to set the valve state
+                    gpio.output(ValveManager._valve_ports[i], ValveManager.next_state[i])
+                
+                #Reset the valve state so this doesn't run again
+                self.next_state = None
         
     
     def request_new_state(self, new_state):

@@ -40,12 +40,11 @@ class LightingSubsystem(subsys.Subsystem):
         
         
     def loop(self):
-        while self.running:
-            if self._sensor_dict = None:
-                light_plan = generate_light_plan()
-                update_lights(light_plan)
-            time.sleep(2)
-        
+        if self._sensor_dict = None:
+            light_plan = generate_light_plan()
+            update_lights(light_plan)
+        time.sleep(2)
+
 
     def generate_light_plan():
         light_plan = LightPlan()

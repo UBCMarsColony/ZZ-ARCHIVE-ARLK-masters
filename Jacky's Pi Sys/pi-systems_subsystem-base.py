@@ -72,7 +72,8 @@ class Subsystem(ABC):
 
 
         def run(self):
-            self.subsystem.run()
+            while self.subsystem.running:
+                self.subsystem.run()
 
 
 """

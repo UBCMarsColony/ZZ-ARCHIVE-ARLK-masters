@@ -21,10 +21,9 @@ class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):
 
 
     def loop(self):
-        while self.running:
-            with self.thread.lock:
-                self.__update_sensor_data()
-            time.sleep(2)
+        with self.thread.lock:
+            self.__update_sensor_data()
+        time.sleep(2)
 
 
     def __update_sensor_data(self):

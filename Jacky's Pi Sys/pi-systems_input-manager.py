@@ -9,8 +9,7 @@ class InputManager(subsys.Subsystem):
         super().__init__(name=name, thread_id=thread_id)
 
     def loop(self):
-        while self.is_running():
-            print(str(check_buttons()))
+        print(str(check_buttons()))
             
         
     def check_buttons(self):
