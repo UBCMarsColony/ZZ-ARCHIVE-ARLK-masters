@@ -11,7 +11,7 @@ from collections import namedtuple
 SensorDataSet = namedtuple("SensorDataSet", "CO2 O2 temperature humidity pressure")
 
 
-class SensorSubsystem(subsys.Subsystem, subsys.SerialUser):    
+class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):    
     
     
     def __init__(self, name=None, thread_id=None):

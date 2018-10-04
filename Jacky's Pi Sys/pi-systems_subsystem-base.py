@@ -76,10 +76,10 @@ class Subsystem(ABC):
 
 
 """
-SerialUser class enables the subsystem to use serial methods. This allows direct data transfer
+SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
 between arduino and pi.
 """
-class SerialUser():
+class SerialMixin:
 
     def __init__(self, address):
         # for RPI version 1, use “bus = smbus.SMBus(0)”
@@ -89,7 +89,7 @@ class SerialUser():
         self.slave_address = 0x0A
 
 
-    def readNumber():
+    def read_number():
         return self.bus.read_byte(self.slave_address)
         # number = bus.read_byte_data(slave_address, 1)
         
@@ -100,7 +100,7 @@ class SerialUser():
         # use chr(byte b) to turn it to char
 
         for index in range(93):
-            num = readNumber()
+            num = self.read_number()
             if num:
                 return_str.append(chr(num))
 
