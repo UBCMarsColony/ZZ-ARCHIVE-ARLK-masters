@@ -13,39 +13,52 @@ More information on this is included in the README file in this directory.
 
 Param: name - The thread's unique name
 Param: thread_id - The thread's unique ID that will be used to reference it
-Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool
+Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool. Default: true
 """
 
 
 class Subsystem(ABC):
-    def __init__(self, thread_id, name=None, add_to_pool=True):
+    def __init__(self, thread_id, name=self.__class__.__name__, *, loop_delay_ms=750):
         if thread_id is None:
-            raise ValueError("Subsystem parameter thread_id is not defined!")
+            pass
+            #raise TypeError("Subsystem parameter thread_id is not defined!")
 
-        self.name = name if name is not None else self.__class__.__name__
-        self.thread = None
-        self.thread_id = thread_id
+        if name is None:
+            raise TypeError("Cannot pass None as value for subsystem name!")
+
+        self.name = name
+        
         self.running = False
+        self.loop_delay_ms = loop_delay_ms
+        self.thread = Subsystem.SubsystemThread(self)
+        self.thread_id = thread_id
             
-        # By default, add the subsystem to the pool.
-        if add_to_pool is True:
-            subsys_pool.add(self)
+        subsys_pool.add(self)
 
         print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
 
 
+    def __enter__(self):
+        self.thread.lock.acquire()
+        return self
+
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.thread.lock.release()
+
+
     def start(self):
-        if self.thread is None:
-            self.thread = Subsystem.SubsystemThread(self)
-        
-        print("Subsystem starting:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        if self.running is True:
+            raise threading.ThreadError("Tried starting a thread that was still running!")
+
         self.thread.start() 
         self.running = True
+        print("Subsystem started: \n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
         
 
     def stop(self):
-        self.running = False
         print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        self.running = False
         self.thread.join()
     
     """
@@ -67,13 +80,18 @@ class Subsystem(ABC):
             super().__init__()
 
             self.subsystem = subsystem
+            self.setName(self.subsystem.name)
             self.lock = threading.Lock()
             self.subsystem.running = True
 
 
         def run(self):
+            last_runtime = time.time()
+
             while self.subsystem.running:
-                self.subsystem.run()
+                # Time.time() uses seconds, so divide loop_delay_ms by 1000 to convert to seconds.
+                if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
+                    self.subsystem.loop()
 
 
 """

@@ -56,7 +56,7 @@ class ValveManager(subsys.Subsystem):
     #Task to run in a seperate thread
     def loop(self):        
         # Check if a new valve state has been requested
-        with self.thread.lock:
+        with self:
             if self.next_state is not None:
                 
                 #If there is a new state, apply it

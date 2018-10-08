@@ -15,15 +15,14 @@ class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):
     
     
     def __init__(self, name=None, thread_id=None):
-        super().__init__(name=name, thread_id=thread_id)
+        super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
         self.sensor_data = SensorDataSet(0,0,0,0,0)
 
 
     def loop(self):
-        with self.thread.lock:
+        with self:
             self.__update_sensor_data()
-        time.sleep(2)
 
 
     def __update_sensor_data(self):
