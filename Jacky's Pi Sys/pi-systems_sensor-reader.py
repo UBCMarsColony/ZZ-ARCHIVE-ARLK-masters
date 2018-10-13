@@ -26,20 +26,27 @@ class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):
 
 
     def __update_sensor_data(self):
-        try:    
-            sensor_json = json.loads(self.get_json_dict())
+        try:
+            sensor_json = json.loads(
+                self.get_json_dict()
+            )
         except ValueError as ve:
-            print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
+            print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
+        except json.JSONDecodeError as jde:
+            print("JSON Object could not be decoded.\n\tStack Trace: " + str(ve) + "\n\tStopping update")
+            return
         except Exception as e:
             print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
-
-        self.sensor_data = SensorDataSet(
-            CO2=sensor_json.CO2,
-            O2=sensor_json.O2,
-            temperature=sensor_json.temperature,
-            humidity=sensor_json.humidity,
-            pressure=sensor_json.pressure
-        )
+            return
+            
+        with self:
+            self.sensor_data = SensorDataSet(
+                CO2=sensor_json.CO2,
+                O2=sensor_json.O2,
+                temperature=sensor_json.temperature,
+                humidity=sensor_json.humidity,
+                pressure=sensor_json.pressure
+            )
 
 
     def error_check(self):

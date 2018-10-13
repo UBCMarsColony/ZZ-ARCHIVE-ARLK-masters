@@ -95,13 +95,13 @@ SerialMixin class enables the subsystem to use serial methods. This allows direc
 between arduino and pi.
 """
 class SerialMixin:
+    # Static bus object
+    bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
+    
 
     def __init__(self, address):
-        # for RPI version 1, use “bus = smbus.SMBus(0)”
-        self.bus = smbus.SMBus(1)
-    
         # This is the address we setup in the Arduino Program
-        self.slave_address = address or 0x0A
+        self.slave_address = address or 0x0A # May want to remove default in future
 
 
 # WRITING
