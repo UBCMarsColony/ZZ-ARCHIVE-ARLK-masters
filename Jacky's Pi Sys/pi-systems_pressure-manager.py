@@ -27,14 +27,6 @@ class Valve:
         self.port = port
 
 
-    def open(self):
-        # stub...
-
-    
-    def close(self):
-        # stub...
-
-
 class PressureManager(subsys.Subsystem):    
 
     __valves = {
@@ -50,7 +42,7 @@ class PressureManager(subsys.Subsystem):
     #eafm = enter airlock from mars, ecfa = enter colony from airlock
     ValveState = namedtuple("ValveState", PressureManager.__valves.keys())
     __std_state = {
-        state1: ValveState(
+        "state1": ValveState(
             valve1=Valve.State.Open, 
             valve2=Valve.State.Closed, 
             valve3=Valve.State.Open
@@ -69,6 +61,8 @@ class PressureManager(subsys.Subsystem):
     def loop(self):        
         # Check if a new valve state has been requested
         with self:
+
+            # TODO Also need to check if a current state is being applied
             if self.next_state is not None:
                 
                 #If there is a new state, apply it

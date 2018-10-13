@@ -10,10 +10,6 @@ The purpose of the Subsystem class is to ease task management.
 In general, we would like the airlock tasks to be split up into single,
 maintainable components. This enables better subsystem management in the future.
 More information on this is included in the README file in this directory.
-
-Param: name - The thread's unique name
-Param: thread_id - The thread's unique ID that will be used to reference it
-Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool. Default: true
 """
 
 
