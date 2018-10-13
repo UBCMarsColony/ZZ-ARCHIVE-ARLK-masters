@@ -16,7 +16,9 @@ TAG = "pi-systems_lighting_lights-manager"
 
 from random import *
 import sys
+import gpio
 import time
+from collections import namedtuple
 import importlib
     
 # LightScheme library is imported with importlib due 
@@ -26,49 +28,40 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 
 
 class LightingSubsystem(subsys.Subsystem):
-    def __init__(self, gpio, name=None, threadID=None):
-        super().__init__(gpio, name=name, threadID=threadID)
+
+    light_pins = (namedtuple("LightPins", "overhead door_mars door_coln"))(
+        # Random values
+        overhead=23,
+        door_mars=24,
+        door_colony=25
+    )
+
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name=name, thread_id=thread_id)
         
         self._sensor_dict = None
 
         
     def register_pins(self):
-        self.gpio.setup(lp.get_pin("OVERHEAD_1"), self.gpio.OUT)
-        self.gpio.setup(lp.get_pin("OVERHEAD_2"), self.gpio.OUT)
-        self.gpio.setup(lp.get_pin("DOOR_MARS1"), self.gpio.OUT)
-        self.gpio.setup(lp.get_pin("DOOR_COLN1"), self.gpio.OUT)        
+        for pin in self.light_pins:
+            gpio.setup(pin, gpio.OUT)
         
-        
-    def thread_task(self):
-        while self.is_running():
-            if self._sensor_dict = None:
-                light_plan = generate_light_plan()
-                update_lights(light_plan)
-            time.sleep(2)
-        
+    def loop(self):
+        if self._sensor_dict = None:
+            light_plan = generate_light_plan()
+            update_lights(light_plan)
+        time.sleep(2)   
 
-    def generate_light_plan():
+
+    def generate_light_plan(self) -> LightPlan:
         light_plan = LightPlan()
-        # door_data = get door data
-        door_colony = 0
-        door_mars = 0
-        
-        if pir_data: #or GPIO.input(gas):
-            light_plan["OVERHEAD_1"] = 1
-            light_plan["OVERHEAD_2"] = 1
 
-        elif door_colony and not door_mars:
-            light_plan["OVERHEAD_1"] = 1
-            light_plan["OVERHEAD_2"] = 1
-            light_plan["DOOR_COLN1"] = 1
-
-        elif door_mars and not door_colony:
-            light_plan["OVERHEAD_1"] = 1
-            light_plan["OVERHEAD_2"] = 1
-            light_plan["DOOR_MARS1"] = 1
-
-        #elif GPIO.input(lights):
-            #lights_on = GPIO.wait_for_edge(pir, GPIO_RISING, timeout=30000)
+        #IMPLEMENT
+        if "somecondition":
+            light_plan[self.light_pins.overhead] = 1
+            light_plan[self.light_pins.door_mars] = 0
+            light_plan[self.light_pins.door_colony] = 0
+        "and so on..."
         
         return light_plan
 
@@ -76,54 +69,33 @@ class LightingSubsystem(subsys.Subsystem):
     def update_lights(light_plan):
         if not isinstance(light_plan, LightPlan):
             raise TypeError("ERROR: The parameter <light_plan> has type " + 
-                str(type(light_plan))[7 : len(str(type(light_plan))) - 2] + 
-                " when it should be of type LightPlan!")
-        print(str(light_plan))
+                str(type(light_plan)) + " when it should be of type LightPlan!")
         
-        for key in lp.get_keys():
-            GPIO.output(lp.get_pin(key), light_plan[key])
-            
-        return 0
-        
-        
-    def input_data(self, sensor_dict):
-        self._sensor_dict = sensor_dict
-    
-    
-#Can be used for precision lighting later on. Currently not in use
-class LightData():
-    def __init__(self):
-        self.red = 0
-        self.blue = 0
-        self.green = 0
-        self.alpha = 0
-        self.brightness = 0
+        with self:
+            for pin in self.light_pins:
+                GPIO.output(pin, light_plan[pin])
 
 
 # The LightPlan dict object contains data about how to turn lights on and off.
 # It is limited to keys defined in the _keys variable
+
+# TODO Rework this whole class to take valid pins as a parameter. This will allow easier testing.
+# This class doesn't work in its current state - make sure to update it.
 class LightPlan(dict):
-    
-    # ##############--PLEASE NOTE--###############
-    #
-    # ALL VALID LIGHT SCHEME KEYS MUST BE INCLUDED IN THE STATIC ARRAY BELOW
-    #
-    # ############################################    
-    _keys = {"OVERHEAD_1":27, "OVERHEAD_2":22, "DOOR_COLN1":17, "DOOR_MARS1":19}
     
     #LightPlan constructor
     def __init__(self):
-        for key in LightPlan._keys:
+        for key in LightPlan.__keys:
             self[key] = 0
             
     #Modifies default dict element assignment to ensure the specified key is valid
     def __setitem__(self, key, val):
-        if key not in LightPlan._keys:
+        if key not in LightPlan.__keys:
             raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
         dict.__setitem__(self, key, val)
     
     def __getitem__(self, key):
-        if key not in LightPlan._keys:
+        if key not in LightPlan.__keys:
             raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
         return dict.__getitem__(self, val)
 	
@@ -131,11 +103,11 @@ class LightPlan(dict):
     #Returns the index associated with the key, or raises an error if the key is invalid
     @staticmethod
     def get_pin(self, key):
-        if key not in LightPlan._keys:
+        if key not in LightPlan.__keys:
             raise KeyError("LightPlan key " + str(key) + " is unregistered, so it couldn't be used.")
-        return LightPlan._keys[key]
+        return LightPlan.__keys[key]
 	
     #Return the list of valid keys
     @staticmethod
     def get_keys():
-        return LightPlan._keys
+        return LightPlan.__keys

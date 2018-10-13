@@ -1,77 +1,132 @@
 import threading
 from abc import ABC, abstractmethod
 import importlib
+import smbus
+import time
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
 """
-The purpose of the Subsystem class is to ease system thread management.
-In general, we would like airlock subsystems to function under a similar
-command flow. This enables better subsystem management in the future.
+The purpose of the Subsystem class is to ease task management.
+In general, we would like the airlock tasks to be split up into single,
+maintainable components. This enables better subsystem management in the future.
 More information on this is included in the README file in this directory.
 
-Param: gpio - The RPi.GPIO reference that will be used by the subsystem to control pins
 Param: name - The thread's unique name
-Param: threadID - The thread's unique ID that will be used to reference it
-Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool
+Param: thread_id - The thread's unique ID that will be used to reference it
+Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool. Default: true
 """
+
+
 class Subsystem(ABC):
+    def __init__(self, thread_id, name=self.__class__.__name__, *, loop_delay_ms=750):
+        if thread_id is None:
+            pass
+            #raise TypeError("Subsystem parameter thread_id is not defined!")
 
-
-    def __init__(self, gpio, name=None, threadID=None, add_to_pool = True):
-        if threadID is None:
-            threadID = 5
-            
         if name is None:
-            name = "Thread_%s" + str(threadID)
-            
-        self.is_running = False
-        self.gpio = gpio
+            raise TypeError("Cannot pass None as value for subsystem name!")
+
         self.name = name
-        self.subsystem_thread = SubsystemThread(self, threadID, name)
-        print("Initialized new subsystem:\n\tName=" + str(name) + "\n\tID=" + str(threadID))
         
-        # By default, add the subsystem to the pool.
-        if add_to_pool is True:
-            subsys_pool.add(self)
-                
-                
+        self.running = False
+        self.loop_delay_ms = loop_delay_ms
+        self.thread = Subsystem.SubsystemThread(self)
+        self.thread_id = thread_id
+            
+        subsys_pool.add(self)
+
+        print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+
+
+    def __enter__(self):
+        self.thread.lock.acquire()
+        return self
+
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.thread.lock.release()
+
+
     def start(self):
-        print("STARTING THREAD <" + self.name + ">")
-        self.is_running = True
-        self.subsystem_thread.start() 
+        if self.running is True:
+            raise threading.ThreadError("Tried starting a thread that was still running!")
+
+        self.thread.start() 
+        self.running = True
+        print("Subsystem started: \n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
         
 
-    def join(self):
-        print("JOINING THREAD <" + self.name + ">")
-        self.is_running = False
-        self.subsystem_thread.join()
+    def stop(self):
+        print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        self.running = False
+        self.thread.join()
     
     """
     Contains the code which will be run during the threads life.
     """
     @abstractmethod
-    def thread_task(self):
+    def loop(self):
         pass
-        
+
+    # """
+    # Locks the thread while running the method. Useful when accessing data that is modified by the thread.
+    # """
+    # def get_threadsafe(self, async_method):
+    #     with self.thread.lock:
+    #         async_method()
+
+    class SubsystemThread(threading.Thread):
+        def __init__(self, subsystem): 
+            super().__init__()
+
+            self.subsystem = subsystem
+            self.setName(self.subsystem.name)
+            self.lock = threading.Lock()
+            self.subsystem.running = True
+
+
+        def run(self):
+            last_runtime = time.time()
+
+            while self.subsystem.running:
+                # Time.time() uses seconds, so divide loop_delay_ms by 1000 to convert to seconds.
+                if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
+                    self.subsystem.loop()
+
+
+"""
+SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
+between arduino and pi.
+"""
+class SerialMixin:
+
+    def __init__(self, address):
+        # for RPI version 1, use “bus = smbus.SMBus(0)”
+        self.bus = smbus.SMBus(1)
     
-    # A decorator for ensuring the thread is active
-    def run_only_if_active(func):
-        def wrapper(self):
-            if self.is_running:
-                func(self)
-            
-        return wrapper
+        # This is the address we setup in the Arduino Program
+        self.slave_address = 0x0A
 
 
-class SubsystemThread(threading.Thread):
-    def __init__(self, subsystem, threadID, name): 
-        threading.Thread.__init__(self)
-        self.subsystem = subsystem
-        self.threadID = threadID
-        self.name = name
+    def read_number():
+        return self.bus.read_byte(self.slave_address)
+        # number = bus.read_byte_data(slave_address, 1)
         
-    def run(self):
-        self.subsystem.isRunning = True
-        print("Subsystem <" + self.name + "> started as thread: <" + str(self.threadID) + ">\n")
-        
-        self.subsystem.thread_task()
+
+    def get_json_dict():
+        return_str = []
+        # use ord(char a) to turn it to byte
+        # use chr(byte b) to turn it to char
+
+        for index in range(93):
+            num = self.read_number()
+            if num:
+                return_str.append(chr(num))
+
+        str_ret = ''.join(return_str)
+        return str_ret
+
+    #t = get_json_dict()
+    #import json
+    #d = json.loads(t)
+    #print(d)

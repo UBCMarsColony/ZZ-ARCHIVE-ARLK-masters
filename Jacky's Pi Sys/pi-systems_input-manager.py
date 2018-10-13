@@ -5,9 +5,11 @@ class InputManager(subsys.Subsystem):
     
     _input_pins = [12,13,14,15] #TODO actually assign proper pins
     
-    def thread_task(self):
-        while self.is_running():
-            print(str(check_buttons()))
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name=name, thread_id=thread_id)
+
+    def loop(self):
+        print(str(self.check_buttons()))
             
         
     def check_buttons(self):
@@ -17,7 +19,7 @@ class InputManager(subsys.Subsystem):
         
         return None
         
-        
+
     def send_instructions(self):
         #Implement me
         pass

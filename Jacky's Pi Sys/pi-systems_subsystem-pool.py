@@ -1,3 +1,6 @@
+import importlib
+subsystem = importlib.import_module('pi-systems_subsystem-base')
+
 
 # This variable is a dictionary that contains all subsystems.
 # Subsystems are automatically placed in here upon creation
@@ -10,10 +13,17 @@ def add(subsys, overwrite=False):
     else:
         print("WARNING: Key <" + subsys.name + "> already exists in the subsystem pool. Entry skipped.")
 
-        
+
+def remove(subsys):
+    if isinstance(subsys, subsystem.Subsystem):
+        subsys_pool.pop(subsys.name)
+    else if :
+        subsys_pool.pop()
+
+
 def get_all():
     return subsys_pool
-        
+
         
 def stop_all():
     print("Closing all subsystems.")

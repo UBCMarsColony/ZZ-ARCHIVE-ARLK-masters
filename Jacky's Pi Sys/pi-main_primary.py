@@ -31,21 +31,21 @@ def begin(runtime_params):
     # TODO Need to rework this. Remove global calls, make it reference the subsystem pool instead,
     # as all the systems will already be stored there.
     print("Initializing Sensors...\n") 
-    sensors = sensor_ss.SensorSubsystem(gpio, "sensors", 3)
+    sensors = sensor_ss.SensorSubsystem("sensors", 3)
     sensors.start()
     print("Sensors Initialized!\n")
     
     print("Initializing UI...\n")
-    input = input_ss.InputManager(gpio, "input", 5)
+    input = input_ss.InputManager("input", 5)
     input.start()
     
     print("Initializing Valves...\n")
-    valves = valve_ss.ValveManager(gpio, "valves", 6)
+    valves = valve_ss.ValveManager("valves", 6)
     valves.start()
     #subsystems["valves"].request_new_state(valve_ss.ValveManager.std_state["init"])
     
     print("Initializing Lights...\n")
-    lights = light_ss.LightingSubsystem(gpio, "lights", 4)
+    lights = light_ss.LightingSubsystem("lights", 4)
     lights.start() 
     
     print("Beginning Main Loop Sequence...\n")
