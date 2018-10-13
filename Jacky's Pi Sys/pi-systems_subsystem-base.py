@@ -117,6 +117,31 @@ class SerialMixin:
             time.sleep(1)
 
 
+    def generate_protocol_message(*, action=-1, procedure=-1, data=None, is_response=False):
+        # Abstract this later on
+        high_bit = 1<<7
+        max_value = high_bit - 1
+
+        if action > max_value
+            raise ValueError("action must not use the signing bit!")
+        if is_response:
+            action += high_bit
+        
+        if procedure > max_value:
+            raise ValueError("procedure must not use the signing bit!")
+        if data is not None:
+            procedure += high_bit
+
+        protocol_message = {
+            "action": action,
+            "procedure": procedure
+        }
+        if data is not None:
+            protocol_message["data"] = data
+        
+        return protocol_message
+
+
 # READING
     def read_number():
         return self.bus.read_byte(self.slave_address)

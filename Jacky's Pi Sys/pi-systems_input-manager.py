@@ -1,25 +1,22 @@
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
+import json
 
-class InputManager(subsys.Subsystem):
-    
-    _input_pins = [12,13,14,15] #TODO actually assign proper pins
+class InputManager(subsys.SerialMixin, subsys.Subsystem):
     
     def __init__(self, name=None, thread_id=None):
-        super().__init__(name=name, thread_id=thread_id)
+        super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
     def loop(self):
-        print(str(self.check_buttons()))
-            
+        self.check_buttons()    
         
     def check_buttons(self):
-        for button in InputManager._input_pins:
-            if self.gpio.input(pin)
-                return button
-        
-        return None
-        
+        self.write_json_dict(
+           self.generate_protocol_message(
+               action=1 # ExecuteProcedure
+               procedure=1 # CheckButtons
+           )
+        )
 
-    def send_instructions(self):
-        #Implement me
-        pass
+        response = self.read_json_dict()
+        print(response)
