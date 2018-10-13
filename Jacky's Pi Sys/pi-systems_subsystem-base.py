@@ -101,9 +101,23 @@ class SerialMixin:
         self.bus = smbus.SMBus(1)
     
         # This is the address we setup in the Arduino Program
-        self.slave_address = 0x0A
+        self.slave_address = address or 0x0A
 
 
+# WRITING
+    def write_number(value):
+        bus.write_byte(address, value)
+        # bus.write_byte_data(address, 0, value)
+        return -1
+
+
+    def write_json_dict(json_str):
+        for char in json_str:
+            writeNumber(ord(char))
+            time.sleep(1)
+
+
+# READING
     def read_number():
         return self.bus.read_byte(self.slave_address)
         # number = bus.read_byte_data(slave_address, 1)

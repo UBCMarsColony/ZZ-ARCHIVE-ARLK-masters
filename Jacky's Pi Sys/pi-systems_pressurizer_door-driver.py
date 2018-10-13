@@ -38,12 +38,3 @@ class DoorSubsystem(subsys.Subsystem):
                     stop the door
                     run security measures
         close()
-
-
-def runSequence():
-    dThread = DoorThread("Door Thread", 2)
-    dThread.start()
-    
-    dThread.join()
-    #start new thread to open doors
-        #continuously update a state variable accessible anywhere
