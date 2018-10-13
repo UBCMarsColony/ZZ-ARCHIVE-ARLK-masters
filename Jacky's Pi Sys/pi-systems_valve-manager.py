@@ -1,58 +1,70 @@
-"""
-Written By: Thomas Richmond
-Purpose: The valve manager controls all airlock valves. While the thread is running, 
-         a new state can be assigned using request_new_state() and inputting a tuple 
-         of size $num_valves. The next time the thread runs its loop, it will apply
-         this new new state.
-         Valve ports are kept in a tuple so as to work with both for loops and GPIO.
-
-"""
-
 try:
     import RPi.GPIO as gpio
 except ImportError:
     print("Could not find the GPIO library. Are you on a Pi machine?")
 
 from collections import namedtuple
+from enum import Enum, auto
 
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
 
-Valve = namedtuple("Valve", "state port")
+class Valve:
 
-# TODO Change field names (param 2) to something more obvious (ie ColonyValve)
-ValveState = namedtuple("ValveState", "v1 v2 v3")
+    # Integer constant to specify what state the Valve is in.
+    class State(Enum):
+        Closed = 0
+        Open = auto()
+        # Add Enum values if needed
 
 
-class ValveManager(subsys.Subsystem):
+    def __init__(self, port, state):
+        self.state = state or Valve.State.Closed
+
+        if port is None:
+            raise ValueError("Cannot create a Valve with no port reference!")
+        self.port = port
+
+
+    def open(self):
+        # stub...
+
+    
+    def close(self):
+        # stub...
+
+
+class ValveManager(subsys.Subsystem):    
 
     __valves = {
-        "Valve1": Valve(state=0, port=23),
-        "Valve2": Valve(state=0, port=24)
-        "Valve3": Valve(state=0, port=25)
+        # Give valves correct ports and better, clearer names.
+        "valve1": Valve(port=0),
+        "valve2": Valve(port=1),
+        "valve3": Valve(port=2) 
     }
     
-
+    
     #Standard states: 
     #init = initialization, eafc = enter airlock from colony, emfa = enter mars from airlock, 
     #eafm = enter airlock from mars, ecfa = enter colony from airlock
+    ValveState = namedtuple("ValveState", ValveManager.__valves.keys())
     __std_state = {
-        "open": ValveState(1, 1, 1),
-        "close": ValveState(0,0,0),
-        "init": ValveState(1,0,0), 
-        "eafc": ValveState(0,1,0), 
-        "emfa": ValveState(0,0,1), 
-        "eafm": ValveState(0,0,1), 
-        "ecfa": ValveState(0,1,0)
+        state1: ValveState(
+            valve1=Valve.State.Open, 
+            valve2=Valve.State.Closed, 
+            valve3=Valve.State.Open
+        ),
+        # Add standard states based on documentation on Google Drive
     }
 
 
     def __init__(self, name=None, thread_id=None):
-        super().__init__(name=name, thread_id=thread_id)
+        super().__init__(name, thread_id)
         
         self.next_state = None
-    
+
+
     #Task to run in a seperate thread
     def loop(self):        
         # Check if a new valve state has been requested
@@ -60,25 +72,24 @@ class ValveManager(subsys.Subsystem):
             if self.next_state is not None:
                 
                 #If there is a new state, apply it
-                for i in range(len(ValveManager._valves)):
-                
-                    #Write to each GPIO port to set the valve state
-                    gpio.output(ValveManager._valves[i], ValveManager.next_state[i])
-                
+                for valve in self.next_state:
+                    # Do stuff
+                    pass
+
                 #Reset the valve state so this doesn't run again
                 self.next_state = None
         
     
     def request_new_state(self, new_state):
-        #Check that new_state is a tuple, is a valid length, and has all valid entries
-        if isinstance(new_state, tuple) and len(new_state) == len(ValveManager._valves):
-            for state in new_state:
-                if not isinstance(state, int) or (state == 1 or state == 0):
-                    print("Invalid entry in new valve state in ValveManager")
-                    return
-            
+        #Check that new_state is a valid state object and has only valid entries
+        if not CHECK_CONDITIONS:
+            raise RuntimeError("My conditional error 1")
+        
+        for state in new_state:
+            if state not in Valve.State:
+                raise ValueError("State has an invalid entry!")
+        
+        # This should only run so long as all other condiitons pass.
+        with self:
             self.next_state = new_state
-            
-        else:
-            print("Invalid valve state entered in ValveManager - Should be a tuple of length %i" % (len(_valves)))
 
