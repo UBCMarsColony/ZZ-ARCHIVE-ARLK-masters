@@ -21,8 +21,7 @@ class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):
 
 
     def loop(self):
-        with self:
-            self.__update_sensor_data()
+        self.__update_sensor_data()
 
 
     def __update_sensor_data(self):
