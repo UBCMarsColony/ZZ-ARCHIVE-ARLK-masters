@@ -36,13 +36,13 @@ def begin(runtime_params):
     print("Sensors Initialized!\n")
     
     print("Initializing UI...\n")
-    input = input_ss.InputManager("input", 5)
+    input = input_ss.InputSubsystem("input", 5)
     input.start()
     
     print("Initializing Valves...\n")
-    valves = valve_ss.PressureManager("valves", 6)
+    valves = valve_ss.PressureSubsystem("valves", 6)
     valves.start()
-    #subsystems["valves"].request_new_state(valve_ss.PressureManager.std_state["init"])
+    #subsystems["valves"].request_new_state(valve_ss.PressureSubsystem.std_state["init"])
     
     print("Initializing Lights...\n")
     lights = light_ss.LightingSubsystem("lights", 4)
@@ -70,7 +70,7 @@ def loop(runtime_params):
         
         if next_button == 16:
             #This is placeholder code
-            subsystems["valves"].request_new_state(valve_ss.PressureManager.std_state["close"])
+            subsystems["valves"].request_new_state(valve_ss.PressureSubsystem.std_state["close"])
             pass
         
         subsystems["lights"].input_data(data)

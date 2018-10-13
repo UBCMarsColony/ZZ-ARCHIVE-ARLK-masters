@@ -3,7 +3,7 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 class DoorSubsystem(subsys.Subsystem):
 
     def __init__(self, name=None, thread_id=None):
-        super().__init__(name=name, thread_id=thread_id)
+        super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
     def loop(self):
         

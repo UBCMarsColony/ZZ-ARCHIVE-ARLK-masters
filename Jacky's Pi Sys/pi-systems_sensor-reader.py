@@ -26,9 +26,7 @@ class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):
 
     def __update_sensor_data(self):
         try:
-            sensor_json = json.loads(
-                self.get_json_dict()
-            )
+            sensor_json = self.get_json_dict()
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
         except json.JSONDecodeError as jde:

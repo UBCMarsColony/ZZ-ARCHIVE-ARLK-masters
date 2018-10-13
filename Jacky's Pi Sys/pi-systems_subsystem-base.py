@@ -90,6 +90,8 @@ class Subsystem(ABC):
                     self.subsystem.loop()
 
 
+import json
+
 """
 SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
 between arduino and pi.
@@ -111,8 +113,8 @@ class SerialMixin:
         return -1
 
 
-    def write_json_dict(json_str):
-        for char in json_str:
+    def write_json_dict(json_dict):
+        for char in json.dumps(json_dict):
             writeNumber(ord(char))
             time.sleep(1)
 
@@ -159,7 +161,7 @@ class SerialMixin:
                 return_str.append(chr(num))
 
         str_ret = ''.join(return_str)
-        return str_ret
+        return json.loads(str_ret)
 
     #t = get_json_dict()
     #import json

@@ -10,10 +10,10 @@ import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
 
-class PressureManager(subsys.Subsystem):
+class PressureSubsystem(subsys.Subsystem):
     
-    class ValveStates(Enum):
-        EAFC=1 # Enter airlock from colony
+    class Procedure(Enum):
+        Procedure1 = 1
         # and so on...
 
 
