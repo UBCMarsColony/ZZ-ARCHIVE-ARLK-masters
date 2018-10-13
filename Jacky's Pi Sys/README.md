@@ -134,5 +134,5 @@ Intra-modular communication should be done using the standardized protocol, as e
     protocol_message = {
         "action": ActionFlag (1 byte, high bit on = message is a response),
         "procedure": procedureFlag (1 byte, high bit on = data is present),
-        "data": [data1, data2...] (byte array with extra data for the procedure, if needed)
+        "data": myData (extra data for the procedure, if needed. Should be as small as possible.)
     }
