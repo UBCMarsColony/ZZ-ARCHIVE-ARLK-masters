@@ -132,7 +132,7 @@ ___
 Intra-modular communication should be done using the standardized protocol, as explained below:
 
     PiToArduino = {
-        "action": ActionFlag (1 byte),
+        "action": ActionFlag (1 byte, high bit on = message is a response),
         "procedure": procedureFlag (1 byte, high bit on = data is present),
         "data": [data1, data2...] (byte array)
     }
