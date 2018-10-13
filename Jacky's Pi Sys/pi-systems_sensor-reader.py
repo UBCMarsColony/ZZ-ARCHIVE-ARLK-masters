@@ -8,16 +8,16 @@ import json
 from collections import namedtuple
     
 
-SensorDataSet = namedtuple("SensorDataSet", "CO2 O2 temperature humidity pressure")
 
 
 class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):    
     
+    SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
     
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
-        self.sensor_data = SensorDataSet(0,0,0,0,0)
+        self.sensor_data = self.SensorData(0,0,0,0,0)
 
 
     def loop(self):
@@ -37,7 +37,7 @@ class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):
             return
             
         with self:
-            self.sensor_data = SensorDataSet(
+            self.sensor_data = self.SensorData(
                 CO2=sensor_json.CO2,
                 O2=sensor_json.O2,
                 temperature=sensor_json.temperature,

@@ -1,3 +1,4 @@
+import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
 class DoorSubsystem(subsys.Subsystem):

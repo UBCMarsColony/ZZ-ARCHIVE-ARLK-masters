@@ -1,7 +1,12 @@
 import threading
 from abc import ABC, abstractmethod
 import importlib
-import smbus
+
+try:
+    import smbus
+except ModuleNotFoundError:
+    print("RPi not being used, skipping smbus import...")
+
 import time
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
@@ -14,7 +19,7 @@ More information on this is included in the README file in this directory.
 
 
 class Subsystem(ABC):
-    def __init__(self, thread_id, name=self.__class__.__name__, *, loop_delay_ms=750):
+    def __init__(self, thread_id, name, *, loop_delay_ms=750):
         if thread_id is None:
             pass
             #raise TypeError("Subsystem parameter thread_id is not defined!")
@@ -22,7 +27,7 @@ class Subsystem(ABC):
         if name is None:
             raise TypeError("Cannot pass None as value for subsystem name!")
 
-        self.name = name
+        self.name = name or self.__class__.__name__
         
         self.running = False
         self.loop_delay_ms = loop_delay_ms
@@ -124,7 +129,7 @@ class SerialMixin:
         high_bit = 1<<7
         max_value = high_bit - 1
 
-        if action > max_value
+        if action > max_value:
             raise ValueError("action must not use the signing bit!")
         if is_response:
             action += high_bit

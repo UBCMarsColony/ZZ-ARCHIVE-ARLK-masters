@@ -21,7 +21,7 @@ class InputSubsystem(subsys.SerialMixin, subsys.Subsystem):
     def check_buttons(self):
         self.write_json_dict(
            self.generate_protocol_message(
-               action=1 # ExecuteProcedure
+               action=1, # ExecuteProcedure
                procedure=self.Procedure.CheckButtons.value
            )
         )
@@ -33,7 +33,11 @@ class InputSubsystem(subsys.SerialMixin, subsys.Subsystem):
             self.write_json_dict(
                 self.generate_protocol_message(
                     action=1,
-                    procedure=self.Procedure.DisplayMessage.value
+                    procedure=self.Procedure.DisplayMessage.value,
                     data={"tt": "I got some","bt": "data from the Pi!"}
                 )
             )
+
+if __name__ == "__main__":
+    c = InputSubsystem("test", 12, A)
+    c.check_buttons()
