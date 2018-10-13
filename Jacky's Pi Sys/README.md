@@ -126,3 +126,13 @@ To stop this subsystem, simply `stop()` it:
     mySubsys.stop()
 
 </details>
+## Protocols
+Intra-modular communication should be done using the standardized protocol, as explained below:
+
+    PiToArduino = {
+        "action": ActionFlag (1 byte),
+        "procedure": procedureFlag (1 byte, high bit on = data is present),
+        "data": [data1, data2...] (byte array)
+    }
+
+___
