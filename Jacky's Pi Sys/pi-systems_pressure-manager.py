@@ -35,7 +35,7 @@ class Valve:
         # stub...
 
 
-class ValveManager(subsys.Subsystem):    
+class PressureManager(subsys.Subsystem):    
 
     __valves = {
         # Give valves correct ports and better, clearer names.
@@ -48,7 +48,7 @@ class ValveManager(subsys.Subsystem):
     #Standard states: 
     #init = initialization, eafc = enter airlock from colony, emfa = enter mars from airlock, 
     #eafm = enter airlock from mars, ecfa = enter colony from airlock
-    ValveState = namedtuple("ValveState", ValveManager.__valves.keys())
+    ValveState = namedtuple("ValveState", PressureManager.__valves.keys())
     __std_state = {
         state1: ValveState(
             valve1=Valve.State.Open, 
