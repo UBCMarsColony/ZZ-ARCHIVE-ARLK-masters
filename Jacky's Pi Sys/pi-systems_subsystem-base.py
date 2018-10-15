@@ -1,7 +1,7 @@
 import threading
 from abc import ABC, abstractmethod
 import importlib
-
+import random
 try:
     import smbus
 except ModuleNotFoundError:
@@ -24,21 +24,20 @@ class Subsystem(ABC):
             pass
             #raise TypeError("Subsystem parameter thread_id is not defined!")
 
-        if name is None:
-            raise TypeError("Cannot pass None as value for subsystem name!")
-
-        self.name = name or self.__class__.__name__
+        self.name = name or (self.__class__.__name__ + str(random.randint(0, 0xFFFF)))
+        self.thread_id = thread_id
         
         self.running = False
         self.loop_delay_ms = loop_delay_ms
         self.thread = Subsystem.SubsystemThread(self)
-        self.thread_id = thread_id
             
         subsys_pool.add(self)
 
         print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
 
 
+    # Allows "with" statement to be used on a subsystem, granting the "with" block
+    # secure access to subsystem data.
     def __enter__(self):
         self.thread.lock.acquire()
         return self
@@ -59,22 +58,16 @@ class Subsystem(ABC):
 
     def stop(self):
         print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
-        self.running = False
+        with self:
+            self.running = False
         self.thread.join()
     
-    """
-    Contains the code which will be run during the threads life.
-    """
+
+    # Definition contains the code which will be looped over during the threads life.
     @abstractmethod
     def loop(self):
         pass
 
-    # """
-    # Locks the thread while running the method. Useful when accessing data that is modified by the thread.
-    # """
-    # def get_threadsafe(self, async_method):
-    #     with self.thread.lock:
-    #         async_method()
 
     class SubsystemThread(threading.Thread):
         def __init__(self, subsystem): 
@@ -90,17 +83,16 @@ class Subsystem(ABC):
             last_runtime = time.time()
 
             while self.subsystem.running:
-                # Time.time() uses seconds, so divide loop_delay_ms by 1000 to convert to seconds.
+                # Time.time() uses seconds, so convert loop_delay_ms to seconds.
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
                     self.subsystem.loop()
 
 
 import json
 
-"""
-SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
-between arduino and pi.
-"""
+
+#SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
+#between arduino and pi.
 class SerialMixin:
     # Static bus object
     bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
@@ -124,6 +116,7 @@ class SerialMixin:
             time.sleep(1)
 
 
+    # Generates a valid protocol message.
     def generate_protocol_message(*, action=-1, procedure=-1, data=None, is_response=False):
         # Abstract this later on
         high_bit = 1<<7
@@ -167,8 +160,3 @@ class SerialMixin:
 
         str_ret = ''.join(return_str)
         return json.loads(str_ret)
-
-    #t = get_json_dict()
-    #import json
-    #d = json.loads(t)
-    #print(d)
