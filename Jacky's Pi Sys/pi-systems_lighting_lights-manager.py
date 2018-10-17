@@ -38,13 +38,12 @@ class LightingSubsystem(subsys.Subsystem):
 
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id)
+
+        for pin in self.light_pins:
+            gpio.setup(pin, gpio.OUT)
         
         self._sensor_dict = None
 
-        
-    def register_pins(self):
-        for pin in self.light_pins:
-            gpio.setup(pin, gpio.OUT)
         
     def loop(self):
         if self._sensor_dict is None:

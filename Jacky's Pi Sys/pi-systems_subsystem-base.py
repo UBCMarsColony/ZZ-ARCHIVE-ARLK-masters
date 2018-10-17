@@ -96,12 +96,6 @@ import json
 class SerialMixin:
     # Static bus object
     bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
-    
-
-    def __init__(self, address):
-        # This is the address we setup in the Arduino Program
-        self.slave_address = address or 0x0A # May want to remove default in future
-
 
 # WRITING
     def write_number(value):
@@ -143,12 +137,15 @@ class SerialMixin:
 
 
 # READING
-    def read_number():
-        return self.bus.read_byte(self.slave_address)
+    def read_number(address):
+        if address is None or not isinstance(address, int):
+            raise TypeError("Address parameter must be of type int!")
+
+        return self.bus.read_byte(address)
         # number = bus.read_byte_data(slave_address, 1)
         
 
-    def get_json_dict():
+    def get_json_dict(address):
         return_str = []
         # use ord(char a) to turn it to byte
         # use chr(byte b) to turn it to char

@@ -10,8 +10,8 @@ class InputSubsystem(subsys.SerialMixin, subsys.Subsystem):
         GetLatestInput=1
         DisplayMessage=2
 
-    def __init__(self, name=None, thread_id=None, address=None):
-        super().__init__(name=name, thread_id=thread_id, address=address, loop_delay_ms=5000)
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
 
     def loop(self):
