@@ -50,6 +50,7 @@ class Subsystem(ABC):
 
     def __del__(self):
         # Remove from subsystem pool.
+        subsys_pool.remove(self)
         print("Subsystem %s has been deleted." % (self.name))
 
 
