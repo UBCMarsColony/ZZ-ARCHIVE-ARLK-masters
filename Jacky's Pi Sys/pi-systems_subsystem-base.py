@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     print("RPi not being used, skipping smbus import...")
 
 import time
+from enum import Enum
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
 """
@@ -97,23 +98,24 @@ class IntraModCommMixin:
     # Static bus object
     bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
 
+    class IntraModCommAction(Enum):
+        ExecuteProcedure = 1
+
 # WRITING
-    @staticmethod
-    def intra_write(address=0x0A, message):
+    def intra_write(self, address=0x0A, message):
         for char in message:
             IntraModCommMixin.bus.write_byte(address, ord(char))
             time.sleep(1)
 
 
     # Generates a valid protocol message.
-    @staticmethod
-    def build_protocol_message(*, action=-1, procedure=-1, data=None, is_response=False):
+    def generate_intra_protocol_message(self, *, action=-1, procedure=-1, data=None, is_response=False):
         # TODO Abstract this later on
         high_bit = 1<<7
         max_value = high_bit - 1
 
         # Verify and modify data
-        if action > max_value:
+        if action > max_value and action in set(action.value for action in IntraModCommMixin.IntraModCommAction):
             raise ValueError("action must not use the signing bit!")
         if is_response:
             action += high_bit
@@ -133,8 +135,7 @@ class IntraModCommMixin:
 
 
 # READING
-    @staticmethod
-    def intra_read(address):
+    def intra_read(self, address):
         return_str = []
         # use ord(char a) to turn it to byte
         # use chr(byte b) to turn it to char

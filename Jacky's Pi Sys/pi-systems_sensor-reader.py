@@ -10,7 +10,7 @@ from collections import namedtuple
 
 
 
-class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):    
+class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):    
     
     SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
     
@@ -26,7 +26,7 @@ class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):
 
     def __update_sensor_data(self):
         try:
-            sensor_json = self.get_json_dict(0x0A)
+            sensor_json = self.intra_read(0x0A)
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
         except json.JSONDecodeError as jde:
