@@ -4,7 +4,7 @@ import json
 from enum import Enum
 
 
-class InputSubsystem(subsys.SerialMixin, subsys.Subsystem):
+class InputSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
 
     class Procedure(Enum):
         GetLatestInput=1
@@ -19,14 +19,14 @@ class InputSubsystem(subsys.SerialMixin, subsys.Subsystem):
 
 
     def check_buttons(self):
-        self.write_json_dict(
+        self.intra_write("ADDRESS HERE",
            self.generate_protocol_message(
-               action=1, # ExecuteProcedure
+               action=1, self.IntraModCommAction.ExecuteProcedure
                procedure=self.Procedure.CheckButtons.value
            )
         )
 
-        response = self.get_json_dict()
+        response = self.intra_read("ADDRESS HERE")
         print(response)
 
         if response:
@@ -34,7 +34,7 @@ class InputSubsystem(subsys.SerialMixin, subsys.Subsystem):
                 self.generate_protocol_message(
                     action=1,
                     procedure=self.Procedure.DisplayMessage.value,
-                    data={"text": "I got some data from the Pi!"}
+                    data=[ord(x) for x in "Sending Disp Data"]
                 )
             )
 

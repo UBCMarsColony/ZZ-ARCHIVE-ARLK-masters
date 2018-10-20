@@ -26,6 +26,10 @@ class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
 
     def __update_sensor_data(self):
         try:
+            self.intra_write(0x0A, self.generate_intra_protocol_message(
+                action=self.IntraModCommAction.ExecuteProcedure,
+                procedure=1
+            ))
             sensor_json = self.intra_read(0x0A)
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
@@ -47,7 +51,7 @@ class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
 
 
     def error_check(self):
-        with self.thread.lock:
+        with self:
             CO2 = self.sensor_data.CO2
             O2 = self.sensor_data.O2
             TEMP = self.sensor_data.temperature

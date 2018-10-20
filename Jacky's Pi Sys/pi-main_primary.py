@@ -24,7 +24,7 @@ def begin(runtime_params):
     print("Performing systems initialization...\n")
     
     # Set GPIO mode to Broadcom SOC Channel (Mars Colony Default)
-    gpio.setmode(gpio.bcm)
+    gpio.setmode(gpio.BCM)
     
     # Start initializing the vital airlock systems
     

@@ -48,6 +48,11 @@ class Subsystem(ABC):
         self.thread.lock.release()
 
 
+    def __del__(self):
+        # Remove from subsystem pool.
+        print("Subsystem %s has been deleted." % (self.name))
+
+
     def start(self):
         if self.running is True:
             raise threading.ThreadError("Tried starting a thread that was still running!")
@@ -61,7 +66,6 @@ class Subsystem(ABC):
         print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
         with self:
             self.running = False
-        self.thread.join()
     
 
     # Definition contains the code which will be looped over during the threads life.
@@ -77,19 +81,19 @@ class Subsystem(ABC):
             self.subsystem = subsystem
             self.setName(self.subsystem.name)
             self.lock = threading.Lock()
-            self.subsystem.running = True
+            self.subsystem.running = False
 
 
         def run(self):
-            last_runtime = time.time()
+            self.subsystem.running = True
 
+            last_runtime = time.time()
             while self.subsystem.running:
                 # Time.time() uses seconds, so convert loop_delay_ms to seconds.
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
                     self.subsystem.loop()
 
-
-import json
+            self.join()
 
 
 #SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
@@ -102,9 +106,9 @@ class IntraModCommMixin:
         ExecuteProcedure = 1
 
 # WRITING
-    def intra_write(self, address=0x0A, message):
-        for char in message:
-            IntraModCommMixin.bus.write_byte(address, ord(char))
+    def intra_write(self, address, message):
+        for byte in message:
+            self.bus.write_byte(address, ord(byte))
             time.sleep(1)
 
 
@@ -115,7 +119,7 @@ class IntraModCommMixin:
         max_value = high_bit - 1
 
         # Verify and modify data
-        if action > max_value and action in set(action.value for action in IntraModCommMixin.IntraModCommAction):
+        if action > max_value and action in set(action.value for action in self.IntraModCommAction):
             raise ValueError("action must not use the signing bit!")
         if is_response:
             action += high_bit
@@ -136,14 +140,7 @@ class IntraModCommMixin:
 
 # READING
     def intra_read(self, address):
-        return_str = []
-        # use ord(char a) to turn it to byte
-        # use chr(byte b) to turn it to char
-
         for index in range(93):
-            num = IntraModCommMixin.bus.read_byte(address)
+            num = self.bus.read_byte(address)
             if num:
                 return_str.append(chr(num))
-
-        str_ret = ''.join(return_str)
-        return json.loads(str_ret)
