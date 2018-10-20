@@ -93,29 +93,26 @@ import json
 
 #SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
 #between arduino and pi.
-class SerialMixin:
+class IntraModCommMixin:
     # Static bus object
     bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
 
 # WRITING
-    def write_number(value):
-        bus.write_byte(address, value)
-        # bus.write_byte_data(address, 0, value)
-        return -1
-
-
-    def write_json_dict(json_dict):
-        for char in json.dumps(json_dict):
-            writeNumber(ord(char))
+    @staticmethod
+    def intra_write(address=0x0A, message):
+        for char in message:
+            IntraModCommMixin.bus.write_byte(address, ord(char))
             time.sleep(1)
 
 
     # Generates a valid protocol message.
-    def generate_protocol_message(*, action=-1, procedure=-1, data=None, is_response=False):
-        # Abstract this later on
+    @staticmethod
+    def build_protocol_message(*, action=-1, procedure=-1, data=None, is_response=False):
+        # TODO Abstract this later on
         high_bit = 1<<7
         max_value = high_bit - 1
 
+        # Verify and modify data
         if action > max_value:
             raise ValueError("action must not use the signing bit!")
         if is_response:
@@ -126,32 +123,24 @@ class SerialMixin:
         if data is not None:
             procedure += high_bit
 
-        protocol_message = {
-            "action": action,
-            "procedure": procedure
-        }
+        # Format protocol message
+        protocol_message = [action, procedure]
         if data is not None:
-            protocol_message["data"] = data
-        
+            protocol_message.append(data)
+
+        protocol_message.insert(0, len(protocol_message))
         return protocol_message
 
 
 # READING
-    def read_number(address):
-        if address is None or not isinstance(address, int):
-            raise TypeError("Address parameter must be of type int!")
-
-        return self.bus.read_byte(address)
-        # number = bus.read_byte_data(slave_address, 1)
-        
-
-    def get_json_dict(address):
+    @staticmethod
+    def intra_read(address):
         return_str = []
         # use ord(char a) to turn it to byte
         # use chr(byte b) to turn it to char
 
         for index in range(93):
-            num = self.read_number()
+            num = IntraModCommMixin.bus.read_byte(address)
             if num:
                 return_str.append(chr(num))
 

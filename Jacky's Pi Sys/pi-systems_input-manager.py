@@ -34,7 +34,7 @@ class InputSubsystem(subsys.SerialMixin, subsys.Subsystem):
                 self.generate_protocol_message(
                     action=1,
                     procedure=self.Procedure.DisplayMessage.value,
-                    data={"tt": "I got some","bt": "data from the Pi!"}
+                    data={"text": "I got some data from the Pi!"}
                 )
             )
 
