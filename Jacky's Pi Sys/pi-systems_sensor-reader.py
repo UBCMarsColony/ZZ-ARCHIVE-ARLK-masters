@@ -4,7 +4,6 @@ import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
 
 import serial
-import json
 from collections import namedtuple
     
 
@@ -30,23 +29,21 @@ class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
                 action=self.IntraModCommAction.ExecuteProcedure,
                 procedure=1
             ))
-            sensor_json = self.intra_read(0x0A)
+            sensor_data_msg = self.intra_read(0x0A)
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
-        except json.JSONDecodeError as jde:
-            print("JSON Object could not be decoded.\n\tStack Trace: " + str(ve) + "\n\tStopping update")
-            return
         except Exception as e:
             print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
             return
             
         with self:
+            # TODO make this work - accessors are invalid since protocol version.
             self.sensor_data = self.SensorData(
-                CO2=sensor_json.CO2,
-                O2=sensor_json.O2,
-                temperature=sensor_json.temperature,
-                humidity=sensor_json.humidity,
-                pressure=sensor_json.pressure
+                CO2=sensor_data_msg.CO2,
+                O2=sensor_data_msg.O2,
+                temperature=sensor_data_msg.temperature,
+                humidity=sensor_data_msg.humidity,
+                pressure=sensor_data_msg.pressure
             )
 
 
