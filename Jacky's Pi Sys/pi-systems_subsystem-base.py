@@ -2,11 +2,6 @@ import threading
 from abc import ABC, abstractmethod
 import importlib
 import random
-try:
-    import smbus
-except ModuleNotFoundError:
-    print("RPi not being used, skipping smbus import...")
-
 import time
 from enum import Enum
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
@@ -48,10 +43,13 @@ class Subsystem(ABC):
         self.thread.lock.release()
 
 
+    def __repr__(self):
+        return "SUBSYSTEM { \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.thread_id, str(self.thread.running))
+
     def __del__(self):
         # Remove from subsystem pool.
         subsys_pool.remove(self)
-        print("Subsystem %s has been deleted." % (self.name))
+        print("Subsystem deleted:\n\t" + repr(self))
 
 
     def start(self):
@@ -60,11 +58,11 @@ class Subsystem(ABC):
 
         self.thread.start() 
         self.running = True
-        print("Subsystem started: \n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        print("Subsystem started: \n\t" + repr(self))
         
 
     def stop(self):
-        print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        print("Subsystem stopping:\n\t" + repr(self))
         with self:
             self.running = False
     
@@ -100,27 +98,38 @@ class Subsystem(ABC):
 #SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
 #between arduino and pi.
 class IntraModCommMixin:
-    # Static bus object
-    bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
+
+    try:
+        # Initialization needed for the class to run properly
+        import smbus
+        import RPi.GPIO as gpio
+
+        # Static bus object
+        gpio.setmode(gpio.BCM)
+        __bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
+    except ModuleNotFoundError:
+        print("RPi not being used, skipping RPi imports...")
 
     class IntraModCommAction(Enum):
         ExecuteProcedure = 1
 
 # WRITING
-    def intra_write(self, address, message):
+    @classmethod
+    def intra_write(cls, address, message):
         for byte in message:
-            self.bus.write_byte(address, ord(byte))
+            cls.__bus.write_byte(address, ord(byte))
             time.sleep(1)
 
 
     # Generates a valid protocol message.
-    def generate_intra_protocol_message(self, *, action=-1, procedure=-1, data=None, is_response=False):
+    @classmethod
+    def generate_intra_protocol_message(cls, *, action=-1, procedure=-1, data=None, is_response=False):
         # TODO Abstract this later on
         high_bit = 1<<7
         max_value = high_bit - 1
 
         # Verify and modify data
-        if action > max_value and action in set(action.value for action in self.IntraModCommAction):
+        if action > max_value and action in set(action.value for action in cls.IntraModCommAction):
             raise ValueError("action must not use the signing bit!")
         if is_response:
             action += high_bit
@@ -140,8 +149,9 @@ class IntraModCommMixin:
 
 
 # READING
-    def intra_read(self, address):
+    @classmethod
+    def intra_read(cls, address):
         for index in range(93):
-            num = self.bus.read_byte(address)
+            num = cls.__bus.read_byte(address)
             if num:
                 return_str.append(chr(num))

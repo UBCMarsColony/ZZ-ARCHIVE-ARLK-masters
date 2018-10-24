@@ -21,8 +21,8 @@ class InputSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
     def check_buttons(self):
         self.intra_write("ADDRESS HERE",
            self.generate_protocol_message(
-               action=1, self.IntraModCommAction.ExecuteProcedure
-               procedure=self.Procedure.CheckButtons.value
+               action=self.IntraModCommAction.ExecuteProcedure,
+               procedure=self.Procedure.GetLatestInput.value
            )
         )
 
