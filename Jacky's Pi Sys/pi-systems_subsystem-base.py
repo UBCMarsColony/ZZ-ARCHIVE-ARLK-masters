@@ -44,12 +44,12 @@ class Subsystem(ABC):
 
 
     def __repr__(self):
-        return "SUBSYSTEM { \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.thread_id, str(self.thread.running))
+        return "{ \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.thread_id, str(self.running))
 
     def __del__(self):
         # Remove from subsystem pool.
         subsys_pool.remove(self)
-        print("Subsystem deleted:\n\t" + repr(self))
+        print("Subsystem deleted:\n" + repr(self))
 
 
     def start(self):
@@ -58,11 +58,11 @@ class Subsystem(ABC):
 
         self.thread.start() 
         self.running = True
-        print("Subsystem started: \n\t" + repr(self))
+        print("Subsystem started: \n" + repr(self))
         
 
     def stop(self):
-        print("Subsystem stopping:\n\t" + repr(self))
+        print("Subsystem stopping:\n" + repr(self))
         with self:
             self.running = False
     
@@ -89,8 +89,12 @@ class Subsystem(ABC):
             last_runtime = time.time()
             while self.subsystem.running:
                 # Time.time() uses seconds, so convert loop_delay_ms to seconds.
+                print(time.time() - last_runtime)
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
                     self.subsystem.loop()
+                    last_runtime = time.time()
+                
+                time.sleep(0.1)
 
             self.join()
 
@@ -129,6 +133,8 @@ class IntraModCommMixin:
         max_value = high_bit - 1
 
         # Verify and modify data
+        if isinstance(action, cls.IntraModCommAction):
+            action = action.value
         if action > max_value and action in set(action.value for action in cls.IntraModCommAction):
             raise ValueError("action must not use the signing bit!")
         if is_response:

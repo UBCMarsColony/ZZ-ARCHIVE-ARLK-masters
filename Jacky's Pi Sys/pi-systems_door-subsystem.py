@@ -23,7 +23,7 @@ class DoorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
 
                 # Check sensors and things
 
-                self.intra_write(address
+                self.intra_write(0,
                     self.generate_intra_protocol_message(
                         action=self.IntraModCommAction.ExecuteProcedure,
                         procedure=self.next_state
@@ -73,7 +73,7 @@ class DoorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
             else:
                 raise TypeError("Door state must be an integer or alias defined by DoorSubsystem.Procedure")
                 
-        if state not in set(p.value for p in self.Procedure)
+        if state not in set(p.value for p in self.Procedure):
             raise ValueError("Door state must be defined in DoorSubsystem.Procedure")
 
         with self:

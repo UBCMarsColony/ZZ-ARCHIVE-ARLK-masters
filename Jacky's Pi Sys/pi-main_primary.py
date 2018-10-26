@@ -1,7 +1,6 @@
 import sys
 import importlib
 import time
-import RPi.GPIO as gpio
 
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
@@ -11,9 +10,9 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 # Import all subsystem files so we can create new instances of each one.
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
-input_ss = importlib.import_module('pi-systems_input-manager')
-light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
-valve_ss = importlib.import_module('pi-systems_valve-manager')
+# input_ss = importlib.import_module('pi-systems_input-manager')
+# light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
+# valve_ss = importlib.import_module('pi-systems_valve-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
 
 """
@@ -58,32 +57,33 @@ def begin(runtime_params):
             cmd_input = cmd_input("Shut down colony? (y/n)\n")
             if cmd_input == "y" or cmd_input == "Y":
                 ss_pool.stop_all()
+                exit(0)
                 break
             else:
                 print("Airlock shutdown cancelled")
-
-        exit(0)
         
 def loop(runtime_params):
+    # nextinput = input("Enter Command: ")
+
+    # subsystems = ss_pool.get_all()
+    # if nextinput == "o" or nextinput == "O":
+    #     print("Requesting door open")
+    #     with subsystems["airlock1_doors"] as doors: 
+    #         doors.request_door_state(doors.OpenDoor)
+    # elif nextinput == "c" or nextinput == "C":
+    #     print("Requesting door close")
+    #     with subsystems["airlock1_doors"] as doors:
+    #         doors.request_door_state(doors.CloseDoor)
+    # elif nextinput == "i" or nextinput == "I":
+    #     print("Current subsystem data:\n---------\n")
+    #     for subsys in ss_pool.get_all():
+    #         print(repr(subsys))
+    # else:
+    #     print("Command not recognized")
+    time.sleep(10)    
+    ######
     # TODO find a nicer way to do this
     # subsystems = ss_pool.get_all()
-    nextinput = input("Enter Command: ")
-
-    subsystems = ss_pool.get_all()
-    if nextinput == "o" or nextinput == "O":
-        print("Requesting door open")
-        with subsystems["airlock1_doors"] as doors: 
-            doors.request_door_state(doors.OpenDoor)
-    elif nextinput == "c" or nextinput == "C":
-        print("Requesting door close")
-        with subsystems["airlock1_doors"] as doors:
-            doors.request_door_state(doors.CloseDoor)
-    elif nextinput == "i" or nextinput == "I":
-        print("Current subsystem data:\n---------\n")
-        for subsys in ss_pool.get_all():
-            print(repr(subsys))
-    else:
-        print("Command not recognized")
     # data = subsystems["sensors"].get_data()
     # next_button = subsystems["input"].check_buttons()
     

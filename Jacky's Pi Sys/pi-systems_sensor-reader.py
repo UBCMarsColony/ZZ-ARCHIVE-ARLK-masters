@@ -1,9 +1,6 @@
 import importlib
-import RPi.GPIO as gpio
 import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
-
-import serial
 from collections import namedtuple
     
 
@@ -20,6 +17,7 @@ class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
 
 
     def loop(self):
+        print("Running thread!")
         self.__update_sensor_data()
 
 
@@ -32,10 +30,8 @@ class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
             sensor_data_msg = self.intra_read(0x0A)
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
-        except Exception as e:
-            print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
             return
-            
+
         with self:
             # TODO make this work - accessors are invalid since protocol version.
             self.sensor_data = self.SensorData(
