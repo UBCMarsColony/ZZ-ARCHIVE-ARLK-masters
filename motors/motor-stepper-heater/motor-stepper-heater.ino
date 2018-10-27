@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <SPI.h>
 
 //constants
 
@@ -20,7 +21,7 @@ const int pulseWidth = 1;
 const int ON = 1;
 const int OFF = 0;
 
-const int address_slave = 45; //address must be in HEX!
+const int address_slave = 0x5; //address must be in HEX!
 
 //Motor heater assembly using TMP36 temperature sensor.
 //temperature thresholds
@@ -86,8 +87,8 @@ void setup() {
     digitalWrite(pinNumber.ENA, LOW);
     doorStatus=unknown;
     Serial.println("Door status and pinNumber set, testing motor");
-    motorTest();
-    Wire.onRequest(requestHandler);
+    //motorTest();
+    //Wire.onRequest(requestHandler);
     Serial.println("System setup complete, starting...");
 
 }
@@ -157,7 +158,7 @@ void stepperAngleIncrement(char direction){
 void motorTest(void){
     Serial.println("Motor self test routine...");
     int i=0;
-    for(i=0;i<4;i++){
+    for(i=0;i<2;i++){
         int angle=45;
         stepperAngleRotate(angle, 'R');
         stepperAngleRotate(angle, 'L');
@@ -258,16 +259,26 @@ void commandHandler(int howMany){
     char command=Wire.read();
     switch(command){
         case 'o':
+            Serial.println("!o received");
             doorOpen();
+            break;
+        case 'O':
+            doorOpen();
+            Serial.println("!O received");
             break;
         case 'c':
             doorClose();
+            Serial.println("!c received");
+            break;
+        case 'C':
+            doorClose();
+            Serial.println("!C received");
             break;
     }
 }
 
-void requestHandler(){
-    Wire.beginTransmission();
-    Wire.write()
-    Wire.endTransmission();
-}
+// void requestHandler(){
+//     Wire.beginTransmission();
+//     Wire.write()
+//     Wire.endTransmission();
+// }
