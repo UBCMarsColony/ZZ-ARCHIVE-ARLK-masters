@@ -2,11 +2,6 @@ import threading
 from abc import ABC, abstractmethod
 import importlib
 import random
-try:
-    import smbus
-except ModuleNotFoundError:
-    print("RPi not being used, skipping smbus import...")
-
 import time
 from enum import Enum
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
@@ -48,20 +43,28 @@ class Subsystem(ABC):
         self.thread.lock.release()
 
 
+    def __repr__(self):
+        return "{ \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.thread_id, str(self.running))
+
+    def __del__(self):
+        # Remove from subsystem pool.
+        subsys_pool.remove(self)
+        print("Subsystem deleted:\n" + repr(self))
+
+
     def start(self):
         if self.running is True:
             raise threading.ThreadError("Tried starting a thread that was still running!")
 
         self.thread.start() 
         self.running = True
-        print("Subsystem started: \n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        print("Subsystem started: \n" + repr(self))
         
 
     def stop(self):
-        print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        print("Subsystem stopping:\n" + repr(self))
         with self:
             self.running = False
-        self.thread.join()
     
 
     # Definition contains the code which will be looped over during the threads life.
@@ -77,45 +80,62 @@ class Subsystem(ABC):
             self.subsystem = subsystem
             self.setName(self.subsystem.name)
             self.lock = threading.Lock()
-            self.subsystem.running = True
+            self.subsystem.running = False
 
 
         def run(self):
-            last_runtime = time.time()
+            self.subsystem.running = True
 
+            last_runtime = time.time()
             while self.subsystem.running:
                 # Time.time() uses seconds, so convert loop_delay_ms to seconds.
+                print(time.time() - last_runtime)
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
                     self.subsystem.loop()
+                    last_runtime = time.time()
+                
+                time.sleep(0.1)
 
-
-import json
+            self.join()
 
 
 #IntraModCommMixin class enables the subsystem to use serial methods. This allows direct data transfer
 #between arduino and pi.
 class IntraModCommMixin:
-    # Static bus object
-    bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
+
+    try:
+        # Initialization needed for the class to run properly
+        import smbus
+        import RPi.GPIO as gpio
+
+        # Static bus object
+        gpio.setmode(gpio.BCM)
+        __bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
+    except ModuleNotFoundError:
+        print("RPi not being used, skipping RPi imports...")
 
     class IntraModCommAction(Enum):
         ExecuteProcedure = 1
 
 # WRITING
-    def intra_write(self, address=0x0A, message):
-        for char in message:
-            IntraModCommMixin.bus.write_byte(address, ord(char))
+    @classmethod
+    def intra_write(cls, address, message):
+        for byte in message:
+            cls.__bus.write_byte(address, ord(byte))
             time.sleep(1)
 
 
     # Generates a valid protocol message.
-    def generate_intra_protocol_message(self, *, action=-1, procedure=-1, data=None, is_response=False):
+    @classmethod
+    def generate_intra_protocol_message(cls, *, action=-1, procedure=-1, data=None, is_response=False):
         # TODO Abstract this later on
         high_bit = 1<<7
         max_value = high_bit - 1
 
         # Verify and modify data
-        if action > max_value and action in set(action.value for action in IntraModCommMixin.IntraModCommAction):
+        if isinstance(action, cls.IntraModCommAction):
+            action = action.value
+        if action > max_value and action in set(action.value for action in cls.IntraModCommAction):
             raise ValueError("action must not use the signing bit!")
         if is_response:
             action += high_bit
@@ -135,15 +155,9 @@ class IntraModCommMixin:
 
 
 # READING
-    def intra_read(self, address):
-        return_str = []
-        # use ord(char a) to turn it to byte
-        # use chr(byte b) to turn it to char
-
+    @classmethod
+    def intra_read(cls, address):
         for index in range(93):
-            num = IntraModCommMixin.bus.read_byte(address)
+            num = cls.__bus.read_byte(address)
             if num:
                 return_str.append(chr(num))
-
-        str_ret = ''.join(return_str)
-        return json.loads(str_ret)
