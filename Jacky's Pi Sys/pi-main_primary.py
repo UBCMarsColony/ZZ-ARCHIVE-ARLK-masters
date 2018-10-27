@@ -20,7 +20,7 @@ Purpose: Performs initial system setup and begins airlock loop cycle. Handles an
 Parameter: runtime_params - The Namespace returned by the argument parser in init.py
 """
 def begin(runtime_params):
-    print("---INITIALIZING AIRLOCK SYSTEMS---\n\n")
+    print("\n\n---INITIALIZING AIRLOCK SYSTEMS---")
     
     # Start initializing the vital airlock systems
     subsystems = []
@@ -36,14 +36,14 @@ def begin(runtime_params):
     # lights = light_ss.LightingSubsystem("lights", 4)
     # lights.start() 
     
-    print("\n---AIRLOCK SYSTEMS INITIALIZED---\n")
+    print("---AIRLOCK SYSTEMS INITIALIZED---\n")
 
-    print("\n---STARTING SUBSYSTEMS---")
+    print("---STARTING SUBSYSTEMS---")
     for subsystem in subsystems:
         try:
             subsystem.start()
         except Exception as e:
-            print("WARNING: Subsystem was not initialized as a result of an exception:\n\t" + e)
+            print("WARNING: Subsystem could not start as due to an unexpected exception:\n\t", e)
     
     print("\n---ALL SUBSYSTEMS STARTED---")
 
@@ -54,7 +54,7 @@ def begin(runtime_params):
         try:
             loop(runtime_params)
         except KeyboardInterrupt:
-            cmd_input = cmd_input("Shut down colony? (y/n)\n")
+            cmd_input = input("Shut down colony? (y/n)\n")
             if cmd_input == "y" or cmd_input == "Y":
                 ss_pool.stop_all()
                 exit(0)
@@ -63,24 +63,26 @@ def begin(runtime_params):
                 print("Airlock shutdown cancelled")
         
 def loop(runtime_params):
-    # nextinput = input("Enter Command: ")
+    nextinput = input("Enter Command: ")
 
-    # subsystems = ss_pool.get_all()
-    # if nextinput == "o" or nextinput == "O":
-    #     print("Requesting door open")
-    #     with subsystems["airlock1_doors"] as doors: 
-    #         doors.request_door_state(doors.OpenDoor)
-    # elif nextinput == "c" or nextinput == "C":
-    #     print("Requesting door close")
-    #     with subsystems["airlock1_doors"] as doors:
-    #         doors.request_door_state(doors.CloseDoor)
-    # elif nextinput == "i" or nextinput == "I":
-    #     print("Current subsystem data:\n---------\n")
-    #     for subsys in ss_pool.get_all():
-    #         print(repr(subsys))
-    # else:
-    #     print("Command not recognized")
-    time.sleep(10)    
+    subsystems = ss_pool.get_all()
+
+    # DOOR LOGIC
+    if nextinput == "o" or nextinput == "O":
+        print("Requesting door open")
+        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
+    elif nextinput == "c" or nextinput == "C":
+        print("Requesting door close")
+        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
+    
+    # SUBSYSTEMS INFO
+    elif nextinput == "i" or nextinput == "I":
+        print("Current subsystem data:\n---------\n")
+        for subsys in ss_pool.get_all():
+            print(repr(subsys))
+    else:
+        print("Command not recognized")
+    
     ######
     # TODO find a nicer way to do this
     # subsystems = ss_pool.get_all()

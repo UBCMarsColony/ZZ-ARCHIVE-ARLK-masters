@@ -1,4 +1,6 @@
-import threading
+#import threading
+import multiprocessing
+
 from abc import ABC, abstractmethod
 import importlib
 import random
@@ -21,34 +23,34 @@ class Subsystem(ABC):
             #raise TypeError("Subsystem parameter thread_id is not defined!")
 
         self.name = name or (self.__class__.__name__ + str(random.randint(0, 0xFFFF)))
-        self.thread_id = thread_id
+        self.process_id = thread_id
         
         self.running = False
         self.loop_delay_ms = loop_delay_ms
-        self.thread = Subsystem.SubsystemThread(self)
+        self.process = Subsystem.SubsystemProcess(self)
             
         subsys_pool.add(self)
 
-        print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.process_id))
 
 
     # Allows "with" statement to be used on a subsystem, granting the "with" block
     # secure access to subsystem data.
     def __enter__(self):
-        self.thread.lock.acquire()
+        self.process.lock.acquire()
         return self
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.thread.lock.release()
+        self.process.lock.release()
 
 
     def __repr__(self):
-        return "{ \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.thread_id, str(self.running))
+        return "{ \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.process_id, str(self.running))
 
     def __del__(self):
         # Remove from subsystem pool.
-        subsys_pool.remove(self)
+        # subsys_pool.remove(self)
         print("Subsystem deleted:\n" + repr(self))
 
 
@@ -56,7 +58,7 @@ class Subsystem(ABC):
         if self.running is True:
             raise threading.ThreadError("Tried starting a thread that was still running!")
 
-        self.thread.start() 
+        self.process.start() 
         self.running = True
         print("Subsystem started: \n" + repr(self))
         
@@ -73,28 +75,28 @@ class Subsystem(ABC):
         pass
 
 
-    class SubsystemThread(threading.Thread):
+    class SubsystemProcess(multiprocessing.Process):
         def __init__(self, subsystem): 
             super().__init__()
 
             self.subsystem = subsystem
-            self.setName(self.subsystem.name)
-            self.lock = threading.Lock()
+            # self.setName(self.subsystem.name) VESITIGIAL CODE FROM THREADING
+            self.lock = multiprocessing.Lock()
             self.subsystem.running = False
 
 
         def run(self):
             self.subsystem.running = True
+            print("Subsystem running: \n" + repr(self.subsystem))
 
             last_runtime = time.time()
             while self.subsystem.running:
                 # Time.time() uses seconds, so convert loop_delay_ms to seconds.
-                print(time.time() - last_runtime)
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
                     self.subsystem.loop()
                     last_runtime = time.time()
                 
-                time.sleep(0.1)
+                time.sleep(0.5)
 
             self.join()
 

@@ -8,12 +8,13 @@ from collections import namedtuple
 
 class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):    
     
-    SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
+    # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
     
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
-        self.sensor_data = self.SensorData(0,0,0,0,0)
+        # namedtuple is temporarily a dict for pickling purposes.
+        self.sensor_data = {}#self.SensorData(0,0,0,0,0)
 
 
     def loop(self):
@@ -33,14 +34,15 @@ class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
             return
 
         with self:
+            pass
             # TODO make this work - accessors are invalid since protocol version.
-            self.sensor_data = self.SensorData(
-                CO2=sensor_data_msg.CO2,
-                O2=sensor_data_msg.O2,
-                temperature=sensor_data_msg.temperature,
-                humidity=sensor_data_msg.humidity,
-                pressure=sensor_data_msg.pressure
-            )
+            self.sensor_data = {
+                'CO2':sensor_data_msg.CO2,
+                'O2':sensor_data_msg.O2,
+                'temperature':sensor_data_msg.temperature,
+                'humidity':sensor_data_msg.humidity,
+                'pressure':sensor_data_msg.pressure
+            }
 
 
     def error_check(self):

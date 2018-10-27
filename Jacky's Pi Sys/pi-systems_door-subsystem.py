@@ -66,21 +66,20 @@ class DoorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
     def request_door_state(self, state=None):
         if not state:
             raise TypeError("Door state must be an integer defined in DoorSubsystem.Procedure")
-        
+
         if not isinstance(state, int):
             if isinstance(state, self.Procedure):
                 state = state.value
             else:
                 raise TypeError("Door state must be an integer or alias defined by DoorSubsystem.Procedure")
-                
+
         if state not in set(p.value for p in self.Procedure):
             raise ValueError("Door state must be defined in DoorSubsystem.Procedure")
 
         with self:
             self.next_state = state
 
-
-        print("Door state requested: %i" % (state))
+        print("Door state requested: %s" % (self.Procedure(state).name))
 
 
 # TEST CODE
