@@ -100,7 +100,7 @@ class Subsystem(ABC):
             self.join()
 
 
-#SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
+#IntraModCommMixin class enables the subsystem to use serial methods. This allows direct data transfer
 #between arduino and pi.
 class IntraModCommMixin:
 
