@@ -1,8 +1,10 @@
 import threading
+
 from abc import ABC, abstractmethod
 import importlib
-import smbus
+import random
 import time
+from enum import Enum
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
 """
@@ -10,34 +12,29 @@ The purpose of the Subsystem class is to ease task management.
 In general, we would like the airlock tasks to be split up into single,
 maintainable components. This enables better subsystem management in the future.
 More information on this is included in the README file in this directory.
-
-Param: name - The thread's unique name
-Param: thread_id - The thread's unique ID that will be used to reference it
-Param: add_to_pool - Boolean that indicates whether or not to add the subsystem to the pool. Default: true
 """
 
 
 class Subsystem(ABC):
-    def __init__(self, thread_id, name=self.__class__.__name__, *, loop_delay_ms=750):
+    def __init__(self, thread_id, name, *, loop_delay_ms=750):
         if thread_id is None:
             pass
             #raise TypeError("Subsystem parameter thread_id is not defined!")
 
-        if name is None:
-            raise TypeError("Cannot pass None as value for subsystem name!")
-
-        self.name = name
+        self.name = name or (self.__class__.__name__ + str(random.randint(0, 0xFFFF)))
+        self.thread_id = thread_id
         
         self.running = False
         self.loop_delay_ms = loop_delay_ms
         self.thread = Subsystem.SubsystemThread(self)
-        self.thread_id = thread_id
             
         subsys_pool.add(self)
 
         print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
 
 
+    # Allows "with" statement to be used on a subsystem, granting the "with" block
+    # secure access to subsystem data.
     def __enter__(self):
         self.thread.lock.acquire()
         return self
@@ -47,33 +44,35 @@ class Subsystem(ABC):
         self.thread.lock.release()
 
 
+    def __repr__(self):
+        return "{ \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.thread_id, str(self.running))
+
+    def __del__(self):
+        # Remove from subsystem pool.
+        subsys_pool.remove(self)
+        print("Subsystem deleted:\n" + repr(self))
+
+
     def start(self):
         if self.running is True:
             raise threading.ThreadError("Tried starting a thread that was still running!")
 
         self.thread.start() 
         self.running = True
-        print("Subsystem started: \n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
+        print("Subsystem started: \n" + repr(self))
         
 
     def stop(self):
-        print("Subsystem stopping:\n\tName: %s\n\tID: %i" % (self.name, self.thread_id))
-        self.running = False
-        self.thread.join()
+        print("Subsystem stopping:\n" + repr(self))
+        with self:
+            self.running = False
     
-    """
-    Contains the code which will be run during the threads life.
-    """
+
+    # Definition contains the code which will be looped over during the threads life.
     @abstractmethod
     def loop(self):
         pass
 
-    # """
-    # Locks the thread while running the method. Useful when accessing data that is modified by the thread.
-    # """
-    # def get_threadsafe(self, async_method):
-    #     with self.thread.lock:
-    #         async_method()
 
     class SubsystemThread(threading.Thread):
         def __init__(self, subsystem): 
@@ -82,51 +81,84 @@ class Subsystem(ABC):
             self.subsystem = subsystem
             self.setName(self.subsystem.name)
             self.lock = threading.Lock()
-            self.subsystem.running = True
+            self.subsystem.running = False
 
 
         def run(self):
-            last_runtime = time.time()
+            self.subsystem.running = True
 
+            last_runtime = time.time()
             while self.subsystem.running:
-                # Time.time() uses seconds, so divide loop_delay_ms by 1000 to convert to seconds.
+                # Time.time() uses seconds, so convert loop_delay_ms to seconds.
+                print(time.time() - last_runtime)
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
                     self.subsystem.loop()
+                    last_runtime = time.time()
+                
+                time.sleep(0.1)
+
+            self.join()
 
 
-"""
-SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
-between arduino and pi.
-"""
-class SerialMixin:
+#IntraModCommMixin class enables the subsystem to use serial methods. This allows direct data transfer
+#between arduino and pi.
+class IntraModCommMixin:
 
-    def __init__(self, address):
-        # for RPI version 1, use “bus = smbus.SMBus(0)”
-        self.bus = smbus.SMBus(1)
-    
-        # This is the address we setup in the Arduino Program
-        self.slave_address = 0x0A
+    try:
+        # Initialization needed for the class to run properly
+        import smbus
+        import RPi.GPIO as gpio
+
+        # Static bus object
+        gpio.setmode(gpio.BCM)
+        __bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
+    except ModuleNotFoundError:
+        print("RPi not being used, skipping RPi imports...")
+
+    class IntraModCommAction(Enum):
+        ExecuteProcedure = 1
+
+# WRITING
+    @classmethod
+    def intra_write(cls, address, message):
+        for byte in message:
+            cls.__bus.write_byte(address, ord(byte))
+            time.sleep(1)
 
 
-    def read_number():
-        return self.bus.read_byte(self.slave_address)
-        # number = bus.read_byte_data(slave_address, 1)
+    # Generates a valid protocol message.
+    @classmethod
+    def generate_intra_protocol_message(cls, *, action=-1, procedure=-1, data=None, is_response=False):
+        # TODO Abstract this later on
+        high_bit = 1<<7
+        max_value = high_bit - 1
+
+        # Verify and modify data
+        if isinstance(action, cls.IntraModCommAction):
+            action = action.value
+        if action > max_value and action in set(action.value for action in cls.IntraModCommAction):
+            raise ValueError("action must not use the signing bit!")
+        if is_response:
+            action += high_bit
         
+        if procedure > max_value:
+            raise ValueError("procedure must not use the signing bit!")
+        if data is not None:
+            procedure += high_bit
 
-    def get_json_dict():
-        return_str = []
-        # use ord(char a) to turn it to byte
-        # use chr(byte b) to turn it to char
+        # Format protocol message
+        protocol_message = [action, procedure]
+        if data is not None:
+            protocol_message.append(data)
 
+        protocol_message.insert(0, len(protocol_message))
+        return protocol_message
+
+
+# READING
+    @classmethod
+    def intra_read(cls, address):
         for index in range(93):
-            num = self.read_number()
+            num = cls.__bus.read_byte(address)
             if num:
                 return_str.append(chr(num))
-
-        str_ret = ''.join(return_str)
-        return str_ret
-
-    #t = get_json_dict()
-    #import json
-    #d = json.loads(t)
-    #print(d)

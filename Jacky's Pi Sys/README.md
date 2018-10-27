@@ -126,3 +126,13 @@ To stop this subsystem, simply `stop()` it:
     mySubsys.stop()
 
 </details>
+
+___
+## Protocols
+Intra-modular communication should be done using the standardized protocol, as explained below:
+
+    protocol_message = {
+        "action": ActionFlag (1 byte, high bit on = message is a response),
+        "procedure": procedureFlag (1 byte, high bit on = data is present),
+        "data": myData (extra data for the procedure, if needed. Should be as small as possible.)
+    }

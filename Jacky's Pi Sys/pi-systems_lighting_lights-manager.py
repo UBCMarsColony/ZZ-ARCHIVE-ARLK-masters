@@ -29,7 +29,7 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 
 class LightingSubsystem(subsys.Subsystem):
 
-    light_pins = (namedtuple("LightPins", "overhead door_mars door_coln"))(
+    light_pins = (namedtuple("LightPins", ["overhead", "door_mars", "door_coln"]))(
         # Random values
         overhead=23,
         door_mars=24,
@@ -38,16 +38,15 @@ class LightingSubsystem(subsys.Subsystem):
 
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id)
+
+        for pin in self.light_pins:
+            gpio.setup(pin, gpio.OUT)
         
         self._sensor_dict = None
 
         
-    def register_pins(self):
-        for pin in self.light_pins:
-            gpio.setup(pin, gpio.OUT)
-        
     def loop(self):
-        if self._sensor_dict = None:
+        if self._sensor_dict is None:
             light_plan = generate_light_plan()
             update_lights(light_plan)
         time.sleep(2)   

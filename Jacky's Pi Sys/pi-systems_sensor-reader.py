@@ -1,49 +1,50 @@
 import importlib
-import RPi.GPIO as gpio
 import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
-
-import serial
-import json
 from collections import namedtuple
     
 
-SensorDataSet = namedtuple("SensorDataSet", "CO2 O2 temperature humidity pressure")
 
 
-class SensorSubsystem(subsys.SerialMixin, subsys.Subsystem):    
+class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):    
     
+    SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
     
     def __init__(self, name=None, thread_id=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
-        self.sensor_data = SensorDataSet(0,0,0,0,0)
+        self.sensor_data = self.SensorData(0,0,0,0,0)
 
 
     def loop(self):
-        with self:
-            self.__update_sensor_data()
+        print("Running thread!")
+        self.__update_sensor_data()
 
 
     def __update_sensor_data(self):
-        try:    
-            sensor_json = json.loads(self.get_json_dict())
+        try:
+            self.intra_write(0x0A, self.generate_intra_protocol_message(
+                action=self.IntraModCommAction.ExecuteProcedure,
+                procedure=1
+            ))
+            sensor_data_msg = self.intra_read(0x0A)
         except ValueError as ve:
-            print("Failed to parse JSON data.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
-        except Exception as e:
-            print("An unexpected exception occurred while trying to update Pi sensor data. \n\tStack Trace: " + str(e))
+            print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
+            return
 
-        self.sensor_data = SensorDataSet(
-            CO2=sensor_json.CO2,
-            O2=sensor_json.O2,
-            temperature=sensor_json.temperature,
-            humidity=sensor_json.humidity,
-            pressure=sensor_json.pressure
-        )
+        with self:
+            # TODO make this work - accessors are invalid since protocol version.
+            self.sensor_data = self.SensorData(
+                CO2=sensor_data_msg.CO2,
+                O2=sensor_data_msg.O2,
+                temperature=sensor_data_msg.temperature,
+                humidity=sensor_data_msg.humidity,
+                pressure=sensor_data_msg.pressure
+            )
 
 
     def error_check(self):
-        with self.thread.lock:
+        with self:
             CO2 = self.sensor_data.CO2
             O2 = self.sensor_data.O2
             TEMP = self.sensor_data.temperature

@@ -17,8 +17,10 @@ def add(subsys, overwrite=False):
 def remove(subsys):
     if isinstance(subsys, subsystem.Subsystem):
         subsys_pool.pop(subsys.name)
-    else if :
-        subsys_pool.pop()
+    elif str(subsys) == subsys:
+        subsys_pool.pop(subsys)
+    else:
+        raise ValueError("Invalid key parameter for subsystem retrieval!")
 
 
 def get_all():
