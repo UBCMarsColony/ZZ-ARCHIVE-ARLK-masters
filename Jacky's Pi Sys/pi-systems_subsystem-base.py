@@ -51,20 +51,23 @@ class Subsystem(ABC):
     def __del__(self):
         # Remove from subsystem pool.
         # subsys_pool.remove(self)
-        print("Subsystem deleted:\n" + repr(self))
+        if self.running:
+            self.stop()
+
+        print("Subsystem deleted:\n", repr(self))
 
 
     def start(self):
         if self.running is True:
             raise threading.ThreadError("Tried starting a thread that was still running!")
 
+        self.subsystem.running = True
         self.process.start() 
-        self.running = True
-        print("Subsystem started: \n" + repr(self))
+        print("Subsystem started: \n", repr(self))
         
 
     def stop(self):
-        print("Subsystem stopping:\n" + repr(self))
+        print("Subsystem stopping:\n", repr(self))
         with self:
             self.running = False
     
@@ -82,11 +85,9 @@ class Subsystem(ABC):
             self.subsystem = subsystem
             # self.setName(self.subsystem.name) VESITIGIAL CODE FROM THREADING
             self.lock = multiprocessing.Lock()
-            self.subsystem.running = False
 
 
         def run(self):
-            self.subsystem.running = True
             print("Subsystem running: \n" + repr(self.subsystem))
 
             last_runtime = time.time()
@@ -122,6 +123,8 @@ class IntraModCommMixin:
 # WRITING
     @classmethod
     def intra_write(cls, address, message):
+        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
+            "Please use the pi-systems_communications file instead")
         for byte in message:
             cls.__bus.write_byte(address, ord(byte))
             time.sleep(1)
@@ -130,6 +133,8 @@ class IntraModCommMixin:
     # Generates a valid protocol message.
     @classmethod
     def generate_intra_protocol_message(cls, *, action=-1, procedure=-1, data=None, is_response=False):
+        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
+            "Please use the pi-systems_communications file instead")
         # TODO Abstract this later on
         high_bit = 1<<7
         max_value = high_bit - 1
@@ -159,6 +164,8 @@ class IntraModCommMixin:
 # READING
     @classmethod
     def intra_read(cls, address):
+        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
+            "Please use the pi-systems_communications file instead")
         for index in range(93):
             num = cls.__bus.read_byte(address)
             if num:

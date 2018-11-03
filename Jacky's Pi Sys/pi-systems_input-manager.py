@@ -1,10 +1,12 @@
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
+comms = importlib.import_module('pi-systems_communication')
+
 import json
 from enum import Enum
 
 
-class InputSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
+class InputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     class Procedure(Enum):
         GetLatestInput=1

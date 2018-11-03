@@ -1,12 +1,14 @@
 import importlib
 import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
+comms = importlib.import_module('pi-systems_communication')
+
 from collections import namedtuple
     
 
 
 
-class SensorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):    
+class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):    
     
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
     
