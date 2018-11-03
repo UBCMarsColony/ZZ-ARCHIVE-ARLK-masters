@@ -1,7 +1,7 @@
 import importlib
 import time
 subsys = importlib.import_module('pi-systems_subsystem-base')
-comms = importlib.import_module('pi-systems_communication')
+comms = importlib.import_module('pi-systems_communications')
 
 from collections import namedtuple
     

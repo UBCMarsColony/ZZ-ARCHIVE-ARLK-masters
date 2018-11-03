@@ -1,6 +1,6 @@
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
-comms = importlib.import_module('pi-systems_communication')
+comms = importlib.import_module('pi-systems_communications')
 
 import json
 from enum import Enum

@@ -1,5 +1,7 @@
-#SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
-#between arduino and pi.
+from enum import Enum
+
+# SerialMixin class enables the subsystem to use I2C methods for data transfer
+# between arduino and pi.
 class IntraModCommMixin:
 
     try:
@@ -60,3 +62,8 @@ class IntraModCommMixin:
             num = cls.__bus.read_byte(address)
             if num:
                 return_str.append(chr(num))
+
+
+class InterModCommMixin:
+    pass
+    # TODO Implement

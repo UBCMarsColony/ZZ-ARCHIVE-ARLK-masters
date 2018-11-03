@@ -61,7 +61,7 @@ class Subsystem(ABC):
         if self.running is True:
             raise threading.ThreadError("Tried starting a thread that was still running!")
 
-        self.subsystem.running = True
+        self.running = True
         self.process.start() 
         print("Subsystem started: \n", repr(self))
         
