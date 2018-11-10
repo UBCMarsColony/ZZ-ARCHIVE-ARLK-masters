@@ -35,4 +35,7 @@ def get_all():
 def stop_all():
     print("Closing all subsystems.")
     for subsys in subsystem_pool.values():
-        subsys.stop()
+        if subsys.running:
+            subsys.stop()
+
+    del subsystem_pool

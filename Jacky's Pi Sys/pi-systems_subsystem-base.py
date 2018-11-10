@@ -61,7 +61,6 @@ class Subsystem(ABC):
         print("Subsystem stopping:\n", repr(self))
         with self:
             self.running = False
-            subsys_pool.remove(self)
 
 
     # Definition contains the code which will be looped over during the threads life.

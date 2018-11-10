@@ -6,16 +6,20 @@ import json
 from enum import Enum
 
 
-class InputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
+class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     class Procedure(Enum):
         GetLatestInput=1
         DisplayMessage=2
 
-    def __init__(self, name=None, thread_id=None, address=None):
+    def __init__(self, *, name, thread_id, address, linked_door):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
         self.address = address
+
+        # The door subsystem to which this input subsystem is linked.
+        self.linked_door = linked_door
+
 
     def loop(self):
         self.check_buttons()
@@ -42,5 +46,5 @@ class InputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             )
 
 if __name__ == "__main__":
-    c = InputSubsystem("test", 12, A)
+    c = DoorInputSubsystem("test", 12, A)
     c.check_buttons()

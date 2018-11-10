@@ -10,7 +10,7 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 # Import all subsystem files so we can create new instances of each one.
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
-input_ss = importlib.import_module('pi-systems_input-manager')
+door_input_ss = importlib.import_module('pi-systems_door-input-manager')
 # light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
 # valve_ss = importlib.import_module('pi-systems_valve-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
@@ -24,11 +24,29 @@ def begin(runtime_params):
     
     # Start initializing the vital airlock systems
     subsystems = []
+
+    subsystems.append(sensor_ss.SensorSubsystem(
+            name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))
+
+    door_col = door_ss.DoorSubsystem(
+        name="airlock1_door_col", thread_id=0xD00121, address=0)
+    subsystems.append(
+        door_col,
+        door_input_ss.DoorInputSubsystem(
+            name="airlock1_doorinput_col", thread_id=0xC01, address="FILL ME IN", linked_door=door_col),
+    )
+
+    door_mars = door_ss.DoorSubsystem(
+            name="airlock1_door_mars", thread_id=0xD00122, address="FILL ME IN")
+    subsystems.append(
+        door_mars,
+        door_input_ss.DoorInputSubsystem(
+            name="airlock1_doorinput_mars", thread_id=0x12ED, address="FILL ME IN", linked_door=door_mars)
+    )
     
-    subsystems.append(sensor_ss.SensorSubsystem(name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))
-    subsystems.append(door_ss.DoorSubsystem(name="airlock1_door_col", thread_id=0xD00121, address=0))
-    subsystems.append(door_ss.DoorSubsystem(name="airlock1_door_mars", thread_id=0xD00122, address="FILL ME IN"))
-    subsystems.append(input_ss.InputSubsystem(name="airlock1_input_mars", thread_id=0xE, address="FILL ME IN"))
+    
+    
+    
     # input = input_ss.InputSubsystem("input", 5)
     # input.start()
     
@@ -85,8 +103,8 @@ def loop(runtime_params):
     
     # CLI INFO
     elif nextinput == '?':
-        print("----- H E L P -----\n\to: Request door open\n\tc: Request door close" +
-            "\n\ti: Print contents of the subsystem pool\n\t?: Help window (this text)" + 
+        print("----- H E L P -----\no: Request door open\nc: Request door close" +
+            "\ni: Print contents of the subsystem pool\n?: Help window (this text)" + 
             "\n-------------------")
     else:
         print("Command not recognized")
