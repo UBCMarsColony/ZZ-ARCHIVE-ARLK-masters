@@ -20,11 +20,13 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
 
     def loop(self):
-        print("Running thread!")
         self.__update_sensor_data()
 
 
     def __update_sensor_data(self):
+        # self.stop()
+        return
+
         try:
             self.intra_write(0x0A, self.generate_intra_protocol_message(
                 action=self.IntraModCommAction.ExecuteProcedure,

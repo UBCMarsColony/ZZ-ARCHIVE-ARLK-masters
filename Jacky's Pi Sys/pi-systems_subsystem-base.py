@@ -31,7 +31,7 @@ class Subsystem(ABC):
             
         subsys_pool.add(self)
 
-        print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.process_id))
+        print("Subsystem initialized:", repr(self))
 
 
     # Allows "with" statement to be used on a subsystem, granting the "with" block
@@ -46,15 +46,7 @@ class Subsystem(ABC):
 
 
     def __repr__(self):
-        return "{ \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.process_id, str(self.running))
-
-    def __del__(self):
-        # Remove from subsystem pool.
-        # subsys_pool.remove(self)
-        if self.running:
-            self.stop()
-
-        print("Subsystem deleted:\n", repr(self))
+        return "{ \n\tname: \"%s\", \n\tthread_id: %i, \n\trunning: %s \n}" % (self.name, self.process_id, str(self.running))
 
 
     def start(self):
@@ -70,7 +62,9 @@ class Subsystem(ABC):
         print("Subsystem stopping:\n", repr(self))
         with self:
             self.running = False
-    
+
+
+        print(subsys_pool.get_all())
 
     # Definition contains the code which will be looped over during the threads life.
     @abstractmethod
@@ -94,12 +88,19 @@ class Subsystem(ABC):
             while self.subsystem.running:
                 # Time.time() uses seconds, so convert loop_delay_ms to seconds.
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
-                    self.subsystem.loop()
+                    try:
+                        self.subsystem.loop()
+                    except Exception as e:
+                        with self:
+                            print('Error: Subsystem exception has occured!', e)
+                            self.subsystem.running = False
                     last_runtime = time.time()
                 
                 time.sleep(0.5)
-
+        
+            self.terminate()
             self.join()
+            print(subsys_pool.get_all())
 
 
 #SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
@@ -115,7 +116,7 @@ class IntraModCommMixin:
         gpio.setmode(gpio.BCM)
         __bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
     except ModuleNotFoundError:
-        print("RPi not being used, skipping RPi imports...")
+        print("(DEPRECATED) RPi not being used, skipping RPi imports...")
 
     class IntraModCommAction(Enum):
         ExecuteProcedure = 1

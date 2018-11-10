@@ -6,22 +6,30 @@ subsystem = importlib.import_module('pi-systems_subsystem-base')
 # Subsystems are automatically placed in here upon creation
 # unless otherwise specified (See subsystem-base for the code).
 subsys_pool = {}
-    
+
+print('Just got created ')
+
 def add(subsys, overwrite=False):
-    if subsys.name not in subsys_pool or overwrite is True:
-        subsys_pool[subsys.name] = subsys
-    else:
-        print("WARNING: Key <" + subsys.name + "> already exists in the subsystem pool. Entry skipped.")
+    if subsys.name in subsys_pool and overwrite is False:
+        raise KeyError('Subsystem with key %s already exists in the pool!' % (subsys.name))
+
+    subsys_pool[subsys.name] = subsys
+    print('Subsystem added to pool: %s' % (subsys.name))
 
 
 def remove(subsys):
     if isinstance(subsys, subsystem.Subsystem):
-        subsys_pool.pop(subsys.name)
-    elif str(subsys) == subsys:
+        subsys = subsys.name
+    
+    if not isinstance(subsys, str):
+        raise TypeError("Provided subsystem removal key is an invalid type!")
+
+    if subsys in subsys_pool:
+        print(repr(subsys_pool))
         subsys_pool.pop(subsys)
     else:
-        raise ValueError("Invalid key parameter for subsystem retrieval!")
-
+        raise KeyError("Subsystem removal key not found in the pool!")
+    
 
 def get_all():
     return subsys_pool
@@ -30,4 +38,4 @@ def get_all():
 def stop_all():
     print("Closing all subsystems.")
     for subsys in subsys_pool.values():
-        subsys.join()
+        subsys.stop()

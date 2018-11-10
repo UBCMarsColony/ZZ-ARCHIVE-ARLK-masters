@@ -77,9 +77,8 @@ def loop(runtime_params):
     
     # SUBSYSTEMS INFO
     elif nextinput == "i" or nextinput == "I":
-        print("Current subsystem data:\n---------\n")
-        for subsys in ss_pool.get_all():
-            print(repr(subsys))
+        print("Current subsystem pool data:\n---------\n")
+        print(repr(ss_pool.get_all()))
     else:
         print("Command not recognized")
     
