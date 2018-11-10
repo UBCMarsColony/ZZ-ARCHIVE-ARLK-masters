@@ -12,11 +12,12 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
     
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
     
-    def __init__(self, name=None, thread_id=None):
+    def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
         # namedtuple is temporarily a dict for pickling purposes.
         self.sensor_data = {}#self.SensorData(0,0,0,0,0)
+        self.address = address
 
 
     def loop(self):
@@ -27,11 +28,11 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         # return
 
         try:
-            self.intra_write(0x0A, self.generate_intra_protocol_message(
+            self.intra_write(self.address, self.generate_intra_protocol_message(
                 action=self.IntraModCommAction.ExecuteProcedure,
                 procedure=1
             ))
-            sensor_data_msg = self.intra_read(0x0A)
+            sensor_data_msg = self.intra_read(self.address)
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
             return

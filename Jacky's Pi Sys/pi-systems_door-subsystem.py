@@ -10,10 +10,11 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         CloseDoor = ord("c")
 
 
-    def __init__(self, name=None, thread_id=None):
+    def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
         self.new_state = None
+        self.address = address
 
 
     def loop(self):
@@ -24,7 +25,7 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
                 # Check sensors and things
 
-                self.intra_write(0,
+                self.intra_write(self.address,
                     self.generate_intra_protocol_message(
                         action=self.IntraModCommAction.ExecuteProcedure,
                         procedure=self.new_state

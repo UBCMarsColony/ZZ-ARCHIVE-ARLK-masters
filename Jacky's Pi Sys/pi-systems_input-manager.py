@@ -12,23 +12,24 @@ class InputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         GetLatestInput=1
         DisplayMessage=2
 
-    def __init__(self, name=None, thread_id=None):
+    def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
+        self.address = address
 
     def loop(self):
         self.check_buttons()
 
 
     def check_buttons(self):
-        self.intra_write("ADDRESS HERE",
+        self.intra_write(self.address,
            self.generate_protocol_message(
                action=self.IntraModCommAction.ExecuteProcedure,
                procedure=self.Procedure.GetLatestInput.value
            )
         )
 
-        response = self.intra_read("ADDRESS HERE")
+        response = self.intra_read(self.address)
         print(response)
 
         if response:

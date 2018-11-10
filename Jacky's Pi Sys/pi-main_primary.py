@@ -10,7 +10,7 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 # Import all subsystem files so we can create new instances of each one.
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
-# input_ss = importlib.import_module('pi-systems_input-manager')
+input_ss = importlib.import_module('pi-systems_input-manager')
 # light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
 # valve_ss = importlib.import_module('pi-systems_valve-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
@@ -25,8 +25,10 @@ def begin(runtime_params):
     # Start initializing the vital airlock systems
     subsystems = []
     
-    subsystems.append(sensor_ss.SensorSubsystem(name="airlock1_sensors", thread_id=0xDE7EC7))
-    subsystems.append(door_ss.DoorSubsystem(name="airlock1_doors", thread_id=0xD0012))
+    subsystems.append(sensor_ss.SensorSubsystem(name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))
+    subsystems.append(door_ss.DoorSubsystem(name="airlock1_door_col", thread_id=0xD00121, address=0))
+    subsystems.append(door_ss.DoorSubsystem(name="airlock1_door_mars", thread_id=0xD00122, address="FILL ME IN"))
+    subsystems.append(input_ss.InputSubsystem(name="airlock1_input_mars", thread_id=0xE, address="FILL ME IN"))
     # input = input_ss.InputSubsystem("input", 5)
     # input.start()
     
@@ -50,6 +52,7 @@ def begin(runtime_params):
     print("\n---AIRLOCK SETUP COMPLETE.---\n")
 
     print("\n---STARTING LOOPER SEQUENCE---\n")
+    print("Command input enabled.")
     while True:
         try:
             loop(runtime_params)
@@ -63,7 +66,7 @@ def begin(runtime_params):
                 print("Airlock shutdown cancelled")
         
 def loop(runtime_params):
-    nextinput = input("Enter Command: ")
+    nextinput = input()
 
     subsystems = ss_pool.get_all()
 
@@ -79,9 +82,17 @@ def loop(runtime_params):
     elif nextinput == "i" or nextinput == "I":
         print("Current subsystem pool data:\n---------\n")
         print(repr(ss_pool.get_all()))
+    
+    # CLI INFO
+    elif nextinput == '?':
+        print("----- H E L P -----\n\to: Request door open\n\tc: Request door close" +
+            "\n\ti: Print contents of the subsystem pool\n\t?: Help window (this text)" + 
+            "\n-------------------")
     else:
         print("Command not recognized")
-    
+
+
+
     ######
     # TODO find a nicer way to do this
     # subsystems = ss_pool.get_all()
