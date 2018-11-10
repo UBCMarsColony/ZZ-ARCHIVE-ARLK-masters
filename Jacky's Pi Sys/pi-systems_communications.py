@@ -17,7 +17,7 @@ class IntraModCommMixin:
 
     class IntraModCommMessage:
         def __init__(self, raw_array):
-            self.raw_array = base_array
+            self.raw_array = raw_array
 
 
         @property
@@ -47,7 +47,7 @@ class IntraModCommMixin:
             return self.raw_array[2:]
 
 
-        def validate(self) -> bool:
+        def validate(self):
             # Check if the specified action is a valid integer value.
             if self.action not in set(a.value for a in IntraModCommMixin.IntraModCommAction):
                 return False
@@ -63,8 +63,11 @@ class IntraModCommMixin:
         
 
         @staticmethod
-        def generate(*, action=-1, procedure=-1, data=None, is_response=False) -> IntraModCommMixin.IntraModCommMessage:
-            if isinstance(action, cls.IntraModCommAction):
+        def generate(*, action=-1, procedure=-1, data=None, is_response=False):
+            max_value = 1 << 7
+            high_bit = 1 << 7
+            
+            if isinstance(action, IntraModCommMixin.IntraModCommAction):
                 action = action.value
 
             if action > max_value:
@@ -84,22 +87,26 @@ class IntraModCommMixin:
 
             generated_message = [action, procedure]
             if data is not None:
-                generated_message.append(data)
+                generated_message.extend(data)
 
-            return IntraModCommMessage(generated_message)
+            return IntraModCommMixin.IntraModCommMessage(generated_message)
 
 
     class IntraModCommAction(Enum):
         ExecuteProcedure = 1
+        SelfCheck = 2
+        Restart = 3
+        Shutdown = 4
 
 
 # WRITING
     @classmethod
     def intra_write(cls, address, message):
-        if isinstance(message, IntraModCommMixin.IntraModCommMessage)
+        if isinstance(message, IntraModCommMixin.IntraModCommMessage):
             message = message.raw_array
 
-        cls.__bus.write_i2c_block_data(address, message.pop(0), message)
+        cmd, data = message.pop(0), message
+        cls.__bus.write_i2c_block_data(address, cmd, data)
         # for byte in message:
             # cls.__bus.write_byte(address, ord(byte))
             # time.sleep(1)

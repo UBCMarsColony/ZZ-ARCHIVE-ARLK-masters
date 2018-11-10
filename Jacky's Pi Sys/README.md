@@ -136,3 +136,6 @@ Intra-modular communication should be done using the standardized protocol, as e
         "procedure": procedureFlag (1 byte, high bit on = data is present),
         "data": myData (extra data for the procedure, if needed. Should be as small as possible.)
     }
+
+Our size limit is 32 bytes. Data will be encoded by agreement among subsystems.
+___
