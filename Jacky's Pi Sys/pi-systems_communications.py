@@ -99,23 +99,27 @@ class IntraModCommMixin:
         if isinstance(message, IntraModCommMixin.IntraModCommMessage)
             message = message.raw_array
 
-        for byte in message:
-            cls.__bus.write_byte(address, ord(byte))
-            time.sleep(1)
+        cls.__bus.write_i2c_block_data(address, message.pop(0), message)
+        # for byte in message:
+            # cls.__bus.write_byte(address, ord(byte))
+            # time.sleep(1)
 
 
 # READING
     @classmethod
     def intra_read(cls, address) -> IntraModCommMixin.IntraModCommMessage:
-        for index in range(93):
-            num = cls.__bus.read_byte(address)
-            if num:
-                msg.append(num)
+        msg = cls.__bus.read_i2c_block_data(address, 0)
+        # for index in range(93):
+        #     num = cls.__bus.read_byte(address)
+        #     if num:
+        #         msg.append(num)
         
+        if not msg:
+            print('I2C message expected but not read. Discarding')
+            return
         
         message = IntraModCommMixin.IntraModCommMessage(msg)
-        
-        if message and message.validate():
+        if message.validate():
             return message
 
 class InterModCommMixin:
