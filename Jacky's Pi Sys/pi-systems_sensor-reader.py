@@ -24,8 +24,7 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
 
     def __update_sensor_data(self):
-        # self.stop()
-        return
+        # return
 
         try:
             self.intra_write(0x0A, self.generate_intra_protocol_message(
@@ -40,13 +39,13 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         with self:
             pass
             # TODO make this work - accessors are invalid since protocol version.
-            self.sensor_data = {
-                'CO2':sensor_data_msg.CO2,
-                'O2':sensor_data_msg.O2,
-                'temperature':sensor_data_msg.temperature,
-                'humidity':sensor_data_msg.humidity,
-                'pressure':sensor_data_msg.pressure
-            }
+            # self.sensor_data = {
+            #     'CO2':sensor_data_msg.CO2,
+            #     'O2':sensor_data_msg.O2,
+            #     'temperature':sensor_data_msg.temperature,
+            #     'humidity':sensor_data_msg.humidity,
+            #     'pressure':sensor_data_msg.pressure
+            # }
 
 
     def error_check(self):

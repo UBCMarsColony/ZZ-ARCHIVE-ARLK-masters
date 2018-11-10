@@ -1,5 +1,4 @@
-#import threading
-import multiprocessing
+import threading
 
 from abc import ABC, abstractmethod
 import importlib
@@ -23,11 +22,11 @@ class Subsystem(ABC):
             #raise TypeError("Subsystem parameter thread_id is not defined!")
 
         self.name = name or (self.__class__.__name__ + str(random.randint(0, 0xFFFF)))
-        self.process_id = thread_id
+        self.thread_id = thread_id
         
         self.running = False
         self.loop_delay_ms = loop_delay_ms
-        self.process = Subsystem.SubsystemProcess(self)
+        self.thread = Subsystem.SubsystemThread(self)
             
         subsys_pool.add(self)
 
@@ -37,16 +36,16 @@ class Subsystem(ABC):
     # Allows "with" statement to be used on a subsystem, granting the "with" block
     # secure access to subsystem data.
     def __enter__(self):
-        self.process.lock.acquire()
+        self.thread.lock.acquire()
         return self
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.process.lock.release()
+        self.thread.lock.release()
 
 
     def __repr__(self):
-        return "{ \n\tname: \"%s\", \n\tthread_id: %i, \n\trunning: %s \n}" % (self.name, self.process_id, str(self.running))
+        return "{ \n\tname: \"%s\", \n\tthread_id: %i, \n\trunning: %s \n}" % (self.name, self.thread_id, str(self.running))
 
 
     def start(self):
@@ -54,7 +53,7 @@ class Subsystem(ABC):
             raise threading.ThreadError("Tried starting a thread that was still running!")
 
         self.running = True
-        self.process.start() 
+        self.thread.start() 
         print("Subsystem started: \n", repr(self))
         
 
@@ -62,9 +61,8 @@ class Subsystem(ABC):
         print("Subsystem stopping:\n", repr(self))
         with self:
             self.running = False
+            subsys_pool.remove(self)
 
-
-        print(subsys_pool.get_all())
 
     # Definition contains the code which will be looped over during the threads life.
     @abstractmethod
@@ -72,13 +70,13 @@ class Subsystem(ABC):
         pass
 
 
-    class SubsystemProcess(multiprocessing.Process):
+    class SubsystemThread(threading.Thread):
         def __init__(self, subsystem): 
             super().__init__()
 
             self.subsystem = subsystem
-            # self.setName(self.subsystem.name) VESITIGIAL CODE FROM THREADING
-            self.lock = multiprocessing.Lock()
+            self.setName(self.subsystem.name)
+            self.lock = threading.Lock()
 
 
         def run(self):
@@ -89,18 +87,14 @@ class Subsystem(ABC):
                 # Time.time() uses seconds, so convert loop_delay_ms to seconds.
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
                     try:
+                        print('Running %s' % (self.subsystem.name))
                         self.subsystem.loop()
                     except Exception as e:
-                        with self:
-                            print('Error: Subsystem exception has occured!', e)
-                            self.subsystem.running = False
+                        print('Error: Subsystem exception has occured!', e)
+                        self.subsystem.stop()
                     last_runtime = time.time()
                 
                 time.sleep(0.5)
-        
-            self.terminate()
-            self.join()
-            print(subsys_pool.get_all())
 
 
 #SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer

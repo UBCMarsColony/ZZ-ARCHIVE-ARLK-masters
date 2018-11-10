@@ -25,7 +25,6 @@ def remove(subsys):
         raise TypeError("Provided subsystem removal key is an invalid type!")
 
     if subsys in subsys_pool:
-        print(repr(subsys_pool))
         subsys_pool.pop(subsys)
     else:
         raise KeyError("Subsystem removal key not found in the pool!")
