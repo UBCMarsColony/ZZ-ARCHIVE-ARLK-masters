@@ -10,7 +10,7 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 # Import all subsystem files so we can create new instances of each one.
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
-# input_ss = importlib.import_module('pi-systems_input-manager')
+door_input_ss = importlib.import_module('pi-systems_door-input-manager')
 # light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
 # valve_ss = importlib.import_module('pi-systems_valve-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
@@ -24,9 +24,29 @@ def begin(runtime_params):
     
     # Start initializing the vital airlock systems
     subsystems = []
+
+    subsystems.append(sensor_ss.SensorSubsystem(
+            name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))
+
+    door_col = door_ss.DoorSubsystem(
+        name="airlock1_door_col", thread_id=0xD00121, address=0)
+    subsystems.append(
+        door_col,
+        door_input_ss.DoorInputSubsystem(
+            name="airlock1_doorinput_col", thread_id=0xC01, address="FILL ME IN", linked_door=door_col),
+    )
+
+    door_mars = door_ss.DoorSubsystem(
+            name="airlock1_door_mars", thread_id=0xD00122, address="FILL ME IN")
+    subsystems.append(
+        door_mars,
+        door_input_ss.DoorInputSubsystem(
+            name="airlock1_doorinput_mars", thread_id=0x12ED, address="FILL ME IN", linked_door=door_mars)
+    )
     
-    subsystems.append(sensor_ss.SensorSubsystem(name="airlock1_sensors", thread_id=0xDE7EC7))
-    subsystems.append(door_ss.DoorSubsystem(name="airlock1_doors", thread_id=0xD0012))
+    
+    
+    
     # input = input_ss.InputSubsystem("input", 5)
     # input.start()
     
@@ -50,6 +70,7 @@ def begin(runtime_params):
     print("\n---AIRLOCK SETUP COMPLETE.---\n")
 
     print("\n---STARTING LOOPER SEQUENCE---\n")
+    print("Command input enabled.")
     while True:
         try:
             loop(runtime_params)
@@ -63,7 +84,7 @@ def begin(runtime_params):
                 print("Airlock shutdown cancelled")
         
 def loop(runtime_params):
-    nextinput = input("Enter Command: ")
+    nextinput = input()
 
     subsystems = ss_pool.get_all()
 
@@ -77,12 +98,19 @@ def loop(runtime_params):
     
     # SUBSYSTEMS INFO
     elif nextinput == "i" or nextinput == "I":
-        print("Current subsystem data:\n---------\n")
-        for subsys in ss_pool.get_all():
-            print(repr(subsys))
+        print("Current subsystem pool data:\n---------\n")
+        print(repr(ss_pool.get_all()))
+    
+    # CLI INFO
+    elif nextinput == '?':
+        print("----- H E L P -----\no: Request door open\nc: Request door close" +
+            "\ni: Print contents of the subsystem pool\n?: Help window (this text)" + 
+            "\n-------------------")
     else:
         print("Command not recognized")
-    
+
+
+
     ######
     # TODO find a nicer way to do this
     # subsystems = ss_pool.get_all()

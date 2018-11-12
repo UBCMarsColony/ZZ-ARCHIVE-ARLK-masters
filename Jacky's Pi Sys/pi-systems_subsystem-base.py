@@ -1,5 +1,4 @@
-#import threading
-import multiprocessing
+import threading
 
 from abc import ABC, abstractmethod
 import importlib
@@ -23,51 +22,46 @@ class Subsystem(ABC):
             #raise TypeError("Subsystem parameter thread_id is not defined!")
 
         self.name = name or (self.__class__.__name__ + str(random.randint(0, 0xFFFF)))
-        self.process_id = thread_id
+        self.thread_id = thread_id
         
         self.running = False
         self.loop_delay_ms = loop_delay_ms
-        self.process = Subsystem.SubsystemProcess(self)
+        self.thread = Subsystem.SubsystemThread(self)
             
         subsys_pool.add(self)
 
-        print("Subsystem initialized:\n\tName: %s\n\tID: %i" % (self.name, self.process_id))
+        print("Subsystem initialized:", repr(self))
 
 
     # Allows "with" statement to be used on a subsystem, granting the "with" block
     # secure access to subsystem data.
     def __enter__(self):
-        self.process.lock.acquire()
+        self.thread.lock.acquire()
         return self
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.process.lock.release()
+        self.thread.lock.release()
 
 
     def __repr__(self):
-        return "{ \n\tname=\"%s\", \n\tthread_id=%i, \n\trunning=%s \n}" % (self.name, self.process_id, str(self.running))
-
-    def __del__(self):
-        # Remove from subsystem pool.
-        # subsys_pool.remove(self)
-        print("Subsystem deleted:\n" + repr(self))
+        return "{ \n\tname: \"%s\", \n\tthread_id: %i, \n\trunning: %s \n}" % (self.name, self.thread_id, str(self.running))
 
 
     def start(self):
         if self.running is True:
             raise threading.ThreadError("Tried starting a thread that was still running!")
 
-        self.process.start() 
         self.running = True
-        print("Subsystem started: \n" + repr(self))
+        self.thread.start() 
+        print("Subsystem started: \n", repr(self))
         
 
     def stop(self):
-        print("Subsystem stopping:\n" + repr(self))
+        print("Subsystem stopping:\n", repr(self))
         with self:
             self.running = False
-    
+
 
     # Definition contains the code which will be looped over during the threads life.
     @abstractmethod
@@ -75,30 +69,31 @@ class Subsystem(ABC):
         pass
 
 
-    class SubsystemProcess(multiprocessing.Process):
+    class SubsystemThread(threading.Thread):
         def __init__(self, subsystem): 
             super().__init__()
 
             self.subsystem = subsystem
-            # self.setName(self.subsystem.name) VESITIGIAL CODE FROM THREADING
-            self.lock = multiprocessing.Lock()
-            self.subsystem.running = False
+            self.setName(self.subsystem.name)
+            self.lock = threading.Lock()
 
 
         def run(self):
-            self.subsystem.running = True
             print("Subsystem running: \n" + repr(self.subsystem))
 
             last_runtime = time.time()
             while self.subsystem.running:
                 # Time.time() uses seconds, so convert loop_delay_ms to seconds.
                 if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
-                    self.subsystem.loop()
+                    try:
+                        print('Running %s' % (self.subsystem.name))
+                        self.subsystem.loop()
+                    except Exception as e:
+                        print('Error: Subsystem exception has occured!', e)
+                        self.subsystem.stop()
                     last_runtime = time.time()
                 
                 time.sleep(0.5)
-
-            self.join()
 
 
 #SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
@@ -114,7 +109,7 @@ class IntraModCommMixin:
         gpio.setmode(gpio.BCM)
         __bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
     except ModuleNotFoundError:
-        print("RPi not being used, skipping RPi imports...")
+        print("(DEPRECATED) RPi not being used, skipping RPi imports...")
 
     class IntraModCommAction(Enum):
         ExecuteProcedure = 1
@@ -122,6 +117,8 @@ class IntraModCommMixin:
 # WRITING
     @classmethod
     def intra_write(cls, address, message):
+        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
+            "Please use the pi-systems_communications file instead")
         for byte in message:
             cls.__bus.write_byte(address, ord(byte))
             time.sleep(1)
@@ -130,6 +127,8 @@ class IntraModCommMixin:
     # Generates a valid protocol message.
     @classmethod
     def generate_intra_protocol_message(cls, *, action=-1, procedure=-1, data=None, is_response=False):
+        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
+            "Please use the pi-systems_communications file instead")
         # TODO Abstract this later on
         high_bit = 1<<7
         max_value = high_bit - 1
@@ -159,6 +158,8 @@ class IntraModCommMixin:
 # READING
     @classmethod
     def intra_read(cls, address):
+        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
+            "Please use the pi-systems_communications file instead")
         for index in range(93):
             num = cls.__bus.read_byte(address)
             if num:

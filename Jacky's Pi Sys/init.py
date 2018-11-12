@@ -46,7 +46,6 @@ if __name__ == "__main__":
 
     #Start the initial system setup
     # Navigate to main system directory
-    sys.path.insert(0, '../Jacky\'s Pi Sys')
 
     # Select the appropriate system to run, based on runtime_params.
     if runtime_params.simulator == 0:

@@ -1,35 +1,37 @@
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
+comms = importlib.import_module('pi-systems_communications')
 from enum import IntEnum
 
-class DoorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
+class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     class Procedure(IntEnum):
         OpenDoor = ord("o")
         CloseDoor = ord("c")
 
 
-    def __init__(self, name=None, thread_id=None):
+    def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
-        self.next_state = None
+        self.new_state = None
+        self.address = address
 
 
     def loop(self):
         
         with self:
-            if self.next_state is not None:
-                print("Door state updating...")
+            if self.new_state is not None:
+                print("Door state updating (%s)" % (self.Procedure(self.new_state).name))
 
                 # Check sensors and things
 
-                self.intra_write(0,
+                self.intra_write(self.address,
                     self.generate_intra_protocol_message(
                         action=self.IntraModCommAction.ExecuteProcedure,
-                        procedure=self.next_state
+                        procedure=self.new_state
                 ))
 
-                self.next_state = None
+                self.new_state = None
 
         #WARNING: MASS PSEUDOCODE
         #-------------------------
@@ -77,7 +79,7 @@ class DoorSubsystem(subsys.IntraModCommMixin, subsys.Subsystem):
             raise ValueError("Door state must be defined in DoorSubsystem.Procedure")
 
         with self:
-            self.next_state = state
+            self.new_state = state
 
         print("Door state requested: %s" % (self.Procedure(state).name))
 
