@@ -69,7 +69,7 @@ void loop(){
         poll_all();
         count += 1;
         if(count > 3){
-            EEPROM_readall(4);
+            //EEPROM_readall(4);
         }
     }
     else{
@@ -172,11 +172,11 @@ void poll_all(void){
     send_string = "{\"CO2\":\"" + c +"\",\"O2\":\""+ o +"\",\"temperature\":\""+ t +"\",\"pressure\":\""+p+"\",\"humidity\":\"" + h + "\"}";
     //Serial.println(send_string);
     send_length = send_string.length();     //This value is 64
-    Serial.println(send_length);
+    //Serial.println(send_length);
     //Serial.print("index: ");
     //Serial.println(send_index);
-    Serial.print("Python Dict:\t");
-    Serial.println(send_string);
+    //Serial.print("Python Dict:\t");
+    //Serial.println(send_string);
     if(send_index >= send_length)   //resets the index and loops the msg
         send_index = 0;  
     delay(1000);
