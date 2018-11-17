@@ -1,7 +1,7 @@
 import sys
 import importlib
 import time
-
+import keyboard
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
 
@@ -88,35 +88,52 @@ def begin(runtime_params):
         
 
 def loop(runtime_params):
-    nextinput = input()
-
     subsystems = ss_pool.get_all()
-
-    # DOOR LOGIC
-    if nextinput == "o" or nextinput == "O":
-        print("Requesting door open")
-        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
-    elif nextinput == "c" or nextinput == "C":
-        print("Requesting door close")
-        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
-    
-    # SUBSYSTEMS INFO
-    elif nextinput == "i" or nextinput == "I":
+    if keyboard.is_pressed("i"):
         print("Current subsystem pool data:\n---------\n")
         print(repr(ss_pool.get_all()))
-    elif nextinput == 's' or nextinput == 'S':
+        sleep(1)
+    elif keyboard.is_pressed('s'):
         with subsystems["airlock1_sensors"] as sensors:
             sensors.print_updates = not sensors.print_updates
             print('Sensors printout %s' % ("enabled" if sensors.print_updates else "disabled"))
-    
+        sleep(1)
+    elif keyboard.is_pressed('l'):
+        with subsystems['airlock1_lights-internal'] as lights:
+            lights.input_sig = not lights.input_sig
+            print('\nLights %s' % ('on' if lights.input_sig else 'off'))
+        sleep(1)
     # CLI INFO
-    elif nextinput == '?':
+    elif keyboard.is_pressed('?'):
         print("----- KEYBOARD COMMANDS -----\no: Request door open\nc: Request door close" +
             "\ns: Print sensor subsystem updates" +
             "\ni: Print contents of the subsystem pool\n?: Help window (this text)" + 
             "\n-------------------")
-    else:
-        print("Command not recognized")
+        sleep(1)
+    # if nextinput == "o" or nextinput == "O":
+    #     print("Requesting door open")
+    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
+    # elif nextinput == "c" or nextinput == "C":
+    #     print("Requesting door close")
+    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
+    
+    # # SUBSYSTEMS INFO
+    # elif nextinput == "i" or nextinput == "I":
+    #     print("Current subsystem pool data:\n---------\n")
+    #     print(repr(ss_pool.get_all()))
+    # elif nextinput == 's' or nextinput == 'S':
+    #     with subsystems["airlock1_sensors"] as sensors:
+    #         sensors.print_updates = not sensors.print_updates
+    #         print('Sensors printout %s' % ("enabled" if sensors.print_updates else "disabled"))
+    
+    # # CLI INFO
+    # elif nextinput == '?':
+    #     print("----- KEYBOARD COMMANDS -----\no: Request door open\nc: Request door close" +
+    #         "\ns: Print sensor subsystem updates" +
+    #         "\ni: Print contents of the subsystem pool\n?: Help window (this text)" + 
+    #         "\n-------------------")
+    # else:
+    #     print("Command not recognized")
 
 
 

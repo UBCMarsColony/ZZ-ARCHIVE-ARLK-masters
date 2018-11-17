@@ -4,7 +4,7 @@ except ImportError:
     print("Could not find the GPIO library. Are you on a Pi machine?")
 
 from collections import namedtuple
-from enum import Enum, auto
+from enum import Enum
 
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
