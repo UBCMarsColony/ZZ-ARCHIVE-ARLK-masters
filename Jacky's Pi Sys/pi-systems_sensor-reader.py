@@ -35,7 +35,7 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             # ))
             sensor_data_raw = self.intra_read(self.address)
         
-            sensor_data = struct.unpack('xxBHHBH', sensor_data_raw)
+            sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('xxBBHHH')]))
 
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
@@ -44,16 +44,15 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         with self:
             # TODO make this work - accessors are invalid since protocol version.
             self.sensor_data = {
-                'O2':sensor_data[2],
-                'temperature':sensor_data[3],
-                'humidity':sensor_data[4],
-                'pressure':sensor_data[5],
-                'CO2':sensor_data[6]
+                'O2':sensor_data[0],
+                'humidity':sensor_data[1],
+                'temperature':sensor_data[2],
+                'pressure':sensor_data[3],
+                'CO2':sensor_data[4]
             }
 
             if self.print_updates:
                 print(self.sensor_data)
-                print(self.error_check())
 
 
     def error_check(self):
