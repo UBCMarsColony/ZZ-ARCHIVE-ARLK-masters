@@ -5,7 +5,7 @@ comms = importlib.import_module('pi-systems_communications')
 
 from collections import namedtuple
     
-
+import struct
 
 
 class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):    
@@ -29,26 +29,31 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         # return
 
         try:
-            self.intra_write(self.address, self.IntraModCommMessage.generate(
-                action=self.IntraModCommAction.ExecuteProcedure,
-                procedure=1
-            ))
-            sensor_data_msg = self.intra_read(self.address)
+            # self.intra_write(self.address, self.IntraModCommMessage.generate(
+            #     action=self.IntraModCommAction.ExecuteProcedure,
+            #     procedure=1
+            # ))
+            sensor_data_raw = self.intra_read(self.address)
+        
+            sensor_data = struct.unpack('xxBHHBH', sensor_data_raw)
+
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
             return
 
         with self:
-            if self.print_updates:
-                print(sensor_data_msg)
             # TODO make this work - accessors are invalid since protocol version.
-            # self.sensor_data = {
-            #     'CO2':sensor_data_msg.CO2,
-            #     'O2':sensor_data_msg.O2,
-            #     'temperature':sensor_data_msg.temperature,
-            #     'humidity':sensor_data_msg.humidity,
-            #     'pressure':sensor_data_msg.pressure
-            # }
+            self.sensor_data = {
+                'O2':sensor_data[2],
+                'temperature':sensor_data[3],
+                'humidity':sensor_data[4],
+                'pressure':sensor_data[5],
+                'CO2':sensor_data[6]
+            }
+
+            if self.print_updates:
+                print(self.sensor_data)
+                print(self.error_check())
 
 
     def error_check(self):

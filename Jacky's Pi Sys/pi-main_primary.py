@@ -1,6 +1,6 @@
 import sys
 import importlib
-import time
+from time import sleep
 import keyboard
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
@@ -11,7 +11,7 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 # Import all subsystem files so we can create new instances of each one.
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
 door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
-light_ss = importlib.import_module('pi-systems_lighting_lights-manager')
+lights_ss = importlib.import_module('pi-systems_lighting_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
 
@@ -28,11 +28,12 @@ def begin(runtime_params):
     subsystems.append(sensor_ss.SensorSubsystem(
             name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))
 
+    # subsystems.append(lights_ss.LightingSubsystem(name="airlock1_lights-internal", thread_id=0x5EE))
+
     # door_col = door_ss.DoorSubsystem(
     #     name="airlock1_door_col", thread_id=0xD00121, address=0)
     # subsystems.append(door_col)
 
-    # subsystems.append(lights_ss.LightingSubsystem(name="airlock_lights-internal", thread_id=0x5EE)
 
     # subsystems.append(pressure_ss.PressureSubsystem())
     #     door_input_ss.DoorInputSubsystem(
@@ -89,7 +90,15 @@ def begin(runtime_params):
 
 def loop(runtime_params):
     subsystems = ss_pool.get_all()
-    if keyboard.is_pressed("i"):
+    
+    if keyboard.is_pressed('o'):
+        print("Requesting door open")
+        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
+    elif keyboard.is_pressed('c'):
+        print("Requesting door close")
+        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
+
+    elif keyboard.is_pressed("i"):
         print("Current subsystem pool data:\n---------\n")
         print(repr(ss_pool.get_all()))
         sleep(1)
