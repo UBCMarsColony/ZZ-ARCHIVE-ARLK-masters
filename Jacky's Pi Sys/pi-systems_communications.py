@@ -1,4 +1,6 @@
 from enum import Enum
+from threading import Lock
+
 
 # SerialMixin class enables the subsystem to use I2C methods for data transfer
 # between arduino and pi.
@@ -12,6 +14,7 @@ class IntraModCommMixin:
         # Static bus object
         gpio.setmode(gpio.BCM)
         __bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
+        __lock = Lock()
     except ModuleNotFoundError:
         print("RPi not being used, skipping RPi imports...")
 
@@ -106,7 +109,8 @@ class IntraModCommMixin:
             message = message.raw_array
 
         cmd, data = message.pop(0), message
-        cls.__bus.write_i2c_block_data(address, cmd, data)
+        with cls.__lock:
+            cls.__bus.write_i2c_block_data(address, cmd, data)
         # for byte in message:
             # cls.__bus.write_byte(address, ord(byte))
             # time.sleep(1)
@@ -115,7 +119,8 @@ class IntraModCommMixin:
 # READING
     @classmethod
     def intra_read(cls, address) -> IntraModCommMixin.IntraModCommMessage:
-        msg = cls.__bus.read_i2c_block_data(address, 0)
+        with cls.__lock:
+            msg = cls.__bus.read_i2c_block_data(address, 0)
         # for index in range(93):
         #     num = cls.__bus.read_byte(address)
         #     if num:
