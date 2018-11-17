@@ -118,7 +118,7 @@ class IntraModCommMixin:
 
 # READING
     @classmethod
-    def intra_read(cls, address) -> IntraModCommMixin.IntraModCommMessage:
+    def intra_read(cls, address):
         with cls.__lock:
             msg = cls.__bus.read_i2c_block_data(address, 0)
         # for index in range(93):
@@ -131,7 +131,7 @@ class IntraModCommMixin:
             return
         
         message = IntraModCommMixin.IntraModCommMessage(msg)
-        if message.validate():
+        if message: #.validate()
             return message
 
 class InterModCommMixin:

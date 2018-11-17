@@ -20,7 +20,9 @@
 #import time
 #from collections import namedtuple
 #import importlib
-    
+import importlib
+subsys = importlib.import_module("pi-systems_subsystem-base")
+
 class LightingSubsystem(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None, address=None, input_sig = 0):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms= 750)
@@ -43,7 +45,7 @@ class LightingSubsystem(subsys.Subsystem):
     def loop(self):
         if self.input_sig == True:
             GPIO.output(self.output_pin,GPIO.HIGH)
-        else
+        else:
             GPIO.output(self.output_pin,GPIO.LOW)
 
         

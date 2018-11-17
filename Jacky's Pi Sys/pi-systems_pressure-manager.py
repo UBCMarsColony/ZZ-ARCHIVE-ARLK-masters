@@ -36,7 +36,7 @@ class PressureSubsystem(subsys.Subsystem):
             #       The valve subsystem is not currently applying another state.
 
             # Send the new state information to the Arduino - make sure data is packaged according to protocol.
-            if self.new_state is not None
+            if self.new_state is not None:
                 self.new_message = generate_intra_protocol_message(action=action1, procedure=self.Procedure.Procedure1)      
                 intra_write(self.new_message) # send new_message to arduino
 
@@ -45,15 +45,15 @@ class PressureSubsystem(subsys.Subsystem):
         
     def request_new_state(self, new_state):
 
-        if not isinstance(self.new_state, self.Procedure) # new_state is not the expected object type:
+        if not isinstance(self.new_state, self.Procedure): # new_state is not the expected object type:
             raise TypeError("Type Error message")
         
         # the following is a data validity check (not an official error detection). Checks if data is out of range
-        if self.new_state < 1 or self.new_state > MAX  # MAX will need to be defined 
+        if self.new_state < 1 or self.new_state > MAX:  # MAX will need to be defined 
             raise ValueError("Value error message.  Value out of range.") 
 
         #Any other checks that are needed - may want to discuss with team! 
-        if #implement error detection/correction 
+        #if #implement error detection/correction 
 
         # This should only run so long as all other condiitons pass.
         with self:

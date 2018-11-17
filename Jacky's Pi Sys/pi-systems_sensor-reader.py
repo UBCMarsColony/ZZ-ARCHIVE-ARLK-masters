@@ -18,6 +18,7 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         # namedtuple is temporarily a dict for pickling purposes.
         self.sensor_data = {}#self.SensorData(0,0,0,0,0)
         self.address = address
+        self.print_updates = False
 
 
     def loop(self):
@@ -28,7 +29,7 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         # return
 
         try:
-            self.intra_write(self.address, self.generate_intra_protocol_message(
+            self.intra_write(self.address, self.IntraModCommMessage.generate(
                 action=self.IntraModCommAction.ExecuteProcedure,
                 procedure=1
             ))
@@ -38,7 +39,8 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             return
 
         with self:
-            pass
+            if self.print_updates:
+                print(sensor_data_msg)
             # TODO make this work - accessors are invalid since protocol version.
             # self.sensor_data = {
             #     'CO2':sensor_data_msg.CO2,
