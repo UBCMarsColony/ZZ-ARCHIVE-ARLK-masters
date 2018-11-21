@@ -24,6 +24,10 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
     def loop(self):
         self.__update_sensor_data()
 
+        with self:
+            if self.print_updates:
+                print(self.sensor_data)
+
 
     def __update_sensor_data(self):
         # return
@@ -50,9 +54,6 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
                 'pressure':sensor_data[3],
                 'CO2':sensor_data[4]
             }
-
-            if self.print_updates:
-                print(self.sensor_data)
 
 
     def error_check(self):

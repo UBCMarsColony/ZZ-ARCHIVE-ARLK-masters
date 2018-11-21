@@ -28,7 +28,8 @@ try:
     import RPi.GPIO as GPIO
 except RuntimeError:
     print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
-        
+except ModuleNotFoundError:
+    print("Running on non-pi machine")
 
 class LightingSubsystem(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None, address=None, input_sig = 0):

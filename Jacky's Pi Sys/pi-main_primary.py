@@ -74,6 +74,8 @@ def begin(runtime_params):
     print("\n---AIRLOCK SETUP COMPLETE.---\n")
 
     print("\n---STARTING LOOPER SEQUENCE---\n")
+    
+    keyboard.on_press(handle_cmd)
     print("Command input enabled.")
     while True:
         try:
@@ -89,36 +91,47 @@ def begin(runtime_params):
         
 
 def loop(runtime_params):
+    pass
+
+
+def handle_cmd(cmd):
+    cmd = cmd.name
     subsystems = ss_pool.get_all()
-    
-    if keyboard.is_pressed('o'):
+
+    # Door Toggles
+    if cmd is 'o' or cmd is 'O':
         print("Requesting door open")
         subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
-    elif keyboard.is_pressed('c'):
+    elif cmd is 'c' or cmd is 'C':
         print("Requesting door close")
         subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
 
-    elif keyboard.is_pressed("i"):
-        print("Current subsystem pool data:\n---------\n")
-        print(repr(ss_pool.get_all()))
-        sleep(1)
-    elif keyboard.is_pressed('s'):
+    # Sensors SS Debugging
+    elif cmd is 's':
         with subsystems["airlock1_sensors"] as sensors:
             sensors.print_updates = not sensors.print_updates
             print('Sensors printout %s' % ("enabled" if sensors.print_updates else "disabled"))
-        sleep(1)
-    elif keyboard.is_pressed('l'):
+
+    # Light SS Debugging
+    elif cmd is 'l':
         with subsystems['airlock1_lights-internal'] as lights:
             lights.input_sig = not lights.input_sig
             print('\nLights %s' % ('on' if lights.input_sig else 'off'))
-        sleep(1)
-    # CLI INFO
-    elif keyboard.is_pressed('?'):
+    
+    # General System Information/
+    elif cmd is "i":
+        print("Current subsystem pool items:\n---------\n")
+        for key in subsystems.keys():
+            print(key)
+    elif cmd is "I":
+        print("Current subsystem pool items:\n---------\n")
+        print(repr(subsystems))
+    elif cmd is '?':
         print("----- KEYBOARD COMMANDS -----\no: Request door open\nc: Request door close" +
             "\ns: Print sensor subsystem updates" +
             "\ni: Print contents of the subsystem pool\n?: Help window (this text)" + 
             "\n-------------------")
-        sleep(1)
+
     # if nextinput == "o" or nextinput == "O":
     #     print("Requesting door open")
     #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
