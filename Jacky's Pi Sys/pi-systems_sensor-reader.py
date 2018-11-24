@@ -74,22 +74,3 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             print("Pressure is nominal")
         if(20 < HUM < 80):
             print("Humidity is nominal")
-            
-if __name__ == "__main__":
-    #The following proves that I am sending sensor data succesffuly from arduino to pi
-    dict_str = self.get_json_dict()
-    print("Str:\t" + dict_str)
-
-    ss=SensorSubsystem(thread_id=5)
-    ss.start()
-    time.sleep(5)
-
-    for i in range(10):
-        with ss.thread.lock:
-            t = ss.get_data()
-            print(t)
-            t = ss.get_data("O2")
-            print(t)
-        
-        time.sleep(2)
-    ss.stop()

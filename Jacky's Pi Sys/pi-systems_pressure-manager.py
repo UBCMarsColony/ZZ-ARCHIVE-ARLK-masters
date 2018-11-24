@@ -58,4 +58,3 @@ class PressureSubsystem(subsys.Subsystem):
         # This should only run so long as all other condiitons pass.
         with self:
             self.next_state = new_state
-

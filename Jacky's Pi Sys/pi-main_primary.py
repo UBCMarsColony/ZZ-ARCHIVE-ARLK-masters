@@ -127,10 +127,19 @@ def handle_cmd(cmd):
         print("Current subsystem pool items:\n---------\n")
         print(repr(subsystems))
     elif cmd is '?':
-        print("----- KEYBOARD COMMANDS -----\no: Request door open\nc: Request door close" +
+        print("----- KEYBOARD COMMANDS -----" +
+            "\no: Request door open\nc: Request door close" +
+            "\nl: Toggle Lights" + 
+            "\ns: Toggle sensor debug printing" +
             "\ns: Print sensor subsystem updates" +
-            "\ni: Print contents of the subsystem pool\n?: Help window (this text)" + 
+            "\ni: Show items in subsystem pool" +
+            "\nI: Show details of items int the subsystem pool"
+            "\n?: Help window (this text)" + 
             "\n-------------------")
+    elif cmd is 'esc':
+        print('---STOPPING COLONY---')
+        ss_pool.stop_all()
+        exit(0)
 
     # if nextinput == "o" or nextinput == "O":
     #     print("Requesting door open")

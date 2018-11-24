@@ -47,13 +47,8 @@ if __name__ == "__main__":
     #Start the initial system setup
     # Navigate to main system directory
 
-    # Select the appropriate system to run, based on runtime_params.
-    if runtime_params.simulator == 0:
-        pi_main_sys = importlib.import_module('pi-main_primary')
-    elif runtime_params.simulator == 1:
-        pi_main_sys = importlib.import_module('pi-main_simulated')
-
-    # Wait for new user input to proceed
+    pi_main_sys = importlib.import_module('pi-main_primary')
+    # Wait for new user input to proceediIsl
     print("Preliminary setup completed.\nSYSTEM READY")
     # os.system("PAUSE")
 
