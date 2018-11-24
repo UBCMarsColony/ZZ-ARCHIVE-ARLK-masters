@@ -29,7 +29,7 @@ def remove(subsys):
     
 
 def get(name):
-    if name in subsystem_pool.keys()
+    if name in subsystem_pool.keys():
         return subsystem_pool[name]
     else:
         raise KeyError("No key %s found in subsystem pool!" % (name))
