@@ -39,7 +39,7 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             # ))
             sensor_data_raw = self.intra_read(self.address)
         
-            sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('xxBBHHH')]))
+            sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('>xxBBHHH')]))
 
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")

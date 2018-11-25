@@ -106,6 +106,12 @@ def handle_cmd(cmd):
         print("Requesting door close")
         subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
 
+    # Pressure Toggles
+    elif cmd is 'p':
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Procedure3)
+    elif cmd is 'd':
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Procedure4)
+
     # Sensors SS Debugging
     elif cmd is 's':
         with subsystems["airlock1_sensors"] as sensors:
