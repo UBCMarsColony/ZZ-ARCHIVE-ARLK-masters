@@ -13,10 +13,12 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 class PressureSubsystem(subsys.Subsystem):
     
     class Procedure(Enum):
-        Procedure1 = 1
-        Procedure2 = 2
-        Procedure3 = 3
-        Procedure4 = 4
+    #Procedures based on pressurization .ino code
+        Procedure0 = 0 #depressurize
+        Procedure1 = 1 #pressurize
+        Procedure2 = 2 #in_progress
+        Procedure3 = 3 
+        Procedure4 = 4 #pressurize
         # and so on...
 
 
@@ -53,7 +55,6 @@ class PressureSubsystem(subsys.Subsystem):
             raise ValueError("Value error message.  Value out of range.") 
 
         #Any other checks that are needed - may want to discuss with team! 
-        if #implement error detection/correction 
 
         # This should only run so long as all other condiitons pass.
         with self:

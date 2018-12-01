@@ -1,3 +1,5 @@
+#include <Wire.h>
+
 //Common data value definitions
 #define one_atm     101.3   // in kpa
 #define mars_atm    0.6 // in kpa
@@ -20,7 +22,6 @@
 #define pressurize 1
 #define depressurize 0
 
-
 //Control buttons
 #define button_colonyside       2
 #define button_marsside         3
@@ -33,6 +34,10 @@
 //valve pins
 #define first_valve             8
 #define second_valve            9     
+
+// pins for PY inputs for sensor data
+#define pressure_sensor_PY_1                 11
+#define pressure_sensor_PY_2                 12
 
 //Door sensor data debug signals
 #define door_close              10
@@ -66,6 +71,35 @@ typedef struct{
     bool valve_a;
     bool valve_b;
 }airlock;
+
+//
+
+void setup() {
+  Wire.begin(10);                // join i2c bus with address #10
+  Wire.onReceive(receiveEvent); // register event
+  Wire.onRequest(requestEvent); // register event
+  Serial.begin(9600);           // start serial for output
+}
+
+void receiveEvent(int howMany) {
+  int x = 0;
+  while (Wire.available()) { // loop through all but the last
+    x++;
+    unsigned char c = Wire.read();
+
+      //char c = Wire.read(); // receive byte as a character
+      Serial.println(int(c));         // print the character
+  }
+}
+
+void requestEvent() {
+  char s[] ="abcdefghijklmn";//opqrstuvwsyz1234567890!@#$^&*()-=}{";
+  Serial.print("num of bytes");
+  Serial.print(sizeof(s));
+  Wire.write(s); 
+  // respond with message of 6 bytes
+  // as expected by master
+}
 	
 //Airlock System Initialization
 airlock u_airlock;
@@ -76,6 +110,10 @@ void setup(){
     //////////Button and interrupts////////
     pinMode(first_valve,OUTPUT);
     pinMode(second_valve,OUTPUT);
+
+    pinMode(first_PY,INPUT);
+    pinMode(second_PY,INPUT);
+   
     //procedure flag
     cmd_sel = 'x';
     //There's no software debouncing, so build button debouncing circuits
@@ -114,6 +152,7 @@ void loop() {
         procedure(exit);
     }
     cmd_sel = 'x';
+    Serial.println(u_airlock.pressure);
     led_status_display(u_airlock.state);
     delay(1000);
 
@@ -170,7 +209,7 @@ bool PR(){
     u_airlock.valve_b = open;
     digitalWrite(second_valve, HIGH);
     while(u_airlock.state != pressurize){
-        u_airlock.state = get_airlock_state(pressure_data++);  
+        u_airlock.state = get_airlock_state(pressure_sensor_PY_1);   // replaced pressure data with P
         led_status_display(u_airlock.state);
     }
     hold_press();
@@ -181,7 +220,8 @@ bool DPR(){
     u_airlock.valve_b = close;
     digitalWrite(second_valve, LOW);
     while(u_airlock.state != depressurize){
-        u_airlock.state = get_airlock_state(pressure_data--);
+        receiveEvent
+        u_airlock.state = get_airlock_state(pressure_sensor_PY_1);
         led_status_display(u_airlock.state);
     }
     hold_press();
@@ -191,7 +231,7 @@ bool hold_press(){
     digitalWrite(first_valve, LOW);
     u_airlock.valve_b = close;
     digitalWrite(second_valve, LOW);
-    u_airlock.state = get_airlock_state(pressure_data);
+    u_airlock.state = get_airlock_state(pressure_sensor_PY_1);
     led_status_display(u_airlock.state);
 }
 //////////////////////////////////////////////

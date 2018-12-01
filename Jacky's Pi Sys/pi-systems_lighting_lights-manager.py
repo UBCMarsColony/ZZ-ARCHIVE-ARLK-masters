@@ -33,6 +33,7 @@ class LightingSubsystem(subsys.Subsystem):
         
         #variable definitions
         self.input_sig = input_sig
+        #check this pin!!!!!
         self.output_pin = 6
 
         #Setting up the GPIO board
@@ -46,7 +47,21 @@ class LightingSubsystem(subsys.Subsystem):
         else
             GPIO.output(self.output_pin,GPIO.LOW)
 
+class LightingSubsystem(subsys.Subsystem):
+
+    dict = Lights{overhead, door_mars, door_coln}
+
+    def __init__(self, name=None, thread_id=None):
+        super().__init__(name=name, thread_id=thread_id)
+
+        for pin in self.light_pins:
+            gpio.setup(pin, gpio.OUT)
         
+        self._sensor_dict = None    
+
+    def loop(self):
+
+    # Implement 
 
 
 

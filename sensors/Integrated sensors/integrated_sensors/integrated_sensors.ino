@@ -7,6 +7,8 @@ SoftwareSerial K_30_Serial(12,13);  //Sets up a virtual serial port
                                     //Using pin 12 for Rx and pin 13 for Tx
 SoftwareSerial O2_Serial(8,9); //Software Serial port with pin 8 as Rx
                             //and pin 9 as Tx
+
+#define max_index 10
 #define SIZE 100
 #define strsize 10
 #define maxval 6
@@ -17,7 +19,7 @@ int send_index;
 int send_length;
 BYTE recieved_cmd;
 
-String send_string;
+byte send_bytes[max_index];
 BYTE send_val;
 int transmission_size = 6;
 
@@ -42,11 +44,32 @@ String  humidity;
 String  pressure;
 String  CO2;
 
+//typedef struct{
+//    uint16_t data;
+//    int index;
+//}index_dat_link;
+
+typedef struct{
+    byte empty1;
+    byte empty2;
+    byte s_O2;
+    byte s_tempH;
+    byte s_tempL;
+    byte s_humidity;
+    byte s_pressH;
+    byte s_pressL;
+    byte s_CO2H;
+    byte s_CO2L;
+}send_data;
+
+send_data u_send_data;
 
 
 
 void setup()
 {
+
+    //pinMode(A0, INPUT_PULLUP);
     //Initial setup
     count = 0;
     Serial.begin(9600);
@@ -61,11 +84,15 @@ void setup()
     send_index = 0; //Initialize the index for I2C sending strings
     send_length = 0; //Initialize length of I2C send string
     recieved_cmd = byte(0); //initialized the I2C recieved cmd byte
-
+    u_send_data.empty1= 0;
+    u_send_data.empty2= 0;
     Serial.println("Setup Complete");
 }
+
 void loop(){
     if( count > 2){
+        //Serial.print("Input:\t");
+        //Serial.println(analogRead(A0)*5.0/1023);
         poll_all();
         count += 1;
         if(count > 3){
@@ -127,6 +154,7 @@ void poll_all(void){
     Serial.print(" % \n");  
     EEPROMstore(0, O2_string, strsize);
     O2 = String(O2_string);
+    u_send_data.s_O2 = (int(atof(O2_string)))& 0xFF;
 
     get_Temp();
     Serial.print("Temperature: ");
@@ -134,6 +162,8 @@ void poll_all(void){
     Serial.print(" C \n");
     EEPROMstore(1, temperature_string, strsize);
     temperature = String(temperature_string);
+    u_send_data.s_tempH = (int(atof(temperature_string))>>8)& 0xFF;
+    u_send_data.s_tempL = (int(atof(temperature_string)))& 0xFF;
 
     get_Humidity();
     Serial.print("Humidity: ");
@@ -141,6 +171,8 @@ void poll_all(void){
     Serial.print(" % \n");
     EEPROMstore(2, humidity_string, strsize);
     humidity = String(humidity_string);
+    u_send_data.s_humidity = (int(atof(humidity_string)))& 0xFF;
+    
 
     get_Pressure();
     Serial.print("Pressure: ");
@@ -148,6 +180,8 @@ void poll_all(void){
     Serial.print(" KPa \n");
     EEPROMstore(3, pressure_string, strsize);
     pressure = String(pressure_string);
+    u_send_data.s_pressH = (int(atof(pressure_string))>>8)& 0xFF;
+    u_send_data.s_pressL = (int(atof(pressure_string)))& 0xFF;
 
          K_30_Serial.listen();
          delay(2000);
@@ -159,26 +193,22 @@ void poll_all(void){
          Serial.print(" ppm \n");
          EEPROMstore(4, CO2_string, strsize);
          CO2 = String(CO2_string);
-         
-
+         u_send_data.s_CO2H = (int(atof(CO2_string))>>8)& 0xFF;
+         u_send_data.s_CO2L = (int(atof(CO2_string)))& 0xFF;
     Serial.println("_________________________");
 
-    String c = format_for_transmission(CO2,transmission_size);
-    String o = format_for_transmission(O2,transmission_size);
-    String t = format_for_transmission(temperature,transmission_size);
-    String p = format_for_transmission(pressure,transmission_size);
-    String h = format_for_transmission(humidity,transmission_size);
+    send_bytes[0]= u_send_data.empty1;
+    send_bytes[1]= u_send_data.empty2;
+    send_bytes[2]= u_send_data.s_O2;
+    send_bytes[3]= u_send_data.s_humidity;
+    send_bytes[4]= u_send_data.s_tempH;
+    send_bytes[5]= u_send_data.s_tempL;
+    send_bytes[6]= u_send_data.s_pressH;
+    send_bytes[7]= u_send_data.s_pressL;
+    send_bytes[8]= u_send_data.s_CO2H;
+    send_bytes[9]= u_send_data.s_CO2L;
 
-    send_string = "{\"CO2\":\"" + c +"\",\"O2\":\""+ o +"\",\"temperature\":\""+ t +"\",\"pressure\":\""+p+"\",\"humidity\":\"" + h + "\"}";
-    //Serial.println(send_string);
-    send_length = send_string.length();     //This value is 64
-    //Serial.println(send_length);
-    //Serial.print("index: ");
-    //Serial.println(send_index);
-    //Serial.print("Python Dict:\t");
-    //Serial.println(send_string);
-    if(send_index >= send_length)   //resets the index and loops the msg
-        send_index = 0;  
+
     delay(1000);
 }
 
@@ -192,7 +222,6 @@ void get_O2(void){
     buffer=printbytes(response_O2);
     O2_percentage = atof(buffer)/1000;
     dtostrf(O2_percentage,5,2,O2_string);
-    //return O2_string;
 }
 
 void get_Temp(void){
@@ -352,8 +381,9 @@ void receiveData(int byteCount)
 
 // callback for sending data
 void sendData()
-{
-    send_val = byte(send_string[send_index]);
-    Wire.write(send_val);     
-    send_index++; 
+{  
+    Wire.write(send_bytes,sizeof(send_bytes));  
+    //for(int i =0; i< max_index; i++){
+    //    Serial.println(send_bytes[i]);
+    //}
 }
