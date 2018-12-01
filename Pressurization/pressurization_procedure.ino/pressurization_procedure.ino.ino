@@ -66,7 +66,7 @@ typedef struct{
     bool valve_a;
     bool valve_b;
 }airlock;
-	
+
 //Airlock System Initialization
 airlock u_airlock;
 void setup(){
@@ -78,18 +78,11 @@ void setup(){
     pinMode(second_valve,OUTPUT);
     //procedure flag
     cmd_sel = 'x';
-    //There's no software debouncing, so build button debouncing circuits
-    pinMode(button_colonyside, INPUT_PULLUP);
-    pinMode(button_marsside, INPUT_PULLUP);
-
-    //LED display pins
+    
     pinMode(status_press,OUTPUT);
     pinMode(status_progress,OUTPUT);
     pinMode(status_depress,OUTPUT);
-    pinMode(door_close,INPUT_PULLUP);
-    //Button interrupts
-    attachInterrupt(digitalPinToInterrupt(button_colonyside), colonyside, RISING);
-    attachInterrupt(digitalPinToInterrupt(button_marsside), marside, RISING); 
+    
     u_airlock.valve_a = initial_valve_a;
     u_airlock.valve_b = initial_valve_b;
 
@@ -209,4 +202,26 @@ byte get_airlock_state(int pressure){
     else
         state = in_progress;
     return state;
+}
+
+void receiveData(int byteCount)
+{
+    Serial.println("receiving data");
+    int data[32] = [];
+    for(int i = 0; Wire.available() && i < 32; i++)
+    {
+        data[i] = Wire.read();
+    }
+    Serial.print("data received: ");
+    Serial.println(data);
+
+    if (data[0] == 1) {
+      switch(data[1]){
+        case 3: // Toggle Pressurization for Debug Purposes
+          
+          break;
+        case 4: // Toggle Depressurization for Debug Purposes
+          break;
+      }
+    }
 }
