@@ -1,3 +1,5 @@
+#include <Wire.h>
+
 //Common data value definitions
 #define one_atm     101.3   // in kpa
 #define mars_atm    0.6 // in kpa
@@ -39,6 +41,22 @@
 //DEBUGGING definitions
 float pressure_data = 0; // in kpa
 
+enum Procedure {
+    Pressurize = 3,
+    Depressurize = 4
+};
+
+typedef struct IaMC_PressureStateRequest {
+    byte action;
+    byte procedure;
+    byte priority;
+    float pTarget;      // Target pressurization
+    float pTolerance;   // Target pressurization tolerance (%)
+    byte overhead[21];
+} currentState;
+volatile struct IaMC_PressureStateRequest nextState;
+bool newStateRequested = false;
+
 ////////////////// Get State from Pressure data from Pi/////////////////////
 byte get_airlock_state(int pressure);
 
@@ -67,10 +85,12 @@ typedef struct{
     bool valve_b;
 }airlock;
 
+#define SLAVE_ADDRESS 0x14
+
 //Airlock System Initialization
 airlock u_airlock;
+
 void setup(){
-    //put setup code here
     Serial.begin(9600);
 
     //////////Button and interrupts////////
@@ -86,29 +106,54 @@ void setup(){
     u_airlock.valve_a = initial_valve_a;
     u_airlock.valve_b = initial_valve_b;
 
+    Serial.print("Using address: ");
+    Serial.println(SLAVE_ADDRESS);
 
-
+    Wire.begin(SLAVE_ADDRESS);
+    Wire.onReceive(receiveData);
+    Wire.onRequest(sendData);
 }
 void loop() {
     //Looping code 
     u_airlock.pressure = pressure_data;
     u_airlock.state = get_airlock_state(u_airlock.pressure);
 
-    Serial.print("Pressure is:\t");
+    Serial.print("Current Pressure: ");
     Serial.println(u_airlock.pressure);
-    Serial.print("State is:\t");
+    Serial.print("Current State:\ts");
     Serial.println(u_airlock.state);
     Serial.print("cmd_sel is:\t");
     Serial.println(char(cmd_sel));
-    if(cmd_sel == 'i'){
-        procedure(entry);
+
+    
+    if (newStateRequested) {
+      if (nextState.priority < currentState.priority ) {
+        Serial.println("REQUESTED STATE OVERRIDDEN DUE TO PROCEDURE PRIORTY");
+        newStateRequested = false;
+      }
+      else if 
+        (
+          nextState.pTarget == currentState.pTarget && 
+          newState.pTolerance == currentState.pTolerance
+        ) {
+          Serial.println("Ignoring duplicate state request");
+          newStateRequested = false;
+        }
+      else {
+        currentState = newState;
+      }
     }
-    else if (cmd_sel == 'o'){
-        procedure(exit);
-    }
-    cmd_sel = 'x';
-    led_status_display(u_airlock.state);
-    delay(1000);
+//    if next
+//    
+//    if(cmd_sel == 'i'){
+//        procedure(entry);
+//    }
+//    else if (cmd_sel == 'o'){
+//        procedure(exit);
+//    }
+//    cmd_sel = 'x';
+//    led_status_display(u_airlock.state);
+//    delay(1000);
 
 }
 int led_status_display(byte state){
@@ -163,7 +208,7 @@ bool PR(){
     u_airlock.valve_b = open;
     digitalWrite(second_valve, HIGH);
     while(u_airlock.state != pressurize){
-        u_airlock.state = get_airlock_state(pressure_data++);  
+        u_airlock.state = get_airlock_state(pressure_data++);
         led_status_display(u_airlock.state);
     }
     hold_press();
@@ -206,22 +251,25 @@ byte get_airlock_state(int pressure){
 
 void receiveData(int byteCount)
 {
-    Serial.println("receiving data");
-    int data[32] = [];
-    for(int i = 0; Wire.available() && i < 32; i++)
-    {
+    Serial.println("Data received:");
+    byte data[32] = {};
+    for (int i = 0; Wire.available(); i++) {
         data[i] = Wire.read();
+        Serial.println(data[i]);
     }
-    Serial.print("data received: ");
-    Serial.println(data);
 
     if (data[0] == 1) {
-      switch(data[1]){
-        case 3: // Toggle Pressurization for Debug Purposes
-          
-          break;
-        case 4: // Toggle Depressurization for Debug Purposes
-          break;
+      enum Procedure proc = data[1];
+
+      if (proc == Pressurize || proc == Depressurize) {
+        struct IaMC_PressureStateRequest request = (IaMC_PressureStateRequest) data;
+        nextState = request;
+        newStateRequested = true;
       }
     }
 }
+
+void sendData() {
+  Serial.println("sendData stub called");
+}
+
