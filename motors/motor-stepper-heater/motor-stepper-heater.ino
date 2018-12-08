@@ -266,8 +266,8 @@ void commandHandler(int howMany){
     }
 }
 
-void requestHandler(){
-    Wire.beginTransmission();
-    Wire.write()
-    Wire.endTransmission();
-}
+/*void requestHandler(){
+    //Wire.beginTransmission();
+    //Wire.write()
+    //Wire.endTransmission();
+}*/

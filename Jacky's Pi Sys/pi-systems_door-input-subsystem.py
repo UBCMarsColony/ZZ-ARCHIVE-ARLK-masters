@@ -3,15 +3,20 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
 
-import json
 from enum import Enum
-
+from struct import Struct
 
 class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     class Procedure(Enum):
         GetLatestInput=1
         DisplayMessage=2
+
+    #use the pins P.29 P.31 P.33 for the door input buttons
+    #low when not pressed, high when pressed
+    GPIO.setup(29, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(31, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(33, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
     def __init__(self, *, name, thread_id, address, linked_door):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
@@ -37,7 +42,6 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
                     if ord(b'c') in response.data or ord(b'C') in response.data:
                         self.linked_door.request_door_state(self.linked_door.Procedure.CloseDoor)
         
-
 
     def check_buttons(self) -> comms.IntraModCommMixin.IntraModCommMessage:
         self.intra_write(self.address,
