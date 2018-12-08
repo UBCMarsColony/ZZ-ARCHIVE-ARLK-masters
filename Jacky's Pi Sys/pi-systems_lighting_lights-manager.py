@@ -39,7 +39,8 @@ class LightingSubsystem(subsys.Subsystem):
 
         self.light_state = GPIO.LOW
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.output_pin,GPIO.OUT, initial = GPIO.LOW)
+        for pin in self.output_pins:            
+            GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
 
     #Check input signal, if high, turn lights on, if low, turn lights off
     def loop(self):
