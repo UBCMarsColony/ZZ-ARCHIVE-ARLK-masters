@@ -20,32 +20,35 @@
 #import time
 #from collections import namedtuple
 #import importlib
-    
+import importlib
+subsys = importlib.import_module("pi-systems_subsystem-base")
+
+#Try importing, gives error message if it fails
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
+except ModuleNotFoundError:
+    print("Running on non-pi machine")
+
 class LightingSubsystem(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None, address=None, input_sig = 0):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms= 750)
 
-        #Try importing, gives error message if it fails
-        try:
-            import RPI.GPIO as GPIO
-        except RuntimeError:
-            print("Error importing RPi.GPIO!  This is probably because you need superuser privileges.  You can achieve this by using 'sudo' to run your script")
-        
         #variable definitions
         self.input_sig = input_sig
-        #check this pin!!!!!
-        self.output_pin = 6
+        self.output_pin = 18
 
         #Setting up the GPIO board
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.output_pin,GPIO.output, initial = GPIO.LOW)
+        GPIO.setup(self.output_pin,GPIO.OUT, initial = GPIO.LOW)
 
     #Check input signal, if high, turn lights on, if low, turn lights off
     def loop(self):
         if self.input_sig == True:
-            GPIO.output(self.output_pin,GPIO.HIGH)
-        else
-            GPIO.output(self.output_pin,GPIO.LOW)
+            GPIO.output(self.output_pin, GPIO.HIGH)
+        else:
+            GPIO.output(self.output_pin, GPIO.LOW)
 
 class LightingSubsystem(subsys.Subsystem):
 

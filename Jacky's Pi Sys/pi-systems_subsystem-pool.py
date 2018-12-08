@@ -28,6 +28,12 @@ def remove(subsys):
         raise KeyError("Subsystem removal key not found in the pool!")
     
 
+def get(name):
+    if name in subsystem_pool.keys():
+        return subsystem_pool[name]
+    else:
+        raise KeyError("No key %s found in subsystem pool!" % (name))
+
 def get_all():
     return subsystem_pool
 
@@ -37,5 +43,3 @@ def stop_all():
     for subsys in subsystem_pool.values():
         if subsys.running:
             subsys.stop()
-
-    del subsystem_pool

@@ -5,7 +5,7 @@ comms = importlib.import_module('pi-systems_communications')
 
 from collections import namedtuple
     
-
+import struct
 
 
 class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):    
@@ -18,35 +18,42 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         # namedtuple is temporarily a dict for pickling purposes.
         self.sensor_data = {}#self.SensorData(0,0,0,0,0)
         self.address = address
+        self.print_updates = False
 
 
     def loop(self):
         self.__update_sensor_data()
+
+        with self:
+            if self.print_updates:
+                print(self.sensor_data)
 
 
     def __update_sensor_data(self):
         # return
 
         try:
-            self.intra_write(self.address, self.generate_intra_protocol_message(
-                action=self.IntraModCommAction.ExecuteProcedure,
-                procedure=1
-            ))
-            sensor_data_msg = self.intra_read(self.address)
+            # self.intra_write(self.address, self.IntraModCommMessage.generate(
+            #     action=self.IntraModCommAction.ExecuteProcedure,
+            #     procedure=1
+            # ))
+            sensor_data_raw = self.intra_read(self.address)
+        
+            sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('>xxBBHHH')]))
+
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
             return
 
         with self:
-            pass
             # TODO make this work - accessors are invalid since protocol version.
-            # self.sensor_data = {
-            #     'CO2':sensor_data_msg.CO2,
-            #     'O2':sensor_data_msg.O2,
-            #     'temperature':sensor_data_msg.temperature,
-            #     'humidity':sensor_data_msg.humidity,
-            #     'pressure':sensor_data_msg.pressure
-            # }
+            self.sensor_data = {
+                'O2':sensor_data[0],
+                'humidity':sensor_data[1],
+                'temperature':sensor_data[2],
+                'pressure':sensor_data[3],
+                'CO2':sensor_data[4]
+            }
 
 
     def error_check(self):
@@ -67,22 +74,3 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             print("Pressure is nominal")
         if(20 < HUM < 80):
             print("Humidity is nominal")
-            
-if __name__ == "__main__":
-    #The following proves that I am sending sensor data succesffuly from arduino to pi
-    dict_str = self.get_json_dict()
-    print("Str:\t" + dict_str)
-
-    ss=SensorSubsystem(thread_id=5)
-    ss.start()
-    time.sleep(5)
-
-    for i in range(10):
-        with ss.thread.lock:
-            t = ss.get_data()
-            print(t)
-            t = ss.get_data("O2")
-            print(t)
-        
-        time.sleep(2)
-    ss.stop()

@@ -4,13 +4,13 @@ except ImportError:
     print("Could not find the GPIO library. Are you on a Pi machine?")
 
 from collections import namedtuple
-from enum import Enum, auto
+from enum import Enum
 
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
+comms = importlib.import_module('pi-systems_communications')
 
-
-class PressureSubsystem(subsys.Subsystem):
+class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
     
     class Procedure(Enum):
     #Procedures based on pressurization .ino code
@@ -33,7 +33,7 @@ class PressureSubsystem(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None):
         super().__init__(name, thread_id)
         
-        self.next_state = None
+        self.new_state = None
 
 
     #Task to run in a seperate thread
