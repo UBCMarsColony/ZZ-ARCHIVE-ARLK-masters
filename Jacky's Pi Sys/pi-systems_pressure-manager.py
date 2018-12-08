@@ -21,11 +21,11 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         Procedure4 = 4 #pressurize
         # and so on...  
     
-    class priority():
+    class priority(Enum):
         priority0 = 0 #for all normal operations 
         priority1 = 1 #priority is 1 for aborting 
 
-    class TargetState():
+    class TargetState(Enum):
         close = 0 
         Pressurize = 1
         Depressurize = 2
