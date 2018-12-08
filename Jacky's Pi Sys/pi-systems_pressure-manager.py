@@ -21,11 +21,11 @@ class PressureSubsystem(subsys.Subsystem):
         Procedure4 = 4 #pressurize
         # and so on...  
     
-    class priority(byte):
-        priority0 = 0
-        priority1 = 1
+    class priority():
+        priority0 = 0 #for all normal operations 
+        priority1 = 1 #priority is 1 for aborting 
 
-    class TargetState(byte):
+    class TargetState():
         close = 0 
         Pressurize = 1
         Depressurize = 2
@@ -63,7 +63,7 @@ class PressureSubsystem(subsys.Subsystem):
             raise TypeError("Type Error message")
         
         # the following is a data validity check (not an official error detection). Checks if data is out of range
-        if self.new_state < 1 or self.new_state > MAX  # MAX will need to be defined 
+        if self.new_state < 0:
             raise ValueError("Value error message.  Value out of range.") 
 
         #Any other checks that are needed - may want to discuss with team! 
@@ -72,3 +72,5 @@ class PressureSubsystem(subsys.Subsystem):
         with self:
             self.next_state = new_state
 
+if __name__ == "__main__":
+    next_state = None
