@@ -32,24 +32,22 @@ except ModuleNotFoundError:
     print("Running on non-pi machine")
 
 class LightingSubsystem(subsys.Subsystem):
-    def __init__(self, name=None, thread_id=None, address=None, pin=None, input_sig = 0):
+    def __init__(self, name=None, thread_id=None, address=None, pins=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms= 750)
 
-        #variable definitions
-        self.input_sig = input_sig
-        self.output_pin = pin
+        self.output_pins = pins if isinstance(pins, list) else [pins]
 
-        #Setting up the GPIO board
+        self.light_state = GPIO.LOW
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.output_pin,GPIO.OUT, initial = GPIO.LOW)
 
     #Check input signal, if high, turn lights on, if low, turn lights off
     def loop(self):
-        if self.input_sig == True:
-            GPIO.output(self.output_pin, GPIO.HIGH)
-        else:
-            GPIO.output(self.output_pin, GPIO.LOW)
+        for pin in self.output_pins:
+            GPIO.output(pin, self.light_state)
 
+    def toggle():
+        self.light_state = not self.light_state
 
 
 # LightScheme library is imported with importlib due 
