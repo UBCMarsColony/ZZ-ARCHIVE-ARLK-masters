@@ -17,10 +17,18 @@ class PressureSubsystem(subsys.Subsystem):
         Procedure0 = 0 #depressurize
         Procedure1 = 1 #pressurize
         Procedure2 = 2 #in_progress
-        Procedure3 = 3 
+        SetPressure = 3 #Procedure 3
         Procedure4 = 4 #pressurize
-        # and so on...
+        # and so on...  
+    
+    class priority(byte):
+        priority0 = 0
+        priority1 = 1
 
+    class TargetState(byte):
+        close = 0 
+        Pressurize = 1
+        Depressurize = 2
 
     def __init__(self, name=None, thread_id=None):
         super().__init__(name, thread_id)
@@ -38,8 +46,12 @@ class PressureSubsystem(subsys.Subsystem):
             #       The valve subsystem is not currently applying another state.
 
             # Send the new state information to the Arduino - make sure data is packaged according to protocol.
-            if self.new_state is not None
-                self.new_message = generate_intra_protocol_message(action=action1, procedure=self.Procedure.Procedure1)      
+            if self.new_state is not None:
+                self.data = struct.pack(self.priority, self.TargetState)
+                #self.new_message = generate_intra_protocol_message(action=action1, procedure=self.Procedure.Procedure1)      
+                self.IntraModCommMessage.generate(action=self.IntraModCommAction.ExecuteProcedure,
+                                                procedure=self.Procedure.GetLatestInput.value, 
+                                                data=self.data)
                 intra_write(self.new_message) # send new_message to arduino
 
         # Set next_state to None, which will make sure the loop doesn't run again until the next request.
@@ -47,7 +59,7 @@ class PressureSubsystem(subsys.Subsystem):
         
     def request_new_state(self, new_state):
 
-        if not isinstance(self.new_state, self.Procedure) # new_state is not the expected object type:
+        if not isinstance(self.new_state, self.Procedure): # new_state is not the expected object type:
             raise TypeError("Type Error message")
         
         # the following is a data validity check (not an official error detection). Checks if data is out of range

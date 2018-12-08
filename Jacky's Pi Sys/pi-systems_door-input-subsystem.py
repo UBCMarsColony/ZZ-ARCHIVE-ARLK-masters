@@ -18,12 +18,6 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
     GPIO.setup(31, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     GPIO.setup(33, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-    struct structure{
-        self.priority = 0 #change later
-        self.PTarget = 0 # change later
-        self.PTolerance = 0
-    }
-
     def __init__(self, *, name, thread_id, address, linked_door):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
 
