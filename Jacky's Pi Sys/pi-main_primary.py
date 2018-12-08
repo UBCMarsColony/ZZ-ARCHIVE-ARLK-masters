@@ -26,9 +26,9 @@ def begin(runtime_params):
     subsystems = []
 
     subsystems.append(sensor_ss.SensorSubsystem(
-            name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))
+            name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))    
 
-    # subsystems.append(lights_ss.LightingSubsystem(name="airlock1_lights-internal", thread_id=0x5EE))
+    subsystems.append(lights_ss.LightingSubsystem(name="airlock1_lights-internal", thread_id=0x5EE, pin=18))
 
     # door_col = door_ss.DoorSubsystem(
     #     name="airlock1_door_col", thread_id=0xD00121, address=0)

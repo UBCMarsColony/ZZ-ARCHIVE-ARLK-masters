@@ -32,12 +32,12 @@ except ModuleNotFoundError:
     print("Running on non-pi machine")
 
 class LightingSubsystem(subsys.Subsystem):
-    def __init__(self, name=None, thread_id=None, address=None, input_sig = 0):
+    def __init__(self, name=None, thread_id=None, address=None, pin=None, input_sig = 0):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms= 750)
 
         #variable definitions
         self.input_sig = input_sig
-        self.output_pin = 18
+        self.output_pin = pin
 
         #Setting up the GPIO board
         GPIO.setmode(GPIO.BCM)
