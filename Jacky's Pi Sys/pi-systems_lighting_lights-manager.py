@@ -48,5 +48,9 @@ class LightingSubsystem(subsys.Subsystem):
         for pin in self.output_pins:
             GPIO.output(pin, self.light_state)
 
-    def toggle():
-        self.light_state = not self.light_state
+
+    def toggle(state=None): # State should be a bool or int 0/1
+        if state is not None:
+            self.light_state = state
+        else:
+            self.light_state = not self.light_state

@@ -121,8 +121,8 @@ def handle_cmd(cmd):
     # Light SS Debugging
     elif cmd is 'l':
         with subsystems['airlock1_lights-internal'] as lights:
-            lights.input_sig = not lights.input_sig
-            print('\nLights %s' % ('on' if lights.input_sig else 'off'))
+            lights.toggle()
+            print('\nLights %s' % ('on' if lights.light_state else 'off'))
     
     # General System Information/
     elif cmd is "i":
