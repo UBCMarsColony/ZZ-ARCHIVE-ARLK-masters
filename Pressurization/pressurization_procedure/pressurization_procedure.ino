@@ -140,7 +140,12 @@ void receiveData(int byteCount) {
       Serial.println(data[i]);
   }
 
-  // Run checks if needed.
+
+  if (data[1] >= NumMessages) {
+    Serial.println("CRITICAL ERROR: Received message of unknown type! This should never happen.");
+    return;
+  }
+  // Run other checks if needed.
 
   // Put message into the queue
   for (int i = 0; i < MSG_LEN; i++)
