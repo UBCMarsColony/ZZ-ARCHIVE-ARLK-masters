@@ -10,7 +10,7 @@ void sendData();
 #define VALVE_DEPRESSURIZER 9
 
 // Other constants
-#define MSG_LENGTH 32
+#define MSG_LEN 32
 
 enum Procedure {
   SetPressure   = 3,
@@ -25,15 +25,18 @@ typedef struct SetPressure_t {
   byte targetState;
 };
 
-
-void evaluateMessage(byte[], int);
-
-volatile byte messages[NumMessages][MSG_LENGTH] = {0};  // Messages are stored in the element corrsponding to 
-                                                        //their procedure ID (as specified in the Procedure enum)
+volatile byte messages[NumMessages][MSG_LEN] = {0};  // Messages are stored in the element corrsponding to 
+                                                     // their procedure ID (as specified in the Procedure enum)
 volatile byte msgIndex = 0; // Points to a message to be evaluated.
 
 // Pressure Data
 SetPressure_t *currentPressureState;
+
+enum State {
+  Close = 0,
+  Pressurize = 1,
+  Depressurize = 2
+};
 
 typedef struct ValveState_t {
   bool pressurizer;
@@ -43,16 +46,16 @@ typedef struct ValveState_t {
     : pressurizer(p)
     , depressurizer(dp){}
 };
+const struct ValveState_t* PRESSURIZE = new ValveState_t(HIGH, LOW);
+const struct ValveState_t* DEPRESSURIZE = new ValveState_t(LOW, HIGH);
+const struct ValveState_t* CLOSE = new ValveState_t(LOW, LOW);
 
-enum State {
-  Close = 0,
-  Pressurize = 1,
-  Depressurize = 2
-};
 
-const struct ValveState_t *PRESSURIZE = new ValveState_t(HIGH, LOW);
-const struct ValveState_t *DEPRESSURIZE = new ValveState_t(LOW, HIGH);
-const struct ValveState_t *CLOSE = new ValveState_t(LOW, LOW);
+// Function Signatures
+void evaluateMessage(byte[], int);
+void applyValveState(struct ValveState_t);
+void receiveData(int);
+void sendData();
 
 void setup() {
   Serial.begin(9600);
@@ -74,38 +77,14 @@ void setup() {
  * This loop is configured to:
  *    1. Evaluate next message in the messages array. If a message needs immediate evaluations, the 'msgIndex' value can be set to that message.
  *    2. Undergo any airlock actions.
- */
-bool t1 = false, t2 = false, t3 = false;;
- 
+ */ 
 void loop() {
   // MESSAGE PARSING & EVALUATION  
   evaluateMessage(messages[msgIndex], msgIndex);
   memset(messages[msgIndex], 0, sizeof(messages[msgIndex])); // Clear message from 'messages' array
   msgIndex = (msgIndex + 1) % NumMessages;
 
-  if(millis() > 5000 && !t1 ) {
-    Serial.print("P:");
-    Serial.print(PRESSURIZE->pressurizer);
-    Serial.println(PRESSURIZE->depressurizer);
-    t1 = true;
-    digitalWrite(VALVE_PRESSURIZER, PRESSURIZE->pressurizer);
-    digitalWrite(VALVE_DEPRESSURIZER, PRESSURIZE->depressurizer);
-  }
-  if(millis() > 15000 && !t2 ) {
-    Serial.print("D:");
-    Serial.print(DEPRESSURIZE->pressurizer);
-    Serial.println(DEPRESSURIZE->depressurizer);
-    t2 = true;
-    digitalWrite(VALVE_PRESSURIZER, DEPRESSURIZE->pressurizer);
-    digitalWrite(VALVE_DEPRESSURIZER, DEPRESSURIZE->depressurizer);
-  }
-  
-  if(millis() > 25000 && !t3 ) {
-    Serial.println("C");
-    t3 = true;
-    digitalWrite(VALVE_PRESSURIZER, CLOSE->pressurizer);
-    digitalWrite(VALVE_DEPRESSURIZER, CLOSE->depressurizer);
-  }
+  TEST_ROUTINE();
 }
 
 
@@ -126,16 +105,13 @@ void evaluateMessage(byte message[], int type) {
           
           switch(currentPressureState->targetState) {
             case Pressurize:
-              digitalWrite(VALVE_PRESSURIZER, PRESSURIZE->pressurizer);
-              digitalWrite(VALVE_DEPRESSURIZER, PRESSURIZE->depressurizer);
+              applyValveState(PRESSURIZE);
               break;
             case Depressurize:
-              digitalWrite(VALVE_PRESSURIZER, DEPRESSURIZE->pressurizer);
-              digitalWrite(VALVE_DEPRESSURIZER, DEPRESSURIZE->depressurizer);
+              applyValveState(DEPRESSURIZE);
               break;
             case Close:
-              digitalWrite(VALVE_PRESSURIZER, CLOSE->pressurizer);
-              digitalWrite(VALVE_DEPRESSURIZER, CLOSE->depressurizer);
+              applyValveState(CLOSE);
               break;
           }
         }
@@ -144,12 +120,19 @@ void evaluateMessage(byte message[], int type) {
   }
 }
 
+
+void applyValveState(struct ValveState_t* state) {
+  digitalWrite(VALVE_PRESSURIZER, state->pressurizer);
+  digitalWrite(VALVE_DEPRESSURIZER, state->depressurizer);
+}
+
+
 /*
  * I2C INTERRUPTS BEYOND THIS POINT
  */
 void receiveData(int byteCount) {
   Serial.println("Received transmission from Master");
-  byte data[MSG_LENGTH] = {};
+  byte data[MSG_LEN] = {};
 
   // Read the incoming message.
   for (int i = 0; Wire.available(); i++) {
@@ -160,11 +143,43 @@ void receiveData(int byteCount) {
   // Run checks if needed.
 
   // Put message into the queue
-  for (int i = 0; i < MSG_LENGTH; i++)
+  for (int i = 0; i < MSG_LEN; i++)
     messages[data[1]][i] = data[i];
 }
 
 void sendData() {
   Serial.println("sendData stub called");
+}
+
+
+/*
+ * TEST ROUTINE CODE BELOW
+ * -----------------------
+ * Can be removed once system is
+ * confirmed working.
+ */
+
+bool t1 = false, t2 = false, t3 = false;;
+void TEST_ROUTINE() {
+  if(millis() > 5000 && !t1 ) {
+    Serial.print("P:");
+    Serial.print(PRESSURIZE->pressurizer);
+    Serial.println(PRESSURIZE->depressurizer);
+    t1 = true;
+    applyValveState(PRESSURIZE);
+  }
+  if(millis() > 15000 && !t2 ) {
+    Serial.print("D:");
+    Serial.print(DEPRESSURIZE->pressurizer);
+    Serial.println(DEPRESSURIZE->depressurizer);
+    t2 = true;
+    applyValveState(DEPRESSURIZE);
+  }
+  
+  if(millis() > 25000 && !t3 ) {
+    Serial.println("C");
+    t3 = true;
+    applyValveState(CLOSE);
+  }
 }
 
