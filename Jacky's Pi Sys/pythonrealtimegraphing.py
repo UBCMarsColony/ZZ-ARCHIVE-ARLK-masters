@@ -1,4 +1,8 @@
 
+#Noah Caleanu
+#22847157
+# Code for real time graphing from a sensor
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -53,7 +57,8 @@ ax.set_xlim(0, xsize)
 ax.grid()
 xdata, ydata = [], []
 
-# Important: Although blit=True makes graphing faster, we need blit=False to prevent
-# spurious lines to appear when resizing the stripchart.
+# TO READER/USER OF THIS CODE, PLS READ:
+# Although blit=True makes graphing faster --> we need blit=False to prevent
+# spurious lines to appear when resizing the stripchart
 ani = animation.FuncAnimation(fig, run, data_gen, blit=False, interval=100, repeat=False)
 plt.show()
