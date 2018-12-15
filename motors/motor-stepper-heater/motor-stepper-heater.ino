@@ -1,7 +1,7 @@
 #include <Wire.h>
 
 //constants
-
+#define MSG_LEN 32
 struct pin{
     int PUL=10;
     int DIR=11;
@@ -46,11 +46,38 @@ enum tempState{
 };
 enum tempState tempStatusEnum;
 
+
+enum TargetState {
+    Close,
+    Pressurize,
+    Depressurize,
+    Idle
+}
+
+enum Procedure {
+    SetDoorState = 3
+    NumMessages
+}
+
+typedef struct SetDoorState_t {
+  byte action;
+  byte procedure;
+  byte priority;
+  byte targetState;
+};
+
+volatile byte messages[NumMessages][MSG_LEN] = {0};
+volatile byte msgIndex = 0;
+
 int currentAngle, datumClosed, datumOpen;
 
 void setup() {
     Serial.begin(9600);
+    
+    Serial.print("Using address ");
+    Serial.println(address_slave);
     Wire.begin(address_slave); //fucking slaves get your ass back here
+
     Serial.println("UBC Mars Colony Airlock program");
     Serial.println("Door control and heater system");
     delay(2000);
@@ -87,9 +114,10 @@ void setup() {
     doorStatus=unknown;
     Serial.println("Door status and pinNumber set, testing motor");
     motorTest();
+    Wire.onReceive(commandHandler); //function to call when command received
+
     Wire.onRequest(requestHandler);
     Serial.println("System setup complete, starting...");
-
 }
 
 //ISR (interrupt service request): poll for temperature then enable heaters as required
@@ -108,7 +136,10 @@ ISR(TIMER1_COMPA_vect){
 }
 
 void loop() {
-    Wire.onReceive(commandHandler); //function to call when command received
+    // MESSAGE PARSING & EVALUATION  
+    evaluateMessage(messages[msgIndex], msgIndex);
+    memset(messages[msgIndex], 0, sizeof(messages[msgIndex])); // Clear message from 'messages' array
+    msgIndex = (msgIndex + 1) % NumMessages;
 }
 
 //motor is low side switching! 5V from arduino 5v rail. logical disable is pulling the L pin to 5V.
@@ -254,16 +285,44 @@ void motorHeatRoutine(double tempStatus[]){
     }
 }
 
-void commandHandler(int howMany){
-    char command=Wire.read();
-    switch(command){
-        case 'o':
-            doorOpen();
-            break;
-        case 'c':
-            doorClose();
-            break;
+
+byte evaluateMessage(byte message[], int type) {   
+    switch(type){
+        case SetDoorState: 
+        {
+            SetDoorState_t sds = (SetDoorState_t*) message;
+            
+            switch(sds->targetState) {
+                case 'o':
+                    return doorOpen();
+                case 'c':
+                    return doorClose();
+            }
+        }
     }
+}
+
+
+void commandHandler(int howMany){
+    Serial.println("Received transmission from Master");
+    byte data[MSG_LEN] = {};
+
+    // Read the incoming message.
+    for (int i = 0; Wire.available(); i++) {
+        data[i] = Wire.read();
+        Serial.println(data[i]);
+    }
+
+
+    if (data[1] >= NumMessages) {
+        Serial.println("CRITICAL ERROR: Received message of unknown type! This should never happen.");
+        return;
+    }
+    // Run other checks if needed.
+
+    // Put message into the queue
+    for (int i = 0; i < MSG_LEN; i++)
+        messages[data[1]][i] = data[i];
 }
 
 /*void requestHandler(){
