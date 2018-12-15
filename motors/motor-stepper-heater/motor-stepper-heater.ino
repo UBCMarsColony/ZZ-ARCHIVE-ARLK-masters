@@ -282,10 +282,9 @@ bool evaluateMessage(byte message[], int type) {
             }
 
             switch(sds->targetState) {
-                case 'o':
-                    return doorOpen() ? CLEAR_MSG : KEEP_MSG;
-                case 'c':
-                    return doorClose() ? CLEAR_MSG : KEEP_MSG;
+                case open:
+                case close:
+                    doorState = transit;
             }
         }
     }
@@ -324,11 +323,14 @@ void commandHandler(int howMany){
         messages[data[1]][i] = data[i];
 }
 
-/*void requestHandler(){
-    //Wire.beginTransmission();
-    //Wire.write()
-    //Wire.endTransmission();
-}*/
+void requestHandler(int val){
+  switch(val) {
+    case setDoorState:
+      byte msg[] = {1 + (1<<7), setDoorState, 0, doorState};
+      Wire.write(msg, sizeof(msg));
+      break;
+  }
+}
 
 
 
