@@ -2,10 +2,14 @@
 
 //constants
 #define MSG_LEN 32
+#define KEEP_MSG true
+#define CLEAR_MSG false
+
 struct pin{
     int PUL=10;
     int DIR=11;
     int ENA=12;
+    int strike = 9;
     int LIM_open=9;
     int LIM_closed=8;
 
@@ -36,28 +40,29 @@ double temp_motor;
 double temp_gears;
 
 //special enum of type state, to report on door status
-enum doorState{
-    open=1,closed=2,transit=3,unknown=-1
-};
-enum doorState doorStatus;
-
 enum tempState{
     low=-1,ok=0,overheat=1
 };
 enum tempState tempStatusEnum;
 
 
-enum TargetState {
-    Close,
-    Pressurize,
-    Depressurize,
-    Idle
-}
+enum Priority {
+    priorityLow = 0,
+    priorityHigh = 1
+};
+
+enum DoorState {
+    unknown = 0,
+    transit = 3,
+    close = 99,
+    open = 111
+};
+enum DoorState doorState;
 
 enum Procedure {
-    SetDoorState = 3
-    NumMessages
-}
+    setDoorState = 3,
+    numMessages
+};
 
 typedef struct SetDoorState_t {
   byte action;
@@ -66,7 +71,7 @@ typedef struct SetDoorState_t {
   byte targetState;
 };
 
-volatile byte messages[NumMessages][MSG_LEN] = {0};
+volatile byte messages[numMessages][MSG_LEN] = {0};
 volatile byte msgIndex = 0;
 
 int currentAngle, datumClosed, datumOpen;
@@ -102,8 +107,10 @@ void setup() {
     //pin mode setups
     pinMode(pinNumber.PUL, OUTPUT);
     pinMode(pinNumber.DIR, OUTPUT);
-    pinMode(pinNumber.LIM_closed, INPUT_PULLUP);
-    pinMode(pinNumber.LIM_open, INPUT_PULLUP);
+    pinMode(pinNumber.strike, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(pinNumber.strike), ISR_stopDoor, FALLING);
+//    pinMode(pinNumber.LIM_open, INPUT_PULLUP);
+//    attachInterrupt(digitalPinToInterrupt(pinNumber.LIM_open), ISR_stopDoor, FALLING);
     pinMode(13, OUTPUT);
     Serial.println("Pin modes set");
 
@@ -111,13 +118,17 @@ void setup() {
     digitalWrite(pinNumber.DIR, LOW);
     digitalWrite(pinNumber.PUL, LOW);
     digitalWrite(pinNumber.ENA, LOW);
-    doorStatus=unknown;
+    doorState=0;
     Serial.println("Door status and pinNumber set, testing motor");
     motorTest();
-    Wire.onReceive(commandHandler); //function to call when command received
 
-    Wire.onRequest(requestHandler);
+    Wire.onReceive(commandHandler); //function to call when command received
+//    Wire.onRequest(requestHandler);
     Serial.println("System setup complete, starting...");
+}
+
+void ISR_stopDoor() {
+    doorState = ((SetDoorState_t*) messages[setDoorState])->targetState;
 }
 
 //ISR (interrupt service request): poll for temperature then enable heaters as required
@@ -132,14 +143,25 @@ ISR(TIMER1_COMPA_vect){
 
     getTempStatus(tempStatus,temp_gears,temp_motor);
     motorHeatRoutine(tempStatus);
-
 }
 
 void loop() {
     // MESSAGE PARSING & EVALUATION  
-    evaluateMessage(messages[msgIndex], msgIndex);
-    memset(messages[msgIndex], 0, sizeof(messages[msgIndex])); // Clear message from 'messages' array
-    msgIndex = (msgIndex + 1) % NumMessages;
+    if (evaluateMessage(messages[msgIndex], msgIndex) == CLEAR_MSG)
+        memset(messages[msgIndex], 0, sizeof(messages[msgIndex])); // Clear message from 'messages' array
+    msgIndex = (msgIndex + 1) % numMessages;
+
+    // LIFE CYCLE EVENTS
+    if (doorState == transit) {
+        switch (((SetDoorState_t*) messages[setDoorState])->targetState) {
+            case open:
+                stepperAngleRotate(1,'L');
+                break;
+            case close:
+                stepperAngleRotate(1,'R');
+                break;
+        }
+    }
 }
 
 //motor is low side switching! 5V from arduino 5v rail. logical disable is pulling the L pin to 5V.
@@ -195,46 +217,6 @@ void motorTest(void){
     }
 }
 
-int doorOpen(void){
-
-    Serial.println("Open commanded");
-    delay(1000);
-
-    if(doorStatus==open){
-        Serial.println("Door already open!");
-        return 0;
-    }
-
-    Serial.println("Door opening!");
-    while(digitalRead(pinNumber.LIM_open)!=LOW){
-        stepperAngleRotate(1,'L');
-        doorStatus=transit;
-    }
-    doorStatus=open;
-    Serial.println("Door opened!");
-    return 0;
-}
-
-int doorClose(void){
-
-    Serial.println("Close commanded");
-    delay(1000);
-
-    if(doorStatus==closed){
-        Serial.println("Door already closed!");
-        return 0;
-    }
-
-    Serial.println("Door closing!");
-    while(digitalRead(pinNumber.LIM_closed)!=LOW){
-        stepperAngleIncrement('R');
-        doorStatus=transit;
-    }
-
-    doorStatus=closed;
-    Serial.println("Door closed!");
-    return 0;
-}
 
 //Function motorPower takes integer status and switches the motor on or off
 void motorPower(int status){
@@ -286,20 +268,28 @@ void motorHeatRoutine(double tempStatus[]){
 }
 
 
-byte evaluateMessage(byte message[], int type) {   
+bool evaluateMessage(byte message[], int type) {   
     switch(type){
-        case SetDoorState: 
+        case setDoorState: 
         {
-            SetDoorState_t sds = (SetDoorState_t*) message;
+            SetDoorState_t *sds = (SetDoorState_t*) message;
             
+            if (sds->targetState == doorState) {
+                Serial.print("Requested door state ");
+                Serial.print(sds->targetState);
+                Serial.println("Has been reached. Removing request from queue");
+                return CLEAR_MSG;
+            }
+
             switch(sds->targetState) {
                 case 'o':
-                    return doorOpen();
+                    return doorOpen() ? CLEAR_MSG : KEEP_MSG;
                 case 'c':
-                    return doorClose();
+                    return doorClose() ? CLEAR_MSG : KEEP_MSG;
             }
         }
     }
+    return KEEP_MSG;
 }
 
 
@@ -314,10 +304,19 @@ void commandHandler(int howMany){
     }
 
 
-    if (data[1] >= NumMessages) {
+    if (data[1] >= numMessages) {
         Serial.println("CRITICAL ERROR: Received message of unknown type! This should never happen.");
         return;
     }
+
+    // Check if there is already an existing message of this type, and if the incoming message takes priority
+    if (messages[data[1]][0] != 0 && data[2] != priorityHigh) {
+        Serial.print("Message of type ");
+        Serial.print(data[2]);
+        Serial.println(" already exists. Ignoring...");
+        return;
+    }
+
     // Run other checks if needed.
 
     // Put message into the queue
@@ -330,3 +329,50 @@ void commandHandler(int howMany){
     //Wire.write()
     //Wire.endTransmission();
 }*/
+
+
+
+/* ****************
+ * UNUSED FUNCTIONS
+ * ****************
+ * */
+int doorOpen(void){
+
+    Serial.println("Open commanded");
+    delay(1000);
+
+    if(doorState==open){
+        Serial.println("Door already open!");
+        return 0;
+    }
+
+    Serial.println("Door opening!");
+    while(digitalRead(pinNumber.LIM_open)!=LOW){
+        stepperAngleRotate(1,'L');
+        doorState=transit;
+    }
+    doorState=open;
+    Serial.println("Door opened!");
+    return 0;
+}
+
+int doorClose(void){
+
+    Serial.println("Close commanded");
+    delay(1000);
+
+    if(doorState == close){
+        Serial.println("Door already closed!");
+        return 0;
+    }
+
+    Serial.println("Door closing!");
+    while(digitalRead(pinNumber.LIM_closed)!=LOW){
+        stepperAngleIncrement('R');
+        doorState=transit;
+    }
+
+    doorState = close;
+    Serial.println("Door closed!");
+    return 0;
+}
