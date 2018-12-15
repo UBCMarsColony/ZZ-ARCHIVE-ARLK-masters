@@ -11,17 +11,26 @@ void sendData();
 
 // Other constants
 #define MSG_LEN 32
+#define KEEP_MSG true
+#define CLEAR_MSG false
+
 
 enum Procedure {
   SetPressure   = 3,
   NumMessages 
 };
 
+enum TargetState {
+    Close,
+    Pressurize,
+    Depressurize,
+    Idle
+}
 
 typedef struct SetPressure_t {
   byte action;
   byte procedure;
-  float priority;
+  byte priority;
   byte targetState;
 };
 
@@ -52,7 +61,7 @@ const struct ValveState_t* CLOSE = new ValveState_t(LOW, LOW);
 
 
 // Function Signatures
-void evaluateMessage(byte[], int);
+byte evaluateMessage(byte[], int);
 void applyValveState(struct ValveState_t);
 void receiveData(int);
 void sendData();
@@ -80,8 +89,9 @@ void setup() {
  */ 
 void loop() {
   // MESSAGE PARSING & EVALUATION  
-  evaluateMessage(messages[msgIndex], msgIndex);
-  memset(messages[msgIndex], 0, sizeof(messages[msgIndex])); // Clear message from 'messages' array
+  if (evaluateMessage(messages[msgIndex], msgIndex) == CLEAR_MSG)
+    memset(messages[msgIndex], 0, sizeof(messages[msgIndex])); // Clear message from 'messages' array
+
   msgIndex = (msgIndex + 1) % NumMessages;
 
   TEST_ROUTINE();
@@ -92,32 +102,35 @@ void loop() {
  * Parse and evaluate a message.
  * Parameter: message - Stored i2c message byte array.
  * Parameter: type - The numerical value found in 'Procedure' associated with this data.
+ * Return: A boolean indicating if we should remove the message from queue.
  */
-void evaluateMessage(byte message[], int type) {
+bool evaluateMessage(byte message[], int type) {
   if (message[0] != 0) {
     Serial.print("Evaluating message type ");
     Serial.println(type);
 
     switch (type) {
-      case SetPressure: 
-        {
-          currentPressureState = (SetPressure_t*) messages[msgIndex];
-          
-          switch(currentPressureState->targetState) {
-            case Pressurize:
-              applyValveState(PRESSURIZE);
-              break;
-            case Depressurize:
-              applyValveState(DEPRESSURIZE);
-              break;
-            case Close:
-              applyValveState(CLOSE);
-              break;
-          }
+      case SetPressure:
+      {
+        currentPressureState = (SetPressure_t*) message;
+        
+        switch(currentPressureState->targetState) {
+          case Pressurize:
+            applyValveState(PRESSURIZE);
+            break;
+          case Depressurize:
+            applyValveState(DEPRESSURIZE);
+            break;
+          case Close:
+            applyValveState(CLOSE);
+            break;
         }
-        break; 
+        return CLEAR_MSG;
+      }
+      break; 
     }
   }
+  return KEEP_MSG;
 }
 
 

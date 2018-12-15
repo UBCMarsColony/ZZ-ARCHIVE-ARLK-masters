@@ -19,7 +19,7 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     def loop(self):
         
-        with self:
+        with self.lock:
             if self.new_state is not None:
                 print("Door state updating (%s)" % (self.Procedure(self.new_state).name))
 
@@ -47,7 +47,6 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         if state not in set(p.value for p in self.Procedure):
             raise ValueError("Door state must be defined in DoorSubsystem.Procedure")
 
-        with self:
-            self.new_state = state
+        self.new_state = state
 
         print("Door state requested: %s" % (self.Procedure(state).name))
