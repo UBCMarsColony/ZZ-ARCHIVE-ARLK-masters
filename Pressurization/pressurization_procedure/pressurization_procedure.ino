@@ -14,7 +14,7 @@ void sendData();
 
 enum Procedure {
   SetPressure   = 3,
-  NumMessages
+  NumMessages 
 };
 
 
