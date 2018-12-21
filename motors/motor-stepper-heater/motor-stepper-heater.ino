@@ -5,6 +5,9 @@
 #define KEEP_MSG true
 #define CLEAR_MSG false
 
+#define DIR_OPEN 'R'
+#define DIR_CLOSE 'L'
+
 struct pin{
     int PUL=10;
     int DIR=11;
@@ -58,10 +61,18 @@ enum DoorState {
     open = 111
 };
 enum DoorState doorState;
+float currentAngle;
 
 enum Procedure {
+    calibrate = 2,
     setDoorState = 3,
     numMessages
+};
+
+typedef struct Calibrate_t {
+  byte action;
+  byte procedure;
+  byte priority;
 };
 
 typedef struct SetDoorState_t {
@@ -74,14 +85,12 @@ typedef struct SetDoorState_t {
 volatile byte messages[numMessages][MSG_LEN] = {0};
 volatile byte msgIndex = 0;
 
-int currentAngle, datumClosed, datumOpen;
-
+/* ***********************
+ * DEFAULT ARDUINO METHODS
+ * ***********************
+ */
 void setup() {
     Serial.begin(9600);
-    
-    Serial.print("Using address ");
-    Serial.println(address_slave);
-    Wire.begin(address_slave); //fucking slaves get your ass back here
 
     Serial.println("UBC Mars Colony Airlock program");
     Serial.println("Door control and heater system");
@@ -111,39 +120,40 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(pinNumber.strike), ISR_stopDoor, FALLING);
 //    pinMode(pinNumber.LIM_open, INPUT_PULLUP);
 //    attachInterrupt(digitalPinToInterrupt(pinNumber.LIM_open), ISR_stopDoor, FALLING);
-    pinMode(13, OUTPUT);
-    Serial.println("Pin modes set");
+    pinMode(pinNumber.HEATER_motor, OUTPUT);
+    Serial.println("Pins registered");
 
     //initial conditions for motor
     digitalWrite(pinNumber.DIR, LOW);
     digitalWrite(pinNumber.PUL, LOW);
     digitalWrite(pinNumber.ENA, LOW);
-    doorState=0;
-    Serial.println("Door status and pinNumber set, testing motor");
-    motorTest();
+    doorState = unknown;
+    Serial.println("Motor pins registered");
 
+    Serial.println("--- TESTING MOTOR ---");
+    motorTest();
+    Serial.println("--- MOTOR TEST COMPLETE ---");
+
+    Serial.println("--- CALIBRATING MOTOR ---");
+    if (!calibrateMotor()) {
+        System.println("CRITICAL ERROR: The door failed to hit the strike during calibration. Reset door and restart microcontroller.");
+        exit();
+    }
+
+    Serial.println("--- MOTOR CALIBRATED ---");
+    
+    
+    Wire.begin(address_slave); //fucking slaves get your ass back here
     Wire.onReceive(commandHandler); //function to call when command received
 //    Wire.onRequest(requestHandler);
-    Serial.println("System setup complete, starting...");
+    Serial.print("I2C systems online. Using address ");
+    Serial.println(address_slave);
+
+    Serial.println("----------------------");
+    Serial.println("System setup complete!");
+    Serial.println("----------------------\n");
 }
 
-void ISR_stopDoor() {
-    doorState = ((SetDoorState_t*) messages[setDoorState])->targetState;
-}
-
-//ISR (interrupt service request): poll for temperature then enable heaters as required
-ISR(TIMER1_COMPA_vect){
-
-    temp_motor=getTemperature(pinNumber.SENSOR_motor);
-    temp_gears=getTemperature(pinNumber.SENSOR_gears);
-    // Serial.print("Motor temperature: ");
-    // Serial.println(temp_motor);
-    // Serial.print("Gearbox temperature: ");
-    // Serial.println(temp_gears);
-
-    getTempStatus(tempStatus,temp_gears,temp_motor);
-    motorHeatRoutine(tempStatus);
-}
 
 void loop() {
     // MESSAGE PARSING & EVALUATION  
@@ -155,102 +165,90 @@ void loop() {
     if (doorState == transit) {
         switch (((SetDoorState_t*) messages[setDoorState])->targetState) {
             case open:
-                stepperAngleRotate(1,'L');
+                stepperAngleRotate(1, DIR_OPEN);
                 break;
             case close:
-                stepperAngleRotate(1,'R');
+                stepperAngleRotate(1, DIR_CLOSE);
                 break;
         }
     }
 }
 
+
+bool evaluateMessage(byte message[], int type) {   
+    switch(type) {
+        case calibrate:
+            if (!calibrateMotor()) {
+                System.println("CRITICAL ERROR: The door failed to hit the strike during calibration. Reset door and restart microcontroller.");
+                exit();
+            }
+            break;
+
+        case setDoorState: {
+                SetDoorState_t *sds = (SetDoorState_t*) message;
+                
+                if (sds->targetState == doorState) {
+                    Serial.print("Requested door state ");
+                    Serial.print(sds->targetState);
+                    Serial.println("Has been reached. Removing request from queue");
+                    return CLEAR_MSG;
+                }
+
+                switch(sds->targetState) {
+                    case open:
+                    case close:
+                        doorState = transit;
+                }
+            }
+            break;
+    }
+    return KEEP_MSG;
+}
+
+
+/* **************
+ * MOTOR ROUTINES
+ * **************
+ */
 //motor is low side switching! 5V from arduino 5v rail. logical disable is pulling the L pin to 5V.
 
 //function stepperAngleRotate takes int angle, char direction, rotates angle degrees in specified direction. 
-void stepperAngleRotate(int angle, char direction){
+void stepperAngleRotate(int degrees, char direction){
 
     //defins
-    int index=0;
     float stepsToRevCurrentMode=400.00; //this is per stepper raw rotation, not gearboxed rotation
-    float requiredPulses=(angle*gearRatio/360.0)*stepsToRevCurrentMode;
-
-    //direction switching routine
-    if (direction=='R'){
-        digitalWrite(pinNumber.DIR,HIGH);
-    }
-    else{
-        digitalWrite(pinNumber.DIR,LOW);
-    }
+    float requiredPulses=(degrees*gearRatio/360.0)*stepsToRevCurrentMode;
 
     //pulse generator routine
-    while(index<=requiredPulses){
+    for (int pulse = 0; pulse <= requiredPulses; pulse++) {
+        // Listen for strike collision.
+        if (doorState != transit)
+            break;
         //beware of low side switching, pinNumber.PUL,HIGH);
-        digitalWrite(pinNumber.PUL, HIGH);
-        delay(pulseWidth);
-        digitalWrite(pinNumber.PUL, LOW);
-        delay(pulseWidth);
-        // Serial.print("This is increment: ");
-        // Serial.print(index);
-        // Serial.print(" out of: ");
-        // Serial.println(requiredPulses);
-        index++;
+        stepperAngleIncrement(direction);
+
+        currentAngle += angle / requiredPulses;
+        Serial.print("Current angle: ");
+        Serial.println(currentAngle);
     }
-    return;
 }
+
 
 //increments the stepper motor by one tick. Can be used for a different function that tracks angle.
-void stepperAngleIncrement(char direction){
-    digitalWrite(pinNumber.DIR,direction);
-    digitalWrite(pinNumber.PUL,LOW);
-    delay(pulseWidth);
+void stepperAngleIncrement(char direction) {
+    digitalWrite(pinNumber.DIR, direction == DIR_OPEN);
     digitalWrite(pinNumber.PUL,HIGH);
     delay(pulseWidth);
-}
-
-void motorTest(void){
-    Serial.println("Motor self test routine...");
-    int i=0;
-    for(i=0;i<4;i++){
-        int angle=45;
-        stepperAngleRotate(angle, 'R');
-        stepperAngleRotate(angle, 'L');
-    }
+    digitalWrite(pinNumber.PUL,LOW);
+    delay(pulseWidth);
 }
 
 
 //Function motorPower takes integer status and switches the motor on or off
 void motorPower(int status){
-    switch(status){
-        case ON:
-            digitalWrite(pinNumber.ENA,HIGH);
-            return ON;
-        case OFF:
-            digitalWrite(pinNumber.ENA,LOW);
-            return OFF;
-    }
+    digitalWrite(pinNumber.ENA, status);
 }
 
-//temperature controls for TMP36 sensor
-double getTemperature(int sensorAddress){
-    double voltageRaw=analogRead(sensorAddress)*5/1024.0;
-    double temperature=(voltageRaw-0.5)*100; //sensor offset inbuilt
-    return temperature;
-}
-
-void getTempStatus(double statusArray[], double tempGears, double tempMotor){
-    if(tempGears>=tempMin){
-        tempStatus[0]=tempStatusOK;
-    }
-    else{
-        tempStatus[0]=tempStatusLow;
-    }
-    if(tempMotor>=tempMin){
-        tempStatus[1]=tempStatusOK;
-    }
-    else{  
-        tempStatus[1]=tempStatusLow;
-    }
-}
 
 void motorHeatRoutine(double tempStatus[]){
     if(tempStatus[0]==tempStatusLow){
@@ -268,30 +266,42 @@ void motorHeatRoutine(double tempStatus[]){
 }
 
 
-bool evaluateMessage(byte message[], int type) {   
-    switch(type){
-        case setDoorState: 
-        {
-            SetDoorState_t *sds = (SetDoorState_t*) message;
-            
-            if (sds->targetState == doorState) {
-                Serial.print("Requested door state ");
-                Serial.print(sds->targetState);
-                Serial.println("Has been reached. Removing request from queue");
-                return CLEAR_MSG;
-            }
+bool calibrateMotor(void) {
+    doorState = transit;
+    stepperAngleRotate(100, DIR_CLOSE);
 
-            switch(sds->targetState) {
-                case open:
-                case close:
-                    doorState = transit;
-            }
-        }
-    }
-    return KEEP_MSG;
+    // If the door does not strike, there is a problem. Return the appropriate error code.
+    if (doorState == transit)
+        return false;
+
+    doorState = close;
+    currentAngle = 0;
+    return true;
 }
 
 
+/* ********************
+ * TEMPERATURE ROUTINES
+ * ********************
+ */
+//temperature controls for TMP36 sensor
+double getTemperature(int sensorAddress){
+    double voltageRaw=analogRead(sensorAddress)*5/1024.0;
+    double temperature=(voltageRaw-0.5)*100; //sensor offset inbuilt
+    return temperature;
+}
+
+void getTempStatus(double statusArray[], double tempGears, double tempMotor){
+    statusArray[0] = tempGears >= tempMin ? tempStatusOK : tempStatusLow;
+    statusArray[0] = tempMotor >= tempMin ? tempStatusOK : tempStatusLow;
+}
+
+
+
+/* ************
+ * I2C HANDLERS
+ * ************
+ */
 void commandHandler(int howMany){
     Serial.println("Received transmission from Master");
     byte data[MSG_LEN] = {};
@@ -323,6 +333,7 @@ void commandHandler(int howMany){
         messages[data[1]][i] = data[i];
 }
 
+
 void requestHandler(int val){
   switch(val) {
     case setDoorState:
@@ -333,6 +344,43 @@ void requestHandler(int val){
 }
 
 
+/* *********************************
+ * INTERRUPT SERVICE ROUTINES (ISRs)
+ * *********************************
+ */
+//ISR: Detect when the strike in hit.
+void ISR_stopDoor() {
+    Serial.println("DoorStrike activated!");
+    doorState = ((SetDoorState_t*) messages[setDoorState])->targetState;
+}
+
+//ISR: poll for temperature then enable heaters as required
+ISR(TIMER1_COMPA_vect){
+
+    temp_motor=getTemperature(pinNumber.SENSOR_motor);
+    temp_gears=getTemperature(pinNumber.SENSOR_gears);
+    // Serial.print("Motor temperature: ");
+    // Serial.println(temp_motor);
+    // Serial.print("Gearbox temperature: ");
+    // Serial.println(temp_gears);
+
+    getTempStatus(tempStatus,temp_gears,temp_motor);
+    motorHeatRoutine(tempStatus);
+}
+
+/* ****************
+ * TEST ROUTINES
+ * ****************
+ * */
+
+void motorTest(void){
+    Serial.println("Motor self test routine...");
+    for (int i=0; i<4; i++){
+        int angle=45;
+        stepperAngleRotate(angle, DIR_OPEN);
+        stepperAngleRotate(angle, DIR_CLOSE);
+    }
+}
 
 /* ****************
  * UNUSED FUNCTIONS
