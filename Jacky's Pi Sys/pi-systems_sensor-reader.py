@@ -22,9 +22,9 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
 
     def loop(self):
-        self.__update_sensor_data()
+        with self.lock:
+            self.__update_sensor_data()
 
-        with self:
             if self.print_updates:
                 print(self.sensor_data)
 
@@ -45,24 +45,22 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
             return
 
-        with self:
-            # TODO make this work - accessors are invalid since protocol version.
-            self.sensor_data = {
-                'O2':sensor_data[0],
-                'humidity':sensor_data[1],
-                'temperature':sensor_data[2],
-                'pressure':sensor_data[3],
-                'CO2':sensor_data[4]
-            }
+        # TODO make this work - accessors are invalid since protocol version.
+        self.sensor_data = {
+            'O2':sensor_data[0],
+            'humidity':sensor_data[1],
+            'temperature':sensor_data[2],
+            'pressure':sensor_data[3],
+            'CO2':sensor_data[4]
+        }
 
 
     def error_check(self):
-        with self:
-            CO2 = self.sensor_data.CO2
-            O2 = self.sensor_data.O2
-            TEMP = self.sensor_data.temperature
-            HUM = self.sensor_data.humidity
-            PRESS = self.sensor_data.pressure
+        CO2 = self.sensor_data.CO2
+        O2 = self.sensor_data.O2
+        TEMP = self.sensor_data.temperature
+        HUM = self.sensor_data.humidity
+        PRESS = self.sensor_data.pressure
 
         if(15 < O2 < 25):
             print("O2 is nominal")
