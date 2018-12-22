@@ -64,25 +64,40 @@ enum DoorState doorState;
 float currentAngle;
 
 enum Procedure {
-    calibrate = 2,
-    setDoorState = 3,
+    calibrate       = 2,
+    setDoorState    = 3,
+    getDoorState    = 4,
     numMessages
 };
 
+typedef struct Header_t {
+    byte action;
+    byte procedure;
+    byte priority;
+};
+
 typedef struct Calibrate_t {
-  byte action;
-  byte procedure;
-  byte priority;
+  Header_t header;
 };
 
 typedef struct SetDoorState_t {
-  byte action;
-  byte procedure;
-  byte priority;
+  Header_t header;
   byte targetState;
 };
 
-volatile byte messages[numMessages][MSG_LEN] = {0};
+typedef struct GetDoorState_t {
+    Header_t header;
+    byte doorState;
+    short angle;
+};
+
+typedef union I2CMessage_t {
+    Calibrate_t calibrate;
+    SetDoorState_t setDoorState;
+    GetDoorState_t getDoorState;
+};
+
+volatile I2CMessage_t* messages[numMessages] = {0};
 volatile byte msgIndex = 0;
 
 /* ***********************
@@ -136,8 +151,8 @@ void setup() {
 
     Serial.println("--- CALIBRATING MOTOR ---");
     if (!calibrateMotor()) {
-        System.println("CRITICAL ERROR: The door failed to hit the strike during calibration. Reset door and restart microcontroller.");
-        exit();
+        Serial.println("CRITICAL ERROR: The door failed to hit the strike during calibration. Reset door and restart microcontroller.");
+        exit(1);
     }
 
     Serial.println("--- MOTOR CALIBRATED ---");
@@ -175,26 +190,26 @@ void loop() {
 }
 
 
-bool evaluateMessage(byte message[], int type) {   
+bool evaluateMessage(I2CMessage_t* message, int type) {   
     switch(type) {
         case calibrate:
             if (!calibrateMotor()) {
-                System.println("CRITICAL ERROR: The door failed to hit the strike during calibration. Reset door and restart microcontroller.");
-                exit();
+                Serial.println("CRITICAL ERROR: The door failed to hit the strike during calibration. Reset door and restart microcontroller.");
+                exit(1);
             }
             break;
 
         case setDoorState: {
-                SetDoorState_t *sds = (SetDoorState_t*) message;
+                SetDoorState_t sds = message->setDoorState;
                 
-                if (sds->targetState == doorState) {
+                if (sds.targetState == doorState) {
                     Serial.print("Requested door state ");
-                    Serial.print(sds->targetState);
+                    Serial.print(sds.targetState);
                     Serial.println("Has been reached. Removing request from queue");
                     return CLEAR_MSG;
                 }
 
-                switch(sds->targetState) {
+                switch(sds.targetState) {
                     case open:
                     case close:
                         doorState = transit;
@@ -227,7 +242,7 @@ void stepperAngleRotate(int degrees, char direction){
         //beware of low side switching, pinNumber.PUL,HIGH);
         stepperAngleIncrement(direction);
 
-        currentAngle += angle / requiredPulses;
+        currentAngle += degrees / requiredPulses;
         Serial.print("Current angle: ");
         Serial.println(currentAngle);
     }
@@ -319,7 +334,7 @@ void commandHandler(int howMany){
     }
 
     // Check if there is already an existing message of this type, and if the incoming message takes priority
-    if (messages[data[1]][0] != 0 && data[2] != priorityHigh) {
+    if (messages[data[1]]->calibrate.header.action != 0 && data[2] != priorityHigh) {
         Serial.print("Message of type ");
         Serial.print(data[2]);
         Serial.println(" already exists. Ignoring...");
@@ -329,17 +344,22 @@ void commandHandler(int howMany){
     // Run other checks if needed.
 
     // Put message into the queue
-    for (int i = 0; i < MSG_LEN; i++)
-        messages[data[1]][i] = data[i];
+    messages[data[1]] = (I2CMessage_t*) data;
 }
 
 
 void requestHandler(int val){
   switch(val) {
-    case setDoorState:
-      byte msg[] = {1 + (1<<7), setDoorState, 0, doorState};
-      Wire.write(msg, sizeof(msg));
-      break;
+    case getDoorState:
+        GetDoorState_t* gds = new GetDoorState_t();
+        gds->header.action = 1;
+        gds->header.procedure = getDoorState;
+        gds->header.priority = 0;
+        gds->doorState = doorState;
+        gds->angle = currentAngle;
+
+        Wire.write((byte*) &gds, sizeof(gds));
+        break;
   }
 }
 
