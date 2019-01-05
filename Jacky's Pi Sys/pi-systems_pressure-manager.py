@@ -14,7 +14,7 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
     
     class Procedure(Enum):
     #Procedures based on pressurization .ino code
-    # NOT THAT IMPORTANT, purpose is to give a general idea of what state the Py is in
+    # Procedure is NOT THAT IMPORTANT, purpose is to give a general idea of what state the Py is in
         Depressurize = 0 #depressurize
         Pressurize = 1 #pressurize
         InProgress = 2 #in_progress
@@ -24,11 +24,22 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         priority0 = 0 # Low priority actions; for all normal operations pri=0
         priority1 = 1 # High priority actions; for aborting pri=1
 
+    #Replaced Procedure as the important state-teller
     class TargetState(Enum):
         close = 0 
         Pressurize = 1
         Depressurize = 2
         Idle = 3
+
+    #PSEUDOCODE FOR SUBROUTINES
+        #if close, then hold pressure and change valves
+
+        #if Pressure/Depressure, do so accordingly
+
+        #if Idle, hold pressure at current state
+        #break
+        
+
 
     def __init__(self, name=None, thread_id=None):
         super().__init__(name, thread_id)
@@ -71,5 +82,8 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         with self:
             self.next_state = new_state
 
+    def DoSomething():
+
+
+
 if __name__ == "__main__":
-    next_state = 0
