@@ -45,8 +45,9 @@ class LightingSubsystem(subsys.Subsystem):
 
     #Check input signal, if high, turn lights on, if low, turn lights off
     def loop(self):
-        for pin in self.output_pins:
-            GPIO.output(pin, self.light_state)
+        with self.lock:
+            for pin in self.output_pins:
+                GPIO.output(pin, self.light_state)
 
 
     def toggle(state=None): # State should be a bool or int 0/1

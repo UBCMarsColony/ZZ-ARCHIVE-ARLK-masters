@@ -25,7 +25,7 @@ enum TargetState {
     Pressurize,
     Depressurize,
     Idle
-}
+};
 
 typedef struct SetPressure_t {
   byte action;
@@ -41,12 +41,6 @@ volatile byte msgIndex = 0; // Points to a message to be evaluated.
 // Pressure Data
 SetPressure_t *currentPressureState;
 
-enum State {
-  Close = 0,
-  Pressurize = 1,
-  Depressurize = 2
-};
-
 typedef struct ValveState_t {
   bool pressurizer;
   bool depressurizer;
@@ -61,7 +55,7 @@ const struct ValveState_t* CLOSE = new ValveState_t(LOW, LOW);
 
 
 // Function Signatures
-byte evaluateMessage(byte[], int);
+bool evaluateMessage(byte[], int);
 void applyValveState(struct ValveState_t);
 void receiveData(int);
 void sendData();

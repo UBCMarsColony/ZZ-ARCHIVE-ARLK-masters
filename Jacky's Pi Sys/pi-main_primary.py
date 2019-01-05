@@ -1,6 +1,6 @@
 import sys
 import importlib
-from time import sleep
+from time import sleep, time
 import keyboard
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
@@ -20,6 +20,7 @@ Purpose: Performs initial system setup and begins airlock loop cycle. Handles an
 Parameter: runtime_params - The Namespace returned by the argument parser in init.py
 """
 def begin(runtime_params):
+    start_time = time()
     print("\n\n---INITIALIZING AIRLOCK SYSTEMS---")
     
     # Start initializing the vital airlock systems
@@ -71,12 +72,13 @@ def begin(runtime_params):
     
     print("\n---ALL SUBSYSTEMS STARTED---")
 
-    print("\n---AIRLOCK SETUP COMPLETE.---\n")
+    keyboard.on_press(handle_cmd)
+    print("\n---COMMAND INPUT ENABLED---\n.")
 
+    print("\n---AIRLOCK SETUP COMPLETE.---\nElapsed Setup Time: %i" % (start_time - time()))
+    
     print("\n---STARTING LOOPER SEQUENCE---\n")
     
-    keyboard.on_press(handle_cmd)
-    print("Command input enabled.")
     while True:
         try:
             loop(runtime_params)
