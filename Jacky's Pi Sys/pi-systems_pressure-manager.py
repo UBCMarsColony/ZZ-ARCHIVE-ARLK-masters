@@ -11,7 +11,9 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 
 class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
-    
+# For the Py ic2 protol structure
+# Modelled after the structure in the pressurization-procedure.ino
+
     class Procedure(Enum):
     #Procedures based on pressurization .ino code
     # Procedure is NOT THAT IMPORTANT, purpose is to give a general idea of what state the Py is in
@@ -21,25 +23,24 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         # and so on...  
     
     class priority(Enum):
-        priority0 = 0 # Low priority actions; for all normal operations pri=0
-        priority1 = 1 # High priority actions; for aborting pri=1
+        Low_pri = 0 # Low priority; for all normal operations pri=0
+        High_pri = 1 # High priority; for aborting pri=1
+
+#BELOW IS SOME SORT OF PSUEODO-CODE
+        @classmethod
+        def CheckEmergency(cls, priority):
+            if priority==1:
+                print("There is an emergency")
+                #CHANGE ANY VARIABLES TO SHUT DOWN/PAUSE OPERATIONS?
+            if priority==0:
+                print("Continue operations normally")
 
     #Replaced Procedure as the important state-teller
     class TargetState(Enum):
         close = 0 
         Pressurize = 1
         Depressurize = 2
-        Idle = 3
-
-    #PSEUDOCODE FOR SUBROUTINES
-        #if close, then hold pressure and change valves
-
-        #if Pressure/Depressure, do so accordingly
-
-        #if Idle, hold pressure at current state
-        #break
-        
-
+        Idle = 3 
 
     def __init__(self, name=None, thread_id=None):
         super().__init__(name, thread_id)
@@ -82,8 +83,9 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         with self:
             self.next_state = new_state
 
-    def DoSomething():
-
+def dssp():
+    print("I AM PRINTING")
 
 
 if __name__ == "__main__":
+    dssp()
