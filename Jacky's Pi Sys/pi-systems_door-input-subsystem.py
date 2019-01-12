@@ -5,6 +5,7 @@ door_ss = importlib.import_module('pi-systems_door-subsystem')
 
 from enum import Enum
 from struct import Struct
+import RPi.GPIO as GPIO
 
 class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 

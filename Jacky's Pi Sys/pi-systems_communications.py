@@ -118,9 +118,11 @@ class IntraModCommMixin:
 
 # READING
     @classmethod
-    def intra_read(cls, address, formatstr):
+    def intra_read(cls, address, procedure):
+        if not isinstance(procedure, int):
+            raise TypeError('rocedure value provided is not an integer!')
         with cls.__lock:
-            msg = cls.__bus.read_i2c_block_data(address, 0)
+            msg = cls.__bus.read_i2c_block_data(address, procedure)
         # for index in range(93):
         #     num = cls.__bus.read_byte(address)
         #     if num:

@@ -6,11 +6,15 @@ comms = importlib.import_module('pi-systems_communications')
 from collections import namedtuple
     
 import struct
+from enum import Enum
 
 
 class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):    
     
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
+
+    class Procedure(Enum):
+        GetSensorData = 1
     
     def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
@@ -37,7 +41,7 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             #     action=self.IntraModCommAction.ExecuteProcedure,
             #     procedure=1
             # ))
-            sensor_data_raw = self.intra_read(self.address)
+            sensor_data_raw = self.intra_read(self.address, self.Procedure.GetSensorData.value)
         
             sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('>xxBBHHH')]))
 

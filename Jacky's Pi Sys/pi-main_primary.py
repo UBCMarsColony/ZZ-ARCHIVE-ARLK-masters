@@ -11,7 +11,7 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 # Import all subsystem files so we can create new instances of each one.
 sensor_ss = importlib.import_module('pi-systems_sensor-reader')
 door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
-lights_ss = importlib.import_module('pi-systems_lighting_lights-manager')
+lights_ss = importlib.import_module('pi-systems_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
 
@@ -29,7 +29,7 @@ def begin(runtime_params):
     subsystems.append(sensor_ss.SensorSubsystem(
             name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))    
 
-    subsystems.append(lights_ss.LightingSubsystem(name="airlock1_lights-internal", thread_id=0x5EE, pin=18))
+    subsystems.append(lights_ss.LightingSubsystem(name="airlock1_lights-internal", thread_id=0x5EE, pins=18))
 
     # door_col = door_ss.DoorSubsystem(
     #     name="airlock1_door_col", thread_id=0xD00121, address=0)
@@ -141,10 +141,11 @@ def handle_cmd(cmd):
             "\ns: Toggle sensor debug printing" +
             "\ns: Print sensor subsystem updates" +
             "\ni: Show items in subsystem pool" +
-            "\nI: Show details of items int the subsystem pool"
+            "\nI: Show details of items int the subsystem pool" +
+            "#n!: Stop Colony" +
             "\n?: Help window (this text)" + 
             "\n-------------------")
-    elif cmd is 'esc':
+    elif cmd is '!':
         print('---STOPPING COLONY---')
         ss_pool.stop_all()
         exit(0)
