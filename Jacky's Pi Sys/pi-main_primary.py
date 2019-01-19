@@ -20,7 +20,7 @@ Purpose: Performs initial system setup and begins airlock loop cycle. Handles an
 Parameter: runtime_params - The Namespace returned by the argument parser in init.py
 """
 def begin(runtime_params):
-    start_time = time()
+    start_time = time() 
     print("\n\n---INITIALIZING AIRLOCK SYSTEMS---")
     
     # Start initializing the vital airlock systems
@@ -110,10 +110,13 @@ def handle_cmd(cmd):
         subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
 
     # Pressure Toggles
-    elif cmd is 'p':
-        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Pressurize)
-    elif cmd is 'd':
-        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Depressurize)
+    elif cmd is 'p' or cmd is 'P':
+        print("Pressurizing...")
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Pressurize)
+
+    elif cmd is 'd' or cmd is 'D':
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Depressurize)
+        print("Depressurizing")
 
     # Sensors SS Debugging
     elif cmd is 's':
