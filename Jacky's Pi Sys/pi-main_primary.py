@@ -26,17 +26,18 @@ def begin(runtime_params):
     # Start initializing the vital airlock systems
     subsystems = []
 
-    subsystems.append(sensor_ss.SensorSubsystem(
-            name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))    
+    # subsystems.append(sensor_ss.SensorSubsystem(
+    #         name="airlock1_sensors", thread_id=0xDE7EC7, address=0x0A))    
 
-    subsystems.append(lights_ss.LightingSubsystem(name="airlock1_lights-internal", thread_id=0x5EE, pins=18))
+    # subsystems.append(lights_ss.LightingSubsystem(name="airlock1_lights-internal", thread_id=0x5EE, pins=18))
+
 
     # door_col = door_ss.DoorSubsystem(
     #     name="airlock1_door_col", thread_id=0xD00121, address=0)
     # subsystems.append(door_col)
 
 
-    # subsystems.append(pressure_ss.PressureSubsystem())
+    subsystems.append(pressure_ss.PressureSubsystem(name="airlock1_pressurization", thread_id=0xAE120))
     #     door_input_ss.DoorInputSubsystem(
     #         name="airlock1_doorinput_col", thread_id=0xC01, address="FILL ME IN", linked_door=door_col),
     # )
@@ -110,9 +111,9 @@ def handle_cmd(cmd):
 
     # Pressure Toggles
     elif cmd is 'p':
-        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Procedure3)
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Pressurize)
     elif cmd is 'd':
-        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Procedure4)
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].Procedure.Depressurize)
 
     # Sensors SS Debugging
     elif cmd is 's':
