@@ -102,15 +102,15 @@ def handle_cmd(cmd):
     subsystems = ss_pool.get_all()
 
     # Door Toggles
-    if cmd is 'o' or cmd is 'O':
-        print("Requesting door open")
-        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
-    elif cmd is 'c' or cmd is 'C':
-        print("Requesting door close")
-        subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
+    # if cmd is 'o' or cmd is 'O':
+    #     print("Requesting door open")
+    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
+    # elif cmd is 'c' or cmd is 'C':
+    #     print("Requesting door close")
+    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
 
     # Pressure Toggles
-    elif cmd is 'p' or cmd is 'P':
+    if cmd is 'p' or cmd is 'P':
         print("Pressurizing...")
         subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Pressurize)
 
@@ -118,17 +118,17 @@ def handle_cmd(cmd):
         subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Depressurize)
         print("Depressurizing")
 
-    # Sensors SS Debugging
-    elif cmd is 's':
-        with subsystems["airlock1_sensors"] as sensors:
-            sensors.print_updates = not sensors.print_updates
-            print('Sensors printout %s' % ("enabled" if sensors.print_updates else "disabled"))
+    # # Sensors SS Debugging
+    # elif cmd is 's':
+    #     with subsystems["airlock1_sensors"] as sensors:
+    #         sensors.print_updates = not sensors.print_updates
+    #         print('Sensors printout %s' % ("enabled" if sensors.print_updates else "disabled"))
 
-    # Light SS Debugging
-    elif cmd is 'l':
-        with subsystems['airlock1_lights-internal'] as lights:
-            lights.toggle()
-            print('\nLights %s' % ('on' if lights.light_state else 'off'))
+    # # Light SS Debugging
+    # elif cmd is 'l':
+    #     with subsystems['airlock1_lights-internal'] as lights:
+    #         lights.toggle()
+    #         print('\nLights %s' % ('on' if lights.light_state else 'off'))
     
     # General System Information/
     elif cmd is "i":
@@ -140,13 +140,12 @@ def handle_cmd(cmd):
         print(repr(subsystems))
     elif cmd is '?':
         print("----- KEYBOARD COMMANDS -----" +
-            "\no: Request door open\nc: Request door close" +
-            "\nl: Toggle Lights" + 
-            "\ns: Toggle sensor debug printing" +
-            "\ns: Print sensor subsystem updates" +
+            #"\no: Request door open\nc: Request door close" +
+            #"\nl: Toggle Lights" + 
+            #"\ns: Toggle sensor debug printing" +
             "\ni: Show items in subsystem pool" +
             "\nI: Show details of items int the subsystem pool" +
-            "#n!: Stop Colony" +
+            "\n!: Stop Colony" +
             "\n?: Help window (this text)" + 
             "\n-------------------")
     elif cmd is '!':

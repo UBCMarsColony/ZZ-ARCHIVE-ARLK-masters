@@ -41,6 +41,7 @@ if __name__ == "__main__":
     os.system("cls")
 
     print("\n-----------------------")
+    print("UBC MARS COLONY - PRESSURIZATION TEST SUITE")
     print("Mars Colony Airlock preliminary systems initializing...")
     print("-----------------------\n")
 
