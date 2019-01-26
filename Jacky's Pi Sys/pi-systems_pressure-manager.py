@@ -17,27 +17,19 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
     class Procedure(Enum):
     #Procedures based on pressurization .ino code
     # Procedure is NOT THAT IMPORTANT, purpose is to give a general idea of what state the Py is in
-        Depressurize = 0 #depressurize
-        Pressurize = 1 #pressurize
-        InProgress = 2 #in_progress
+       # Depressurize = 0 #depressurize
+        #Pressurize = 1 #pressurize
+        #InProgress = 2 #in_progress
+        SetPressure = 3
         # and so on...  
     
-    class priority(Enum):
-        Low_pri = 0 # Low priority; for all normal operations pri=0
-        High_pri = 1 # High priority; for aborting pri=1
-
-#BELOW IS SOME SORT OF PSUEODO-CODE
-        @classmethod
-        def CheckEmergency(cls, priority):
-            if priority==1:
-                print("There is an emergency")
-                #CHANGE ANY VARIABLES TO SHUT DOWN/PAUSE OPERATIONS?
-            if priority==0:
-                print("Continue operations normally")
-
+    class Priority(Enum):
+        LowPri = 0 # Low priority; for all normal operations pri=0
+        HighPri = 1 # High priority; for aborting pri=1
+        
     #Replaced Procedure as the important state-teller
     class TargetState(Enum):
-        close = 0 
+        Close = 0 
         Pressurize = 1
         Depressurize = 2
         Idle = 3 
@@ -46,6 +38,10 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         super().__init__(name, thread_id)
         
         self.new_state = None
+
+    @classmethod
+    def pressure_control_flow(cls, pressure, temp, O2, C02):
+        pass
 
     #Task to run in a seperate thread
     def loop(self):        
@@ -58,10 +54,11 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
                 # Send the new state information to the Arduino - package data according to protocol.
                 if self.new_state is not None:
+
                     self.data = struct.pack(self.priority, self.TargetState)
                     #self.new_message = generate_intra_protocol_message(action=action1, procedure=self.Procedure.Procedure1)      
                     self.IntraModCommMessage.generate(action=self.IntraModCommAction.ExecuteProcedure,
-                                                procedure=self.Procedure.GetLatestInput.value, 
+                                                procedure=self.Procedure.SetPressure.value, 
                                                 data=self.data)
                     intra_write(self.new_message) # send new_message to arduino
 
@@ -83,9 +80,8 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         with self:
             self.next_state = new_state
 
-def dssp():
-    print("I AM PRINTING")
+
 
 
 if __name__ == "__main__":
-    dssp()
+    pass
