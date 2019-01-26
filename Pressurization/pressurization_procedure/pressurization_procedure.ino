@@ -88,7 +88,7 @@ void loop() {
 
   msgIndex = (msgIndex + 1) % NumMessages;
 
-  TEST_ROUTINE();
+//  TEST_ROUTINE();
 }
 
 
@@ -149,7 +149,7 @@ void receiveData(int byteCount) {
   }
 
 
-  if (data[1] >= NumMessages) {
+  if (data[1] % (1<<7) >= NumMessages) {
     Serial.println("CRITICAL ERROR: Received message of unknown type! This should never happen.");
     return;
   }

@@ -33,20 +33,20 @@ except ModuleNotFoundError:
 
 
 class LightingSubsystem(subsys.Subsystem):
-    def __init__(self, name=None, thread_id=None, address=None, pins=None):
+    def __init__(self, name=None, thread_id=None, pins=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms= 750)
 
-        self.output_pins = pins if isinstance(pins, list) else [pins]
+        self.pins = pins if isinstance(pins, list) else [pins]
 
         self.light_state = GPIO.LOW
         GPIO.setmode(GPIO.BCM)
-        for pin in self.output_pins:            
+        for pin in self.pins:            
             GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
 
     #Check input signal, if high, turn lights on, if low, turn lights off
     def loop(self):
         with self.lock:
-            for pin in self.output_pins:
+            for pin in self.pins:
                 GPIO.output(pin, self.light_state)
 
 
