@@ -13,18 +13,20 @@ butt2 = 13
 butt3 = 15
 led = 8
 
+#use the pins P.29 P.31 P.33 for the door input buttons
+#low when not pressed, high when pressed
+GPIO.setup(butt1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(butt2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(butt3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(led, GPIO.OUT)
+
 class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     class Procedure(Enum):
         GetLatestInput=1
         DisplayMessage=2
 
-    #use the pins P.29 P.31 P.33 for the door input buttons
-    #low when not pressed, high when pressed
-    GPIO.setup(butt1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(butt2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(butt3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(led, GPIO.OUT)
+
 
     def __init__(self, *, name, thread_id, address, linked_door):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
@@ -38,7 +40,7 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
 
     def loop(self):
-        response = self.check_buttons()
+        response = check_buttons()
        
         input2 = GPIO.input(butt2)
         input3 = GPIO.input(butt3)        

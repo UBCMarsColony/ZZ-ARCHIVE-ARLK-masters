@@ -28,14 +28,10 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         Low_pri = 0 # Low priority; for all normal operations pri=0
         High_pri = 1 # High priority; for aborting pri=1
 
-#BELOW IS SOME SORT OF PSUEODO-CODE
-        @classmethod
-        def CheckEmergency(cls, priority):
-            if priority==1:
-                print("There is an emergency")
-                #CHANGE ANY VARIABLES TO SHUT DOWN/PAUSE OPERATIONS?
-            if priority==0:
-                print("Continue operations normally")
+
+    @classmethod
+    def pressure_control(cls, flag):
+        pass    
 
     #Replaced Procedure as the important state-teller
     class TargetState(Enum):
