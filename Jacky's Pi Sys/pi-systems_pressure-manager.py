@@ -56,8 +56,7 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
                 # Send the new state information to the Arduino - package data according to protocol.
                 if self.new_state is not None:
-                    self.data = [self.priority.Low_pri.value, self.new_state.value]
-                    #self.new_message = generate_intra_protocol_message(action=action1, procedure=self.Procedure.Procedure1)      
+                    self.data = [self.priority.Low_pri.value, self.new_state.value]      
                     self.new_message = self.IntraModCommMessage.generate(action=self.IntraModCommAction.ExecuteProcedure.value,
                                                 procedure=self.Procedure.SetPressure.value, 
                                                 data=self.data)

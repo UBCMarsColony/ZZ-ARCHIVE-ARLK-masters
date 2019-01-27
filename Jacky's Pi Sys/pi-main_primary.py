@@ -2,6 +2,7 @@ import sys
 import importlib
 from time import sleep, time
 import keyboard
+
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
 
@@ -100,7 +101,7 @@ def loop(runtime_params):
 def handle_cmd(cmd):
     cmd = cmd.name
     subsystems = ss_pool.get_all()
-
+    
     # Door Toggles
     # if cmd is 'o' or cmd is 'O':
     #     print("Requesting door open")
@@ -117,6 +118,7 @@ def handle_cmd(cmd):
     elif cmd is 'd' or cmd is 'D':
         subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Depressurize)
         print("Depressurizing")
+
 
     # # Sensors SS Debugging
     # elif cmd is 's':

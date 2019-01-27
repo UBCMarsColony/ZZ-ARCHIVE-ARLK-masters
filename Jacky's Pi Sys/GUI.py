@@ -1,16 +1,20 @@
 import tkinter as tk
-    
+import time
+
 def Pressurize():
     print("Pressurization process has started.")
-    # SET FLAGS/ BEGIN THE PRESSURIZATION BASED ON USER INPUT
-
-def Depressuriza():
-    print("Depressurization process has started. ")
-    #continue here for dep
-
-def CheckButtons(b1):
-    if(b1)
-
+    countP = 0 
+    limitP = 5
+    
+    while(countP < limitP):
+        print(countP)
+        time.sleep(1)
+        countP = countP + 1
+    
+        if(countP == limitP):
+            print("DONE")
+            break
+            
 root = tk.Tk()
 frame = tk.Frame(root)
 frame.pack()
