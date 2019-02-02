@@ -19,7 +19,7 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     def loop(self):
         
-        with self:
+        with self.lock:
             if self.new_state is not None:
                 print("Door state updating (%s)" % (self.Procedure(self.new_state).name))
 
@@ -33,37 +33,6 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
                 self.new_state = None
 
-        #WARNING: MASS PSEUDOCODE
-        #-------------------------
-        # This is an example of logic
-        # that could be used for the door.
-        #-------------------------
-        # sData = getLatestSensorData()
-        
-        # if sData is good:
-        #     move door
-        #     specify target switch
-            
-        #     while(door is running):
-            
-        #         #Error checks
-        #         if override is requested
-        #             disconnect the motor 
-        #             set a callback listener until the motor is reset
-        #             break
-                
-        #         if the door is timing out
-        #             get last requested door state
-        #             run course of action logic
-                
-        #         if a sensor problem is encountered:
-        #             run course of action logic
-                    
-        #         #Target state logic
-        #         if target switch is pressed:
-        #             stop the door
-        #             run security measures
-        # close()
     
     def request_door_state(self, state=None):
         if not state:
@@ -78,17 +47,6 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         if state not in set(p.value for p in self.Procedure):
             raise ValueError("Door state must be defined in DoorSubsystem.Procedure")
 
-        with self:
-            self.new_state = state
+        self.new_state = state
 
         print("Door state requested: %s" % (self.Procedure(state).name))
-
-
-# TEST CODE
-if __name__ == "__main__":
-    import time
-    door = DoorSubsystem(name="door_test", thread_id=7357)
-
-    door.request_door_state(DoorSubsystem.Procedure.OpenDoor)
-    time.sleep(7500)
-    door.toggle_door(DoorSubsystem.Procedure.CloseDoor)

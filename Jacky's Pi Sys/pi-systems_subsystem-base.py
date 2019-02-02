@@ -36,16 +36,22 @@ class Subsystem(ABC):
     # Allows "with" statement to be used on a subsystem, granting the "with" block
     # secure access to subsystem data.
     def __enter__(self):
-        self.thread.lock.acquire()
+        self.lock.acquire()
         return self
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.thread.lock.release()
+        self.lock.release()
 
 
     def __repr__(self):
         return "{ \n\tname: \"%s\", \n\tthread_id: %i, \n\trunning: %s \n}" % (self.name, self.thread_id, str(self.running))
+
+
+    # Relay which enables "with" statements to be more obvious in functionality.
+    @property
+    def lock(self):
+        return self.thread.lock
 
 
     def start(self):

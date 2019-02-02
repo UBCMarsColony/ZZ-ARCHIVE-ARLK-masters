@@ -1,6 +1,6 @@
 from enum import Enum
 from threading import Lock
-
+import struct
 
 # SerialMixin class enables the subsystem to use I2C methods for data transfer
 # between arduino and pi.
@@ -118,9 +118,11 @@ class IntraModCommMixin:
 
 # READING
     @classmethod
-    def intra_read(cls, address) -> IntraModCommMixin.IntraModCommMessage:
+    def intra_read(cls, address, procedure):
+        if not isinstance(procedure, int):
+            raise TypeError('rocedure value provided is not an integer!')
         with cls.__lock:
-            msg = cls.__bus.read_i2c_block_data(address, 0)
+            msg = cls.__bus.read_i2c_block_data(address, procedure)
         # for index in range(93):
         #     num = cls.__bus.read_byte(address)
         #     if num:
@@ -131,7 +133,8 @@ class IntraModCommMixin:
             return
         
         message = IntraModCommMixin.IntraModCommMessage(msg)
-        if message.validate():
+
+        if message: #.validate()
             return message
 
 class InterModCommMixin:

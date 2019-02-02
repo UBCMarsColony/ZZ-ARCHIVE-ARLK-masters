@@ -1,212 +1,198 @@
-//Common data value definitions
-#define one_atm     101.3   // in kpa
-#define mars_atm    0.6 // in kpa
-#define epsilon     5   //Range to set control flags, + or - 5 kPa
+#include <Wire.h>
 
-//Opening & Closing Valves
-#define open true
-#define close false 
+// Arduino I2C Things
+#define SLAVE_ADDRESS 0x14
+void receiveData(int);
+void sendData();
 
-//The two main procedures, entering and leaving the airlock
-#define entry 1
-#define exit 0
+// Arduino GPIO
+#define VALVE_PRESSURIZER 8
+#define VALVE_DEPRESSURIZER 9
 
-//Initial state of the valves
-#define initial_valve_a close
-#define initial_valve_b close
-
-//Airlock States
-#define in_progress 2
-#define pressurize 1
-#define depressurize 0
+// Other constants
+#define MSG_LEN 32
+#define KEEP_MSG true
+#define CLEAR_MSG false
 
 
-//Control buttons
-#define button_colonyside       2
-#define button_marsside         3
+enum Procedure {
+  SetPressure   = 3,
+  NumMessages
+};
 
-//LED display
-#define status_press            4
-#define status_progress         5
-#define status_depress          6
+enum TargetState {
+  Close,
+  Pressurize,
+  Depressurize,
+  Idle
+};
 
-//valve pins
-#define first_valve             8
-#define second_valve            9     
+typedef struct SetPressure_t {
+  byte action;
+  byte procedure;
+  byte priority;
+  byte targetState;
+};
 
-//Door sensor data debug signals
-#define door_close              10
-//DEBUGGING definitions
-float pressure_data = 0; // in kpa
+volatile byte messages[NumMessages][MSG_LEN] = {0};  // Messages are stored in the element corrsponding to
+// their procedure ID (as specified in the Procedure enum)
+volatile byte msgIndex = 0; // Points to a message to be evaluated.
 
-////////////////// Get State from Pressure data from Pi/////////////////////
-byte get_airlock_state(int pressure);
+// Pressure Data
+SetPressure_t *currentPressureState;
 
-///////////////// Procedure and primitive definitions////////
-byte cmd_sel;
-void procedure();
-bool hold_press();
-bool DPR();
-bool PR();
-void colonyside(){
-    cmd_sel = 'o';
-    //procedure(exit);
+typedef struct ValveState_t {
+  bool pressurizer;
+  bool depressurizer;
+
+  ValveState_t(int p, int dp)
+    : pressurizer(p)
+    , depressurizer(dp) {}
+};
+const struct ValveState_t* PRESSURIZE = new ValveState_t(HIGH, LOW);
+const struct ValveState_t* DEPRESSURIZE = new ValveState_t(LOW, HIGH);
+const struct ValveState_t* CLOSE = new ValveState_t(LOW, LOW);
+
+
+// Function Signatures
+bool evaluateMessage(byte[], int);
+void applyValveState(struct ValveState_t);
+void receiveData(int);
+void sendData();
+
+void setup() {
+  Serial.begin(9600);
+
+  // Register valves
+  pinMode(VALVE_PRESSURIZER, OUTPUT);
+  pinMode(VALVE_DEPRESSURIZER, OUTPUT);
+
+  // Set up I2C
+  Serial.print("Using address: ");
+  Serial.println(SLAVE_ADDRESS);
+  Wire.begin(SLAVE_ADDRESS);
+  Wire.onReceive(receiveData);
+  Wire.onRequest(sendData);
 }
-void marside(){
-    cmd_sel = 'i';
-    //procedure(entry);
-}
-//////////////// Display driver //////////////////////////
-int led_status_display();
-
-//Airlock Pressurization System
-typedef struct{
-    byte state;
-    int pressure;
-    bool valve_a;
-    bool valve_b;
-}airlock;
-	
-//Airlock System Initialization
-airlock u_airlock;
-void setup(){
-    //put setup code here
-    Serial.begin(9600);
-
-    //////////Button and interrupts////////
-    pinMode(first_valve,OUTPUT);
-    pinMode(second_valve,OUTPUT);
-    //procedure flag
-    cmd_sel = 'x';
-    //There's no software debouncing, so build button debouncing circuits
-    pinMode(button_colonyside, INPUT_PULLUP);
-    pinMode(button_marsside, INPUT_PULLUP);
-
-    //LED display pins
-    pinMode(status_press,OUTPUT);
-    pinMode(status_progress,OUTPUT);
-    pinMode(status_depress,OUTPUT);
-    pinMode(door_close,INPUT_PULLUP);
-    //Button interrupts
-    attachInterrupt(digitalPinToInterrupt(button_colonyside), colonyside, RISING);
-    attachInterrupt(digitalPinToInterrupt(button_marsside), marside, RISING); 
-    u_airlock.valve_a = initial_valve_a;
-    u_airlock.valve_b = initial_valve_b;
 
 
-
-}
+/*
+   This loop is configured to:
+      1. Evaluate next message in the messages array. If a message needs immediate evaluations, the 'msgIndex' value can be set to that message.
+      2. Undergo any airlock actions.
+*/
 void loop() {
-    //Looping code 
-    u_airlock.pressure = pressure_data;
-    u_airlock.state = get_airlock_state(u_airlock.pressure);
+  // MESSAGE PARSING & EVALUATION
+  if (evaluateMessage(messages[msgIndex], msgIndex) == CLEAR_MSG)
+    memset(messages[msgIndex], 0, sizeof(messages[msgIndex])); // Clear message from 'messages' array
 
-    Serial.print("Pressure is:\t");
-    Serial.println(u_airlock.pressure);
-    Serial.print("State is:\t");
-    Serial.println(u_airlock.state);
-    Serial.print("cmd_sel is:\t");
-    Serial.println(char(cmd_sel));
-    if(cmd_sel == 'i'){
-        procedure(entry);
-    }
-    else if (cmd_sel == 'o'){
-        procedure(exit);
-    }
-    cmd_sel = 'x';
-    led_status_display(u_airlock.state);
-    delay(1000);
+  msgIndex = (msgIndex + 1) % NumMessages;
 
-}
-int led_status_display(byte state){
-    if(state == pressurize){
-        Serial.println("Pressruized");
-        digitalWrite(status_press, HIGH);
-        digitalWrite(status_depress, LOW);
-        digitalWrite(status_progress, LOW);
-    }
-    else if (state == depressurize){
-        Serial.println("dePressruized");
-        digitalWrite(status_press, LOW);
-        digitalWrite(status_depress, HIGH);
-        digitalWrite(status_progress, LOW);
-    }
-    else if (state == in_progress){
-        Serial.println("inprogress");
-        digitalWrite(status_press, LOW);
-        digitalWrite(status_depress, LOW);
-        digitalWrite(status_progress, HIGH);
-    }
-    return 1;
-}
-//Entering the airlock from mars is called entry, and leaving the airlock called exit
-void procedure(bool select_procedure){
-    if(select_procedure == exit){
-        PR();
-        Serial.println("Opening colony -> airlock door");
-        while(digitalRead(door_close)!= LOW);
-        Serial.println("Detect airlock door close");
-        DPR();
-        Serial.println("Opening airlock -> mars door");
-        while(digitalRead(door_close)!= LOW);
-        Serial.println("Detect mars door close");
-    }
-    else if(select_procedure == entry){
-        Serial.println("Opening airlock -> mars door");
-        while(digitalRead(door_close)!= LOW);
-        Serial.println("Detect mars door close");
-        PR();
-        Serial.println("Opening colony -> airlock door");
-        while(digitalRead(door_close)!= LOW);
-        Serial.println("Detect airlock door close");
-        DPR();
-    }
+//  TEST_ROUTINE();
 }
 
-///////////// Simple Procedures ////////////////
-bool PR(){
-    u_airlock.valve_a = close;
-    digitalWrite(first_valve, LOW);
-    u_airlock.valve_b = open;
-    digitalWrite(second_valve, HIGH);
-    while(u_airlock.state != pressurize){
-        u_airlock.state = get_airlock_state(pressure_data++);  
-        led_status_display(u_airlock.state);
+
+/*
+   Parse and evaluate a message.
+   Parameter: message - Stored i2c message byte array.
+   Parameter: type - The numerical value found in 'Procedure' associated with this data.
+   Return: A boolean indicating if we should remove the message from queue.
+*/
+bool evaluateMessage(byte message[], int type) {
+  if (message[0] != 0) {
+    Serial.print("Evaluating message type ");
+    Serial.println(type);
+
+    switch (type) {
+      case SetPressure:
+        {
+          currentPressureState = (SetPressure_t*) message;
+
+          switch (currentPressureState->targetState) {
+            case Pressurize:
+              applyValveState(PRESSURIZE);
+              break;
+            case Depressurize:
+              applyValveState(DEPRESSURIZE);
+              break;
+            case Close:
+              applyValveState(CLOSE);
+              break;
+          }
+          return CLEAR_MSG;
+        }
+        break;
     }
-    hold_press();
+  }
+  return KEEP_MSG;
 }
-bool DPR(){
-    u_airlock.valve_a = open;
-    digitalWrite(first_valve, HIGH);
-    u_airlock.valve_b = close;
-    digitalWrite(second_valve, LOW);
-    while(u_airlock.state != depressurize){
-        u_airlock.state = get_airlock_state(pressure_data--);
-        led_status_display(u_airlock.state);
-    }
-    hold_press();
-}
-bool hold_press(){
-    u_airlock.valve_a = close;
-    digitalWrite(first_valve, LOW);
-    u_airlock.valve_b = close;
-    digitalWrite(second_valve, LOW);
-    u_airlock.state = get_airlock_state(pressure_data);
-    led_status_display(u_airlock.state);
-}
-//////////////////////////////////////////////
 
 
-byte get_airlock_state(int pressure){
-    byte state;
-    Serial.print("Inside Get airlock state");
-    Serial.println(pressure);
-    if (mars_atm - epsilon < pressure && pressure < mars_atm + epsilon){
-        state = depressurize;
-    }
-    else if(one_atm - epsilon < pressure && pressure < one_atm + epsilon)
-        state = pressurize;
-    else
-        state = in_progress;
-    return state;
+void applyValveState(struct ValveState_t* state) {
+  digitalWrite(VALVE_PRESSURIZER, state->pressurizer);
+  delay(1000);
+  digitalWrite(VALVE_DEPRESSURIZER, state->depressurizer);
 }
+
+
+/*
+   I2C INTERRUPTS BEYOND THIS POINT
+*/
+void receiveData(int byteCount) {
+  Serial.println("Received transmission from Master");
+  byte data[MSG_LEN] = {};
+
+  // Read the incoming message.
+  for (int i = 0; Wire.available(); i++) {
+    data[i] = Wire.read();
+    Serial.println(data[i]);
+  }
+
+
+  if (data[1] % (1<<7) >= NumMessages) {
+    Serial.println("CRITICAL ERROR: Received message of unknown type! This should never happen.");
+    return;
+  }
+  // Run other checks if needed.
+
+  // Put message into the queue
+  for (int i = 0; i < MSG_LEN; i++)
+    messages[data[1]][i] = data[i];
+}
+
+void sendData() {
+  Serial.println("sendData stub called");
+}
+
+
+/*
+   TEST ROUTINE CODE BELOW
+   -----------------------
+   Can be removed once system is
+   confirmed working.
+*/
+
+bool t1 = false, t2 = false, t3 = false;;
+void TEST_ROUTINE() {
+  if (millis() > 5000 && !t1 ) {
+    Serial.print("P:");
+    Serial.print(PRESSURIZE->pressurizer);
+    Serial.println(PRESSURIZE->depressurizer);
+    t1 = true;
+    applyValveState(PRESSURIZE);
+  }
+  if (millis() > 15000 && !t2 ) {
+    Serial.print("D:");
+    Serial.print(DEPRESSURIZE->pressurizer);
+    Serial.println(DEPRESSURIZE->depressurizer);
+    t2 = true;
+    applyValveState(DEPRESSURIZE);
+  }
+
+  if (millis() > 25000 && !t3 ) {
+    Serial.println("C");
+    t3 = true;
+    applyValveState(CLOSE);
+  }
+}
+
