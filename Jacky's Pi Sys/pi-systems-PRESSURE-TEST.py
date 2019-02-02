@@ -20,10 +20,10 @@ pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 
 """
 Purpose: Performs initial system setup and begins airlock loop cycle. Handles any breakouts within the loop cycle.
-Parameter: runtime_params - The Namespace returned by the argument parser in init.py
+Parameter: runtime_params - The Namespace retairlock1_pressurizationurned by the argument parser in init.py
 """
 def begin(runtime_params):
-    start_time = time() 
+    #start_time = time() 
     print("\n\n---INITIALIZING AIRLOCK SYSTEMS---")
     
     # Start initializing the vital airlock systems
@@ -42,24 +42,24 @@ def begin(runtime_params):
     
     print("\n---ALL SUBSYSTEMS STARTED---")
 
-    keyboard.on_press(handle_cmd)
+    #keyboard.on_press(handle_cmd)
     print("\n---COMMAND INPUT ENABLED---\n.")
 
-    print("\n---AIRLOCK SETUP COMPLETE.---\nElapsed Setup Time: %i" % (start_time - time()))
+    #print("\n---AIRLOCK SETUP COMPLETE.---\nElapsed Setup Time: %i" % (start_time - time()))
     
     print("\n---STARTING LOOPER SEQUENCE---\n")
     
-    while True:
-        try:
-            loop(runtime_params)
-        except KeyboardInterrupt:
-            cmd_input = input("Shut down colony? (y/n)\n")
-            if cmd_input == "y" or cmd_input == "Y":
-                ss_pool.stop_all()
-                exit(0)
-                break
-            else:
-                print("Airlock shutdown cancelled")
+    #while True:
+    try:
+        loop(runtime_params)
+    except KeyboardInterrupt:
+        cmd_input = input("Shut down colony? (y/n)\n")
+        if cmd_input == "y" or cmd_input == "Y":
+            ss_pool.stop_all()
+            exit(0)
+            #break
+        else:
+            print("Airlock shutdown cancelled")
         
 
 def loop(runtime_params):
@@ -90,11 +90,8 @@ def MakeButton():
     button2 = tk.Button(frame, text="Depressurization", fg="green", command=Depressure)
     button2.pack(side=tk.RIGHT)
 
-    try:
-        root.mainloop()
-    except SystemExit:
-        print("\nThe user has exited pressurization process!")
-
+    return root
+    
 
 def SetValve(cmd):
     subsystems = ss_pool.get_all()
@@ -105,7 +102,7 @@ def SetValve(cmd):
 
     if (cmd == 1):
         print("Set P valve")
-        #subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Pressurize)
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Pressurize)
 
         # Start counting 
         while(countP < limitP):
@@ -115,13 +112,13 @@ def SetValve(cmd):
     
         if(countP == limitP):
             print("Set to Idle ") # comment this out when testing (uncomment line below)
-            #subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Idle)
+            subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Idle)
             cmd = 0 # Gotta reset cmd so it doesnt go back and pressurize again
             print("~~ DONE PRESSURIZATION ~~~")
 
     elif (cmd == 2):
         print("Set D valve") # comment this out when testing (uncomment line below)
-        #subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Depressurize)
+        subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Depressurize)
 
         while(countD < limitD):
             print(countD)
@@ -130,13 +127,20 @@ def SetValve(cmd):
     
         if(countD == limitD):
             print("Set to Idle ")
-            #subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Idle)
+            subsystems['airlock1_pressurization'].request_new_state(subsystems['airlock1_pressurization'].TargetState.Idle)
             cmd = 0
             print("DONE")
 
 cmd = 0
-MakeButton()
+root = MakeButton()
+print('Test')
 SetValve(cmd)
+try:
+    begin(None)
+    root.mainloop()
+except SystemExit:
+    print("\nThe user has exited pressurization process!")
+
 
 
 

@@ -10,11 +10,11 @@ sys.path.insert(0, '../pi-systems/')
 ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 # Import all subsystem files so we can create new instances of each one.
-sensor_ss = importlib.import_module('pi-systems_sensor-reader')
-door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
-lights_ss = importlib.import_module('pi-systems_lights-manager')
+#sensor_ss = importlib.import_module('pi-systems_sensor-reader')
+#door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
+#lights_ss = importlib.import_module('pi-systems_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
-door_ss = importlib.import_module('pi-systems_door-subsystem')
+#door_ss = importlib.import_module('pi-systems_door-subsystem')
 
 """
 Purpose: Performs initial system setup and begins airlock loop cycle. Handles any breakouts within the loop cycle.
