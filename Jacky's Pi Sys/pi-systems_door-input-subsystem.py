@@ -8,24 +8,12 @@ from struct import Struct
 import RPi.GPIO as GPIO
 import time
 
-butt1 = 11
-butt2 = 13
-butt3 = 15
-led = 8
-
-#use the pins P.29 P.31 P.33 for the door input buttons
-#low when not pressed, high when pressed
-GPIO.setup(butt1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(butt2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(butt3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(led, GPIO.OUT)
 
 class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     class Procedure(Enum):
         GetLatestInput=1
         DisplayMessage=2
-
 
 
     def __init__(self, *, name, thread_id, address, linked_door):
@@ -45,29 +33,6 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         input2 = GPIO.input(butt2)
         input3 = GPIO.input(butt3)        
     
-        while True:
-            input1 = GPIO.input(butt1)
-            if (input1 is True): # check button 1
-                 print("Button 1 pressed")
-                 GPIO.output(led, GPIO.HIGH) 
-                 time.sleep(1)
-                 GPIO.output(led, GPIO.LOW)
-            else:
-                 pass
-        """#start_value1 = input1
-        #time.sleep(0.05)
-        
-        if(not start_value2 and input2): # check butt2
-             print("Button 2 pressed")
-             GPIO.output(led, GPIO.HIGH)
-             time.sleep(2)
-             GPIO.output(led, GPIO.LOW)
-
-        if(not start_value3 and input3): #check butt3
-             print("Button 3 pressed")
-             GPIO.output(led, GPIO.HIGH)
-             time.sleep(3)
-             GPIO.output(led, GPIO.LOW) """
             
         if response:
             print("Message received from %s: \n%s" % (self.linked_door.name, repr([chr(x) for x in reponse])))
@@ -90,7 +55,57 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
         return self.intra_read(self.address)
 
+# Define some buttons as pull down
+butt1 = 11
+butt2 = 13
+butt3 = 15
+led = 8
+
+#use the pins P.29 P.31 P.33 for the door input buttons
+#low when not pressed, high when pressed
+GPIO.setup(butt1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(butt2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(butt3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(led, GPIO.OUT)
+
+def check_if_buttons_pressed(self):
+        while True:
+            button_state_1 = GPIO.input(butt1)
+            button_state_2 = GPIO.input(butt2)
+            button_state_3 = GPIO.input(butt3)
+
+            if (button_state_1 == False):
+                GPIO.output(butt1, True)
+                print("button 1 pressed")
+                GPIO.output(led, True)
+                time.sleep(1)
+                GPIO.output(led, False)
+                time.sleep(0.02)
+
+            else if (button_state_2 == False):
+                GPIO.output(butt2, True)
+                print("button 2 pressed")
+                GPIO.output(led, True)
+                time.sleep(2)
+                GPIO.output(led, False)
+                time.sleep(0.02)
+
+            else if (button_state_3 == False):
+                GPIO.output(butt3, True)
+                print("button 3 pressed")
+                GPIO.output(led, True)
+                time.sleep(3)
+                GPIO.output(led, False)
+                time.sleep(0.02)
+                
+            else:
+                GPIO.output(butt1, False)
+                GPIO.output(butt2, False)
+                GPIO.output(butt3, False)
+
+        
 
 if __name__ == "__main__":
     c = DoorInputSubsystem("test", 12, A)
     c.check_buttons()
+    c.check_if_buttons_pressed()
