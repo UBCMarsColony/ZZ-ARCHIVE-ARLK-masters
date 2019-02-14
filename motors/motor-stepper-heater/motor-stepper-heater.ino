@@ -182,7 +182,7 @@ void loop() {
             case open:
                 stepperAngleRotate(1, DIR_OPEN);
                 break;
-            case close:
+            case close:-
                 stepperAngleRotate(1, DIR_CLOSE);
                 break;
         }

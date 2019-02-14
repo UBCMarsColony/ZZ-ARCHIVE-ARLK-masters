@@ -8,165 +8,168 @@ from enum import Enum
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 
 """
-The purpose of the Subsystem class is to ease task management.
-In general, we would like the airlock tasks to be split up into single,
-maintainable components. This enables better subsystem management in the future.
-More information on this is included in the README file in this directory.
+Author: ThomasJFR (Thomas Richmond)
+Purpose: Define, contain and execute a subprocess of the airlock.
+More information on this is included in the README file of the directory.
 """
 
 
 class Subsystem(ABC):
-    def __init__(self, thread_id, name, *, loop_delay_ms=750):
-        if thread_id is None:
-            pass
-            #raise TypeError("Subsystem parameter thread_id is not defined!")
 
-        self.name = name or (self.__class__.__name__ + str(random.randint(0, 0xFFFF)))
-        self.thread_id = thread_id
-        
-        self.running = False
-        self.loop_delay_ms = loop_delay_ms
-        self.thread = Subsystem.SubsystemThread(self)
-            
+    """
+    name: Verbose name of subsystem. Can be used to
+        get a subsystem from the pool
+    thread_id: ID to associate to a thread once it
+        enters the thread pool. Immediately
+        tunneled to SubsystemThread object.
+    loop_delay_ms: The amount of time to wait between
+        loops while operational. Immedaitely
+        tunneled to SubsystemThread object.
+    on_start: Callback invoked once the subsystem
+        thread begins.
+    on_stop: Callback invoked once the subsystem
+        thread stops.
+    on_loop: Callback invoked every time the thread loop runs.
+    """
+    def __init__(
+        self,
+        name,
+        *,
+        thread_id,
+        loop_delay_ms,
+        on_start,
+        on_stop,
+        on_loop,
+    ):
+        self.name = name
+        self.thread = Subsystem.SubsystemThread(
+            thread_id=thread_id,
+            loop_delay_ms=loop_delay_ms,
+            target=self._loop)
+
+        if callable(on_start):
+            self.on_start = on_start
+        if callable(on_stop):
+            self.on_stop = on_stop
+        if callable(on_loop):
+            self.on_loop = on_loop
+
         subsys_pool.add(self)
 
-        print("Subsystem initialized:", repr(self))
-
-
-    # Allows "with" statement to be used on a subsystem, granting the "with" block
-    # secure access to subsystem data.
-    def __enter__(self):
-        self.lock.acquire()
-        return self
-
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.lock.release()
-
-
-    def __repr__(self):
-        return "{ \n\tname: \"%s\", \n\tthread_id: %i, \n\trunning: %s \n}" % (self.name, self.thread_id, str(self.running))
-
-
-    # Relay which enables "with" statements to be more obvious in functionality.
-    @property
-    def lock(self):
-        return self.thread.lock
-
-
+    """
+    Starts the thread loop and invokes the on_start method if it exists.
+    """
     def start(self):
-        if self.running is True:
-            raise threading.ThreadError("Tried starting a thread that was still running!")
+        if self.thread.running:
+            return
 
-        self.running = True
-        self.thread.start() 
-        print("Subsystem started: \n", repr(self))
-        
+        self.thread.start(_loop)
+
+        if (self.on_start):  # Run callback method if it exists
+            self.on_start()
 
     def stop(self):
-        print("Subsystem stopping:\n", repr(self))
-        with self:
-            self.running = False
+        self.thread.stop()
 
+        if (self.on_stop):  # Run callback method if it exists
+            self.on_stop()
 
-    # Definition contains the code which will be looped over during the threads life.
+    """
+    Definition contains the code which will be looped
+    during the thread's active life.
+    """
     @abstractmethod
     def loop(self):
         pass
 
+    """
+    Wrapper function to call both the loop and the loop callback
+    for each loop cycle.
+    """
+    def _loop(self):
+        self.loop()
+        if self.on_loop:
+            self.on_loop()
 
-    class SubsystemThread(threading.Thread):
-        def __init__(self, subsystem): 
-            super().__init__()
+    """
+    __enter__, __exit__ and __lock__ are constructs which allow the
+    "with" statement to be used on a subsystem. While acquired, a
+    subsystems data can be accessed and modified.
+    """
+    def __enter__(self):
+        self.lock.acquire()
+        return self
 
-            self.subsystem = subsystem
-            self.setName(self.subsystem.name)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.lock.release()
+
+    @property
+    def lock(self):
+        return self.thread.lock
+
+    """
+    Allow the subsystem's state to be represented in human-readable format.
+    """
+    def __repr__(self):
+        return "{ \n\tname: \"%s\", \n\tthread_id: %i, \n\trunning: %s \n}" \
+            % (self.name, self.thread.thread_id, str(self.thread.running))
+
+    """
+    Purpose: SubsystemThread is a composition-based helper class that
+        implements additional threading functionality. It includes a
+        predefined "run" method which loops over a target method, rather
+        than calling it just once. It also holds a lock object unique to
+        the subsystem.
+    """
+    class SubsystemThread():
+        DEFAULT_LOOP_DELAY_MS = 750
+
+        """
+        thread_id: ID to associate to a thread once it
+         enters the thread pool. Can be a string or number.
+        target: The target method to call while looping.
+        loop_delay_ms:  The amount of time to wait between
+            loops while operational.
+        """
+        def __init__(
+            self,
+            thread_id,  # Allows the thread to be identified on the OS
+            loop,  # Loop function
+            loop_delay_ms=DEFAULT_LOOP_DELAY_MS
+        ):
+            # Thread Data
+            self.thread_id = thread_id
+            self.running = False
+
+            # Create Objects
             self.lock = threading.Lock()
+            self._thread = threading.Thread(
+                name=thread_id,
+                target=self.run,
+                args=(loop, loop_delay_ms))
 
+        def start(self):
+            self.running = True
+            self._thread.start()
 
-        def run(self):
-            print("Subsystem running: \n" + repr(self.subsystem))
+        def stop(self):
+            self.running = False
 
-            last_runtime = time.time()
-            while self.subsystem.running:
-                # Time.time() uses seconds, so convert loop_delay_ms to seconds.
-                if time.time() - last_runtime >= (self.subsystem.loop_delay_ms / 1000):
+        def run(self, loop, loop_delay_ms):
+            # Wrapper function to make loop logic statement look nicer
+            def millis():
+                return time.time() * 1000
+
+            last_runtime = millis()
+            while self.running:
+                # convert loop_delay_ms to seconds.
+                if millis() - last_runtime >= loop_delay_ms:
                     try:
-                        print('Running %s' % (self.subsystem.name))
-                        self.subsystem.loop()
+                        self.loop()
                     except Exception as e:
-                        print('Error: Subsystem exception has occured!', e)
-                        self.subsystem.stop()
-                    last_runtime = time.time()
-                
-                time.sleep(0.5)
+                        print(
+                            'Error: Subsystem exception has occured for %s'
+                            % repr(self.subsystem), e, '\n')
+                    last_runtime = millis()
 
-
-#SerialMixin class enables the subsystem to use serial methods. This allows direct data transfer
-#between arduino and pi.
-class IntraModCommMixin:
-
-    try:
-        # Initialization needed for the class to run properly
-        import smbus
-        import RPi.GPIO as gpio
-
-        # Static bus object
-        gpio.setmode(gpio.BCM)
-        __bus = smbus.SMBus(1) # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
-    except ModuleNotFoundError:
-        print("(DEPRECATED) RPi not being used, skipping RPi imports...")
-
-    class IntraModCommAction(Enum):
-        ExecuteProcedure = 1
-
-# WRITING
-    @classmethod
-    def intra_write(cls, address, message):
-        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
-            "Please use the pi-systems_communications file instead")
-        for byte in message:
-            cls.__bus.write_byte(address, ord(byte))
-            time.sleep(1)
-
-
-    # Generates a valid protocol message.
-    @classmethod
-    def generate_intra_protocol_message(cls, *, action=-1, procedure=-1, data=None, is_response=False):
-        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
-            "Please use the pi-systems_communications file instead")
-        # TODO Abstract this later on
-        high_bit = 1<<7
-        max_value = high_bit - 1
-
-        # Verify and modify data
-        if isinstance(action, cls.IntraModCommAction):
-            action = action.value
-        if action > max_value and action in set(action.value for action in cls.IntraModCommAction):
-            raise ValueError("action must not use the signing bit!")
-        if is_response:
-            action += high_bit
-        
-        if procedure > max_value:
-            raise ValueError("procedure must not use the signing bit!")
-        if data is not None:
-            procedure += high_bit
-
-        # Format protocol message
-        protocol_message = [action, procedure]
-        if data is not None:
-            protocol_message.append(data)
-
-        protocol_message.insert(0, len(protocol_message))
-        return protocol_message
-
-
-# READING
-    @classmethod
-    def intra_read(cls, address):
-        print("WARNING: The IntraModCommMixin class will soon be removed from the pi-systems_subsystem-base file.",
-            "Please use the pi-systems_communications file instead")
-        for index in range(93):
-            num = cls.__bus.read_byte(address)
-            if num:
-                return_str.append(chr(num))
+                time.sleep(0.05)
