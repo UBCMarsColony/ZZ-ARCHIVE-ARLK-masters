@@ -127,14 +127,14 @@ class Subsystem(ABC):
         """
         thread_id: ID to associate to a thread once it
          enters the thread pool. Can be a string or number.
-        target: The target method to call while looping.
+        loop: The target method to call while looping.
         loop_delay_ms:  The amount of time to wait between
             loops while operational.
         """
         def __init__(
             self,
-            thread_id,  # Allows the thread to be identified on the OS
-            loop,  # Loop function
+            thread_id,
+            loop,
             loop_delay_ms=DEFAULT_LOOP_DELAY_MS
         ):
             # Thread Data
