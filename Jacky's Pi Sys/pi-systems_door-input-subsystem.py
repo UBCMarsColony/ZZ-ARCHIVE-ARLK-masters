@@ -20,7 +20,7 @@ GPIO.setup(butt2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(butt3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(led, GPIO.OUT)
 
-class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
+class DoorInputSubsystem(subsys.Subsystem):
 
     class Procedure(Enum):
         GetLatestInput=1
@@ -80,15 +80,15 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
                         self.linked_door.request_door_state(self.linked_door.Procedure.CloseDoor)
         
 
-    def check_buttons(self) -> comms.IntraModCommMixin.IntraModCommMessage:
-        self.intra_write(self.address,
-           self.IntraModCommMessage.generate(
-               action=self.IntraModCommAction.ExecuteProcedure,
+    def check_buttons(self) -> comms.IntraModCommMessage:
+        comms.intra_write(self.address,
+           comms.IntraModCommMessage.generate(
+               action=comms.IntraModCommAction.ExecuteProcedure,
                procedure=self.Procedure.GetLatestInput.value
            )
         )
 
-        return self.intra_read(self.address)
+        return comms.intra_read(self.address)
 
 
 if __name__ == "__main__":

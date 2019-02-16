@@ -11,7 +11,7 @@ import struct
 subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 
-class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
+class PressureSubsystem(subsys.Subsystem):
 # For the Py ic2 protol structure
 # Modelled after the structure in the pressurization-procedure.ino
 
@@ -58,10 +58,10 @@ class PressureSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
                 if self.new_state is not None:
                     self.data = [self.priority.Low_pri.value, self.new_state.value]
                     #self.new_message = generate_intra_protocol_message(action=action1, procedure=self.Procedure.Procedure1)      
-                    self.new_message = self.IntraModCommMessage.generate(action=self.IntraModCommAction.ExecuteProcedure.value,
+                    self.new_message = comms.IntraModCommMessage.generate(action=comms.IntraModCommAction.ExecuteProcedure.value,
                                                 procedure=self.Procedure.SetPressure.value, 
                                                 data=self.data)
-                    self.intra_write(0x14,self.new_message) # send new_message to arduino
+                    comms.intra_write(0x14,self.new_message) # send new_message to arduino
 
         # Set next_state to None, which will make sure the loop doesn't run again until the next request.
         self.new_state = None
