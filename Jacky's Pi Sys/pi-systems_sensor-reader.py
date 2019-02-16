@@ -21,7 +21,7 @@ class SensorSubsystem(comms, subsys.Subsystem):
 
         # namedtuple is temporarily a dict for pickling purposes.
         self.sensor_data = {}#self.SensorData(0,0,0,0,0)
-        self.address = address
+        self.address =  self.address = x if isinstance(x,list) else [x]
         self.print_updates = False
 
 
@@ -37,13 +37,16 @@ class SensorSubsystem(comms, subsys.Subsystem):
         # return
 
         try:
-            # comms.intra_write(self.address, comms.IntraModCommMessage.generate(
-            #     action=comms.IntraModCommAction.ExecuteProcedure,
+            # self.intra_write(self.address, self.IntraModCommMessage.generate(
+            #     action=self.IntraModCommAction.ExecuteProcedure,
             #     procedure=1
             # ))
-            sensor_data_raw = comms.intra_read(self.address, self.Procedure.GetSensorData.value)
+            sensor_data_raw = self.intra_read(self.address, self.Procedure.GetSensorData.value)
         
             sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('>xxBBHHH')]))
+
+             #read all the data from multiple addresses if they exist and then get the average of valid
+            #readings and store into 
 
         except ValueError as ve:
             print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
