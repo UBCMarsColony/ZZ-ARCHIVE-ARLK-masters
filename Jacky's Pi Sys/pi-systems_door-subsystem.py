@@ -3,7 +3,7 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 from enum import IntEnum
 
-class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
+class DoorSubsystem(subsys.Subsystem):
 
     class Procedure(IntEnum):
         OpenDoor = ord("o")
@@ -25,9 +25,9 @@ class DoorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
                 # Check sensors and things
 
-                self.intra_write(self.address,
+                comms.intra_write(self.address,
                     self.generate_intra_protocol_message(
-                        action=self.IntraModCommAction.ExecuteProcedure,
+                        action=comms.IntraModCommAction.ExecuteProcedure,
                         procedure=self.new_state
                 ))
 
