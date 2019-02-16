@@ -10,6 +10,7 @@ class IntraModCommMixin:
         # Initialization needed for the class to run properly
         import smbus
         import RPi.GPIO as gpio
+        
 
         # Static bus object
         gpio.setmode(gpio.BCM)
