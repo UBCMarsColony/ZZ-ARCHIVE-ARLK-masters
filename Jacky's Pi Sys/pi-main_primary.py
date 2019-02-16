@@ -2,6 +2,8 @@ import sys
 import importlib
 from time import sleep, time
 import keyboard
+
+
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
 
@@ -178,49 +180,3 @@ def handle_cmd(cmd):
         print('---STOPPING COLONY---')
         ss_pool.stop_all()
         exit(0)
-
-    # if nextinput == "o" or nextinput == "O":
-    #     print("Requesting door open")
-    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
-    # elif nextinput == "c" or nextinput == "C":
-    #     print("Requesting door close")
-    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
-
-    # # SUBSYSTEMS INFO
-    # elif nextinput == "i" or nextinput == "I":
-    #     print("Current subsystem pool data:\n---------\n")
-    #     print(repr(ss_pool.get_all()))
-    # elif nextinput == 's' or nextinput == 'S':
-    #     with subsystems["airlock1_sensors"] as sensors:
-    #         sensors.print_updates = not sensors.print_updates
-    #         print(
-    #           'Sensors printout %s'
-    #           % ("enabled" if sensors.print_updates else "disabled"))
-
-    # # CLI INFO
-    # elif nextinput == '?':
-    #     print(
-    #       "----- KEYBOARD COMMANDS -----" +
-    #       "\no: Request door open\nc: Request door close" +
-    #         "\ns: Print sensor subsystem updates" +
-    #         "\ni: Print contents of the subsystem pool" +
-    #         "\n?: Help window (this text)" +
-    #         "\n-------------------")
-    # else:
-    #     print("Command not recognized")
-
-    ######
-    # TODO find a nicer way to do this
-    # subsystems = ss_pool.get_all()
-    # data = subsystems["sensors"].get_data()
-    # next_button = subsystems["input"].check_buttons()
-
-    # if next_button == 16:
-    #     #This is placeholder code
-    #     subsystems["valves"].request_new_state(valve_ss.PressureSubsystem.std_state["close"])
-    #     pass
-
-    # subsystems["lights"].input_data(data)
-    # #input.update_UI()
-
-    # time.sleep(runtime_params.loop_delay)
