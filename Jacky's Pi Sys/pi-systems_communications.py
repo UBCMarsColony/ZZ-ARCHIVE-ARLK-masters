@@ -5,6 +5,7 @@ import struct
 # SerialMixin class enables the subsystem to use I2C methods for data transfer
 # between arduino and pi.
 class IntraModCommMixin:
+    
 
     try:
         # Initialization needed for the class to run properly
