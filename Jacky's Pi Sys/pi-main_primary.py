@@ -4,6 +4,10 @@ from time import sleep, time
 import keyboard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
 =======
 
 >>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
@@ -141,6 +145,9 @@ def handle_cmd(cmd):
         print("Requesting door close")
         subsystems["airlock1_doors"].request_door_state(
             subsystems["airlock1_doors"].Procedure.CloseDoor)
+<<<<<<< HEAD
+>>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
+=======
 >>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
 
     # Pressure Toggles
@@ -183,6 +190,9 @@ def handle_cmd(cmd):
             lights.toggle()
             print('\nLights %s' % ('on' if lights.light_state else 'off'))
 
+<<<<<<< HEAD
+>>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
+=======
 >>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
     # General System Information/
     elif cmd is "i":
@@ -194,6 +204,7 @@ def handle_cmd(cmd):
         print(repr(subsystems))
     elif cmd is '?':
 <<<<<<< HEAD
+<<<<<<< HEAD
         print("----- KEYBOARD COMMANDS -----" +
             #"\no: Request door open\nc: Request door close" +
             #"\nl: Toggle Lights" + 
@@ -203,6 +214,8 @@ def handle_cmd(cmd):
             "\n!: Stop Colony" +
             "\n?: Help window (this text)" + 
 =======
+=======
+>>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
         print(
             "----- KEYBOARD COMMANDS -----" +
             "\no: Request door open\nc: Request door close" +
@@ -213,6 +226,9 @@ def handle_cmd(cmd):
             "\nI: Show details of items int the subsystem pool" +
             "#n!: Stop Colony" +
             "\n?: Help window (this text)" +
+<<<<<<< HEAD
+>>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
+=======
 >>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
             "\n-------------------")
     elif cmd is '!':
