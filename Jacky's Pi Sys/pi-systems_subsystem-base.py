@@ -45,7 +45,7 @@ class Subsystem(ABC):
         self.thread = Subsystem.SubsystemThread(
             thread_id=thread_id,
             loop_delay_ms=loop_delay_ms,
-            target=self._loop)
+            loop=self._loop)
 
         if callable(on_start):
             self.on_start = on_start
@@ -63,7 +63,7 @@ class Subsystem(ABC):
         if self.thread.running:
             return
 
-        self.thread.start(_loop)
+        self.thread.start()
 
         if (self.on_start):  # Run callback method if it exists
             self.on_start()
@@ -165,11 +165,11 @@ class Subsystem(ABC):
                 # convert loop_delay_ms to seconds.
                 if millis() - last_runtime >= loop_delay_ms:
                     try:
-                        self.loop()
+                        loop()
                     except Exception as e:
                         print(
-                            'Error: Subsystem exception has occured for %s'
-                            % repr(self.subsystem), e, '\n')
+                            'Error: Subsystem exception has occured for subsystem thread %s: %s' %
+                            (self.thread_id, e))
                     last_runtime = millis()
 
                 time.sleep(0.05)
