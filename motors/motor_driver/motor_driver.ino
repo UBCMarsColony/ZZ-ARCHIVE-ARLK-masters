@@ -28,22 +28,22 @@ enum Procedure {
 };
 
 enum DoorState {
-    unknown = 0,
-    transit = 3,
-    close = 99,
-    open = 111,
+    unknown         = 0,
+    transit         = 3,
+    close           = 99,
+    open            = 111,
     manualCalibrate = 2
 } doorState;
 
-enum Position{
-    doorIsOpen=2*RIGHT,
-    doorIsClosed=0,
+enum Position {
+    doorIsOpen      = 2 * RIGHT,
+    doorIsClosed    = 0,
     doorInTransit
 } doorPosition;
 
 enum Priority {
-    priorityLow = 0,
-    priorityHigh = 1
+    priorityLow     = 0,
+    priorityHigh    = 1
 };
 
 typedef struct Header_t {
@@ -63,34 +63,30 @@ typedef struct SetDoorState_t {
 
 typedef struct GetDoorState_t {
     Header_t header;
-    byte DoorState;
+    byte doorState;
     short angle;
 };
 
-typedef union I2CMessage_t {
-    Calibrate_t calibrate;
-    SetDoorState_t setDoorState;
-    GetDoorState_t getDoorState;
-};
+//typedef union I2CMessage_t {
+//    Calibrate_t calibrate;
+//    SetDoorState_t setDoorState;
+//    GetDoorState_t getDoorState;
+//};
 
-volatile I2CMessage_t* messages[numMessages] = {0};
-volatile byte msgIndex = 0;
+//volatile I2CMessage_t* messages[numMessages] = {0};
+//volatile byte msgIndex = 0;
 
-int speed=500;            //initial speed of the motor
-int RightRotation=RIGHT;  //initial 90 degree rotation
-int LeftRotation=LEFT;    //initial 90 degree rotation
+int speed = 500;            //initial speed of the motor
+int RightRotation = RIGHT;  //initial 90 degree rotation
+int LeftRotation = LEFT;    //initial 90 degree rotation
 int customAngle = 0;      //inital custom angle
 String tempstring = "";   //initializing string to hold input
-const int exitButton=2;   //pin that the button is connected to
-int buttonState=0;        //the button is initially not pressed
+const int exitButton = 2;   //pin that the button is connected to
+int buttonState = 0;        //the button is initially not pressed
 int factor;               //used in custom mode to determine direction and angle being turned
 int whatToDo;              //hopefully helps read string data???
 
-const int Open=111;
-const int Close=99;
-const int ManualCalibrate=2;
-
-const int address_slave=45;
+const int address_slave = 45;
 volatile int incomingdirection = 0;
 
 void setup(){
@@ -126,62 +122,62 @@ void loop(){
 
   switch(incomingdirection){
     //To open the door
-    case Open:
-    Serial.print("Opening door.\n");
-    stepper.moveTo(doorIsOpen); //turns 90 degrees clockwise
-    while (stepper.currentPosition() < doorIsOpen && digitalRead(exitButton)!=HIGH  ){
-      doorState=transit;  //sets the door state as being in transit
-      stepper.run();    //runs until the door reaches the open position or the emergency exit button is pressed
-    }
-    break;
+    case open:
+        Serial.print("Opening door.\n");
+        stepper.moveTo(doorIsOpen); //turns 90 degrees clockwise
+        while (stepper.currentPosition() < doorIsOpen && digitalRead(exitButton)!= HIGH){
+          doorState = transit;  //sets the door state as being in transit
+          stepper.run();    //runs until the door reaches the open position or the emergency exit button is pressed
+        }
+        break;
 
     //To close the door
-    case Close:
-    Serial.print("Closing door.\n");
-    stepper.moveTo(doorIsClosed); //turns 90 degrees counterclockwise
-    while (stepper.currentPosition()!=doorIsClosed && digitalRead(exitButton)!=HIGH ){
-      doorState=transit;  //sets the door state as being in transit
-      stepper.run();    //runs until the door is closed or the emergency exit button is pressed
-    }
-    break;
+    case close:
+        Serial.print("Closing door.\n");
+        stepper.moveTo(doorIsClosed); //turns 90 degrees counterclockwise
+        while (stepper.currentPosition()!=doorIsClosed && digitalRead(exitButton)!=HIGH ){
+          doorState = transit;  //sets the door state as being in transit
+          stepper.run();    //runs until the door is closed or the emergency exit button is pressed
+        }
+        break;
 
     //To manually calibrate the door and input a new location for "closed"
-    case ManualCalibrate:
-    Serial.print("Closing door. Press the emergency exit button to stop when the door is closed.\n");
-    stepper.moveTo(8*LEFT); //closes dor for a full 180 degree rotation
-    while(!Serial.available() && digitalRead(exitButton)!=HIGH){
-      doorState=transit;  //sets the door state as being in transit
-      stepper.run();    //runs until the emergency exit button is pressed
-    }
-    stepper.setCurrentPosition(0);    //sets the door position to zero
-    break;
+    case manualCalibrate:
+        Serial.print("Closing door. Press the emergency exit button to stop when the door is closed.\n");
+        stepper.moveTo(8*LEFT); //closes dor for a full 180 degree rotation
+        while(!Serial.available() && digitalRead(exitButton)!=HIGH){
+          doorState = transit;  //sets the door state as being in transit
+          stepper.run();    //runs until the emergency exit button is pressed
+        }
+        stepper.setCurrentPosition(0);    //sets the door position to zero
+        break;
 
     default:
-      doorState=unknown;
+      doorState = unknown;
   }
 
   incomingdirection=0;
 
   // goes back to the starting position if the emergency exit button has been pressed
-  if(digitalRead(exitButton)== HIGH){
+  if(digitalRead(exitButton )== HIGH){
     Serial.print("Closing door.\n");
     stepper.moveTo(0);  //goes to starting position
     while (stepper.currentPosition()!=doorIsClosed){
-      doorState=transit;    //sets the door state as being in transit
+      doorState = transit;    //sets the door state as being in transit
       stepper.run();}   //runs until the door is closed
   }
 
   //takes the current door position and calculates the anagle it's open, with closed=0 degrees
-  doorPosition=stepper.currentPosition()/RIGHT*90;
+  doorPosition = stepper.currentPosition()/RIGHT*90;
     switch(stepper.currentPosition()){
     case doorIsOpen:
-      doorState=open;
+      doorState = open;
       break;
     case doorIsClosed:
-      doorState=close;
+      doorState = close;
       break;
     default:
-      doorState=unknown;
+      doorState = unknown;
       break;
   }
 }
@@ -195,8 +191,8 @@ void commandHandler(int ignorefornow){
   }
   switch(msg[1]){
     case setDoorState: //set door state
-    incomingdirection=  msg[3];
-    break;
+        incomingdirection =  msg[3];
+        break;
   }
   // SetDoorState_t* sds = (SetDoorState_t*) msg;
   //
@@ -213,15 +209,16 @@ void commandHandler(int ignorefornow){
 
 void requestHandler(int type){
   switch (type){
-    case getDoorState:
+    case getDoorState: {
       //byte gds[]={0,getDoorState,priorityLow,doorState,stepper.currentPosition()};
-      GetDoorState_t gds=GetDoorState_t();
-       gds.DoorState=doorState;
-       gds.angle=stepper.currentPosition(); //placeholder
-       gds.header.action=0; //placeholder
-       gds.header.procedure=getDoorState;
-       gds.header.priority=priorityLow;
-      Wire.write((byte *) &gds, sizeof (gds));
+        GetDoorState_t* gds = new GetDoorState_t();
+        gds->doorState = doorState;
+        gds->angle = stepper.currentPosition(); //placeholder
+        gds->header.action = 0; //placeholder
+        gds->header.procedure = getDoorState;
+        gds->header.priority = priorityLow;
+        Wire.write((byte *) gds, sizeof (gds));
+    }
   }
 }
 
