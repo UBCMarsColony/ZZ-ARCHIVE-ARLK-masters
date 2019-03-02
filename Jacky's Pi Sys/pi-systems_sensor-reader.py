@@ -114,3 +114,6 @@ class SensorSubsystem(comms, subsys.Subsystem):
             print("Pressure is nominal")
         if(20 < HUM < 80):
             print("Humidity is nominal")
+
+
+            
