@@ -145,7 +145,7 @@ class Subsystem(ABC):
             self.lock = threading.Lock()
             self._thread = threading.Thread(
                 name=thread_id,
-                target=self.run,
+                target=self._run,
                 args=(loop, loop_delay_ms))
 
         def start(self):
@@ -155,7 +155,7 @@ class Subsystem(ABC):
         def stop(self):
             self.running = False
 
-        def run(self, loop, loop_delay_ms):
+        def _run(self, loop, loop_delay_ms):
             # Wrapper function to make loop logic statement look nicer
             def millis():
                 return time.time() * 1000
