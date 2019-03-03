@@ -81,12 +81,17 @@ class SensorSubsystem(comms, subsys.Subsystem):
                 print("Invalid object read from I2C.\n\tStackTrace: " +
                       str(ve) + "\n\tSkipping line...")
 
-        # computes average of all readings
-        O2Val = O2Val / numReadingsO2
-        humidityVal = humidityVal / numReadingsHumidity
-        temperatureVal = temperatureVal / numReadingsTemp
-        pressureVal = pressureVal / numReadingsPressure
-        C02Val = C02Val / numReadingsC02
+        # computes average of all readings if they have been read at least once
+        if numReadings02 != 0:
+            O2Val = O2Val / numReadingsO2
+        if numReadingsHumidity != 0:
+            humidityVal = humidityVal / numReadingsHumidity
+        if numReadingsTemp != 0:
+            temperatureVal = temperatureVal / numReadingsTemp
+        if numReadingsPressure != 0:
+            pressureVal = pressureVal / numReadingsPressure
+        if numReadingsC02 != 0:
+            C02Val = C02Val / numReadingsC02
 
         # stores average readings into dictionary
         self.sensor_data = {
@@ -114,6 +119,3 @@ class SensorSubsystem(comms, subsys.Subsystem):
             print("Pressure is nominal")
         if(20 < HUM < 80):
             print("Humidity is nominal")
-
-
-
