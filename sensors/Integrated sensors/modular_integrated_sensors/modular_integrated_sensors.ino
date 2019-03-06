@@ -10,18 +10,18 @@
 #define SLAVE_ADDRESS 10
 #define LOOP_DELAY 1500
 
-// Bitmask: O2 ✔ | Humidity | Temperature | Pressure | CO2 ✔ | ? | ? | ? 
-#define SENSOR_BITMASK 0b10001000
+// Bitmask: O2 ✔ | Humidity ✔ | Temperature ✔ | Pressure | CO2 ✔ | ? | ? | ? 
+#define SENSOR_BITMASK 0b11101000
 
 enum Procedure {
     GetSensorData = 1
 };
 
 enum SensorCommand {
-    GET_FILTERED_GAS_CONC = 'Z',
-    GET_TEMPERATURE = 'T',
-    GET_RELATIVE_HUMIDITY = 'H',
-    GET_BAROM_PRESSURE = 'B'
+    GET_FILTERED_GAS_CONC   = 'Z',
+    GET_TEMPERATURE         = 'T',
+    GET_RELATIVE_HUMIDITY   = 'H',
+    GET_BAROM_PRESSURE      = 'B'
 };
 
 const byte GET_CO2_CONC[] = {0xFE, 0X44, 0X00, 0X08, 0X02, 0X9F, 0X25};
@@ -51,8 +51,8 @@ typedef union I2CMessage_t {
 
 // SoftwareSerial pins are used to interface 
 // with the sensors over UART.
-SoftwareSerial K_30_Serial(12,13);
-SoftwareSerial O2_Serial(8,9);
+SoftwareSerial K_30_Serial(12, 13);
+SoftwareSerial O2_Serial(8, 9);
 
 // byte readCO2[7] = {0xFE, 0X44, 0X00, 0X08, 0X02, 0X9F, 0X25};  //Command packet to read Co2 (see app note)
 // byte response[7] = {0};  //create an array to store the response
@@ -101,59 +101,19 @@ void pollAll(void){
     O2_Serial.listen();
     delay(100);
 
-    // Oxygen
     LatestSensorValues::o2 = getO2();
-    // Serial.print("Oxygen: ");
-    // Serial.print(O2_string);
-    // Serial.print(" % \n");  
-    // EEPROMstore(0, String(o2), strsize);
-    // O2 = String(O2_string);
-    // u_send_data.s_O2 = (int(atof(O2_string)))& 0xFF;
-    // o2 = (int(atof(O2_string))) & 0xFF;
 
-    // Humidity
     LatestSensorValues::humidity = getHumidity();
-    // Serial.print("Humidity: ");
-    // Serial.print(humidity_string);
-    // Serial.print(" % \n");
-    // EEPROMstore(2, humidity_string, strsize);
-    // humidity = String(humidity_string);
-    // u_send_data.s_humidity = (int(atof(humidity_string)))& 0xFF;
-
+    
     LatestSensorValues::temperature = getTemp();
-    // Serial.print("Temperature: ");
-    // Serial.print(temperature_string);
-    // Serial.print(" C \n");
-    // EEPROMstore(1, temperature_string, strsize);
-    // temperature = String(temperature_string);
-    // u_send_data.s_tempH = (int(atof(temperature_string))>>8)& 0xFF;
-    // u_send_data.s_tempL = (int(atof(temperature_string)))& 0xFF;
+    
+//    LatestSensorValues::pressure = getPressure();
 
-
-    LatestSensorValues::pressure = getPressure();
-    // Serial.print("Pressure: ");
-    // Serial.print(pressure_string);
-    // Serial.print(" KPa \n");
-    // EEPROMstore(3, pressure_string, strsize);
-    // pressure = String(pressure_string);
-    // u_send_data.s_pressH = (int(atof(pressure_string))>>8)& 0xFF;
-    // u_send_data.s_pressL = (int(atof(pressure_string)))& 0xFF;
-
+    // CO2
     K_30_Serial.listen();
+    delay(100);
+    
     LatestSensorValues::co2 = getCO2();
-    // delay(2000);
-    // sendRequest(readCO2);
-    // unsigned long valCO2 = getValue(response);
-    // dtostrf(valCO2,3,0,CO2_string);
-    // Serial.print("CO2: ");
-    // Serial.print(CO2_string);
-    // Serial.print(" ppm \n");
-    // EEPROMstore(4, CO2_string, strsize);
-    // CO2 = String(CO2_string);
-    // u_send_data.s_CO2H = (int(atof(CO2_string))>>8)& 0xFF;
-    // u_send_data.s_CO2L = (int(atof(CO2_string)))& 0xFF;
-    // Serial.println("_________________________");
-
 }
 
 uint8_t getO2(void) {
@@ -194,9 +154,6 @@ uint8_t getHumidity(void) {
         processedHumidity = (processedHumidity + response[i] * 10);
     
     return processedHumidity;
-    
-    // humidity_percentage = atof(buffer)/10;
-    // dtostrf(humidity_percentage, 5, 2, humidity_string);
 }
 
 uint16_t getPressure(void) {
@@ -258,8 +215,9 @@ int getSerialSensorData(char buffer[], SoftwareSerial ser, byte command[], int l
     // while (ser.available()) ser.read();     // Discard any remaining bytes
 }
 
-void receiveData(int byteCount)
-{
+void receiveData(int byteCount) {
+
+    // NO CURRENT IMPLEMENTATIONS NEEDED
     Serial.println("receiving data");
     while(Wire.available())
     {
