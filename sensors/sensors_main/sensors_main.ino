@@ -72,7 +72,8 @@ void setup() {
     K_30_Serial.begin(9600);    // Open CO2 Comm Port
 
     Wire.begin(SLAVE_ADDRESS); // initialize i2c as slave
-
+    Serial.print("ADDRESS:");
+    Serial.println(SLAVE_ADDRESS);
     /* define callbacks for i2c communication*/
     Wire.onReceive(receiveData);
     Wire.onRequest(sendData);
@@ -102,11 +103,17 @@ void pollAll(void){
     delay(100);
 
     LatestSensorValues::o2 = getO2();
+    Serial.print("O2: ");
+    Serial.println(LatestSensorValues::o2);
 
     LatestSensorValues::humidity = getHumidity();
+    Serial.print("Humidity: ");
+    Serial.println(LatestSensorValues::humidity);
     
     LatestSensorValues::temperature = getTemp();
-    
+    Serial.print("Temp: ");
+    Serial.println(LatestSensorValues::temperature);
+
 //    LatestSensorValues::pressure = getPressure();
 
     // CO2
@@ -114,6 +121,11 @@ void pollAll(void){
     delay(100);
     
     LatestSensorValues::co2 = getCO2();
+    Serial.print("CO2: ");
+    Serial.println(LatestSensorValues::co2);
+
+    Serial.println("-------------");
+
 }
 
 uint8_t getO2(void) {
