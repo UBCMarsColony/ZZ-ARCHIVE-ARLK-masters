@@ -8,6 +8,7 @@ SoftwareSerial K_30_Serial(12,13);  //Sets up a virtual serial port
 SoftwareSerial O2_Serial(8,9); //Software Serial port with pin 8 as Rx
                             //and pin 9 as Tx
 
+#define DATA_MASK 0b11101000
 #define max_index 10
 #define SIZE 100
 #define strsize 10
@@ -50,16 +51,18 @@ String  CO2;
 //}index_dat_link;
 
 typedef struct{
-    byte empty1;
-    byte empty2;
+    byte action;
+    byte procedure;
+    byte priority;
+    byte dataFlags;
     byte s_O2;
-    byte s_tempH;
     byte s_tempL;
-    byte s_humidity;
-    byte s_pressH;
+    byte s_tempH;
+    short s_humidity;
     byte s_pressL;
-    byte s_CO2H;
+    byte s_pressH;
     byte s_CO2L;
+    byte s_CO2H;
 }send_data;
 
 send_data u_send_data;
@@ -84,8 +87,10 @@ void setup()
     send_index = 0; //Initialize the index for I2C sending strings
     send_length = 0; //Initialize length of I2C send string
     recieved_cmd = byte(0); //initialized the I2C recieved cmd byte
-    u_send_data.empty1= 0;
-    u_send_data.empty2= 0;
+    u_send_data.action = 0;
+    u_send_data.procedure = 0;
+    u_send_data.priority = 0;
+    u_send_data.dataFlags = DATA_MASK;
     Serial.println("Setup Complete");
 }
 
@@ -196,18 +201,6 @@ void poll_all(void){
          u_send_data.s_CO2H = (int(atof(CO2_string))>>8)& 0xFF;
          u_send_data.s_CO2L = (int(atof(CO2_string)))& 0xFF;
     Serial.println("_________________________");
-
-    send_bytes[0]= u_send_data.empty1;
-    send_bytes[1]= u_send_data.empty2;
-    send_bytes[2]= u_send_data.s_O2;
-    send_bytes[3]= u_send_data.s_humidity;
-    send_bytes[4]= u_send_data.s_tempH;
-    send_bytes[5]= u_send_data.s_tempL;
-    send_bytes[6]= u_send_data.s_pressH;
-    send_bytes[7]= u_send_data.s_pressL;
-    send_bytes[8]= u_send_data.s_CO2H;
-    send_bytes[9]= u_send_data.s_CO2L;
-
 
     delay(1000);
 }
@@ -382,7 +375,7 @@ void receiveData(int byteCount)
 // callback for sending data
 void sendData()
 {  
-    Wire.write(send_bytes,sizeof(send_bytes));  
+    Wire.write((byte *) &u_send_data, sizeof(u_send_data));  
     //for(int i =0; i< max_index; i++){
     //    Serial.println(send_bytes[i]);
     //}
