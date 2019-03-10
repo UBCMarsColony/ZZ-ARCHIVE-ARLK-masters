@@ -9,6 +9,7 @@
 
 #define SLAVE_ADDRESS 10
 #define LOOP_DELAY 1500
+#define SENSOR_TIMEOUT 10000
 
 // Bitmask: O2 ✔ | Humidity ✔ | Temperature ✔ | Pressure | CO2 ✔ | ? | ? | ? 
 #define SENSOR_BITMASK 0b11101000
@@ -101,17 +102,17 @@ void loop() {
 void pollAll(void){
     O2_Serial.listen();
     delay(100);
-
-    LatestSensorValues::o2 = getO2();
+    
     Serial.print("O2: ");
+    LatestSensorValues::o2 = getO2();
     Serial.println(LatestSensorValues::o2);
 
-    LatestSensorValues::humidity = getHumidity();
     Serial.print("Humidity: ");
+    LatestSensorValues::humidity = getHumidity();
     Serial.println(LatestSensorValues::humidity);
-    
-    LatestSensorValues::temperature = getTemp();
+
     Serial.print("Temp: ");
+    LatestSensorValues::temperature = getTemp();
     Serial.println(LatestSensorValues::temperature);
 
 //    LatestSensorValues::pressure = getPressure();
@@ -119,10 +120,10 @@ void pollAll(void){
     // CO2
     K_30_Serial.listen();
     delay(100);
-    
-    LatestSensorValues::co2 = getCO2();
-    Serial.print("CO2: ");
-    Serial.println(LatestSensorValues::co2);
+
+//    Serial.print("CO2: ");
+//    LatestSensorValues::co2 = getCO2();
+//    Serial.println(LatestSensorValues::co2);
 
     Serial.println("-------------");
 
@@ -130,14 +131,15 @@ void pollAll(void){
 
 uint8_t getO2(void) {
     byte response[7] = {0};
-    getSerialSensorData(response, O2_Serial, GET_FILTERED_GAS_CONC);
+    getSerialSensorDataO2(response, sizeof response, GET_FILTERED_GAS_CONC);
 
     //O2 gas: 20030 -> 20.030 % , or 200300 ppm
-    uint8_t processedO2 = 0;
-    for (int i = 2; i < 7; i++)  // Parse digits as byte
-        processedO2 = (processedO2 + response[i] * 10);
-    
-    return processedO2;
+    uint16_t processedO2 = 0;
+    for (int i = 2; i < 7; i++) {  // Parse digits as byte
+        Serial.println((char)response[i]);// - '0'));
+        processedO2 = (processedO2 + (response[i] - '0')) * 10;
+    }
+    return processedO2 / 1000;
     // O2_percentage = atof(buffer)/1000;
     // dtostrf(O2_percentage,5,2,O2_string);
 
@@ -145,12 +147,12 @@ uint8_t getO2(void) {
 
 int16_t getTemp(void) {
     byte response[7] = {0};
-    getSerialSensorData(response, O2_Serial, GET_TEMPERATURE);
+    getSerialSensorDataO2(response, sizeof response, GET_TEMPERATURE);
 
     //Temperature: 01255 -> 25.5 degrees celcius
     int16_t processedTemp = 0;
     for (int i = 2; i < 7; i++)  // Parse digits as byte
-        processedTemp = (processedTemp + response[i] * 10);
+        processedTemp = (processedTemp + (response[i] - '0')) * 10;
 
     return processedTemp;
     // temperature_celsius = atof(buffer)/1000;
@@ -159,23 +161,23 @@ int16_t getTemp(void) {
 
 uint8_t getHumidity(void) {
     byte response[7] = {0};
-    getSerialSensorData(response, O2_Serial, GET_FILTERED_GAS_CONC);
+    getSerialSensorDataO2(response, sizeof response, GET_RELATIVE_HUMIDITY);
 
     uint8_t processedHumidity = 0;
     for (int i = 2; i < 7; i++)  // Parse digits as byte
-        processedHumidity = (processedHumidity + response[i] * 10);
+        processedHumidity = (processedHumidity + (response[i] - '0')) * 10;
     
-    return processedHumidity;
+    return processedHumidity / 10;
 }
 
 uint16_t getPressure(void) {
     byte response[7] = {0};
-    getSerialSensorData(response, O2_Serial, GET_FILTERED_GAS_CONC);
+    getSerialSensorDataO2(response, sizeof response, GET_FILTERED_GAS_CONC);
 
     // Pressure: 01011 -> 101.1 kpa == 1011 hPA 
     uint16_t processedPressure = 0;
     for (int i = 2; i < 7; i++)  // Parse digits as byte
-        processedPressure = (processedPressure + response[i] * 10);
+        processedPressure = (processedPressure + (response[i] - '0')) * 10;
     
     return processedPressure;
     // pressure_kpa = atof(buffer)/10;
@@ -184,7 +186,7 @@ uint16_t getPressure(void) {
 
 uint16_t getCO2() {
     byte response[7] = {0};
-    getSerialSensorData(response, K_30_Serial, GET_CO2_CONC, sizeof GET_CO2_CONC);
+    getSerialSensorDataCO2(response, sizeof response, GET_CO2_CONC);
 
     // See K-30 documentation to see why this is done.
     int high = response[1]; //high byte for value is 4th byte in the response (or 2nd here, due to truncation)
@@ -201,29 +203,33 @@ uint16_t getCO2() {
  * Param: command - Character command to send over serial. Valid commands are specified
  *                  in the SensorCommands enum
  */
-int getSerialSensorData(char buffer[], SoftwareSerial ser, enum SensorCommand command) {
-    byte commandByte[] = {command};
-    return getSerialSensorData(buffer, ser, {commandByte}, 1);
+int getSerialSensorDataCO2(char buffer[], int length, byte command[7]) {
+    //stub;
+    return 0;
 }
 
 /* Overloaded funciton definition which takes in an array instead of a single value.
  */
-int getSerialSensorData(char buffer[], SoftwareSerial ser, byte command[], int length) {
-    for (int i = 0; i < length; i++)
-        ser.println(command[i]);  // Write command to serial
+int getSerialSensorDataO2(byte buffer[], int length, char command) {
+    Serial.println("START");
+    O2_Serial.println(command);
     
     long startTime = millis();
-    while (ser.available() < 7)  // Await a response
-        if (millis() - startTime > 10000)
+    while(!O2_Serial.available()) {
+        if(millis() - startTime > SENSOR_TIMEOUT) {
+            Serial.println("SENSOR TIMEOUT!");
             return 1;
+        }
+    }
+    delay(100);
 
-    for (int i = 0; i < 2; i++) 
-        ser.read();                         // Discard the first two bytes
-    for (int i = 0; ser.available(); i++)
-        buffer[i] = ser.read();             // Read serial input
-    ser.flush();                            // Flush remaining bytes
-
+    for (int i = 0; O2_Serial.available(); i++) {
+        buffer[i++] = O2_Serial.read();
+        Serial.print((char)buffer[i - 1]);
+        Serial.print(" ");    
+    }
+    Serial.println();
+    
     return 0;
-    // while (ser.available()) ser.read();     // Discard any remaining bytes
 }
 
