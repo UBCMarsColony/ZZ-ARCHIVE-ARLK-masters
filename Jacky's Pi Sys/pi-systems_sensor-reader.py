@@ -7,7 +7,7 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 
 
-class SensorSubsystem(comms, subsys.Subsystem):
+class SensorSubsystem(subsys.Subsystem):
 
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature",
     # "humidity", "pressure"])
@@ -40,11 +40,17 @@ class SensorSubsystem(comms, subsys.Subsystem):
         # ))
         #
         # init values to 0
-        O2Val, humidityVal, temperatureVal,
-        pressureVal, C02Val = (0, 0, 0, 0, 0)
+        O2Val = 0
+        humidityVal = 0
+        temperatureVal = 0
+        pressureVal = 0
+        C02Val = 0
 
-        numReadingsO2, numReadingsHumidity, numReadingsTemp,
-        numReadingsPressure, numReadingsC02 = (0, 0, 0, 0, 0)
+        numReadingsO2 = 0
+        numReadingsHumidity = 0
+        numReadingsTemp = 0
+        numReadingsPressure = 0
+        numReadingsC02 = 0
         # read all the data from multiple addresses if they exist and then
         # get the average of valid readings and store into sensor_data
         # dictionary also checking valid dataFlags bitmask
