@@ -129,7 +129,7 @@ def handle_cmd(cmd):
     subsystems = ss_pool.get_all()
     
     # Door Toggles
-<<<<<<< HEAD
+    # <<<<<<< HEAD
     # if cmd is 'o' or cmd is 'O':
     #     print("Requesting door open")
     #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
