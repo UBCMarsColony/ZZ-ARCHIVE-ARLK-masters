@@ -43,10 +43,10 @@ class SensorSubsystem(subsys.Subsystem):
         O2Val = 0
         humidityVal = 0
         temperatureVal = 0
-        pressureVal 0
+        pressureVal = 0
         C02Val = 0
 
-        numReadingsO2 = 0 
+        numReadingsO2 = 0
         numReadingsHumidity = 0
         numReadingsTemp = 0
         numReadingsPressure = 0
