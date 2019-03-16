@@ -38,11 +38,12 @@ class InterfaceSubsystem(subsys.Subsystem):
 
     def loop(self):
         self._check_inputs()
+        print(self.inputs, self.outputs)
 
     def _check_inputs(self):
-        for i in inputs:
+        for i in self.inputs:
             prev_state = i.state
-            i.state = GPIO.input(i.pin)
+            i.state = i.state  # GPIO.input(i.pin)
             if prev_state != i.state:
                 for callback in i.on_change_callbacks:
                     callback(i.state)
@@ -125,4 +126,29 @@ if __name__ == "__main__":
     )
     marsInter.get_input_component("Door Toggle").detach_callback(id)
 
+    interInter = InterfaceSubsystem("internalSide", 12, inputs=[
+        InputComponent("Inter_I1", 12, InputComponent.Type.Push.value),
+        InputComponent("Inter_I2", 13, InputComponent.Type.Switch.value)
+    ], outputs=[
+        OutputComponent("Inter_O1", 9, OutputComponent.Type.LED.value)
+    ])
+
+    colonyInter = InterfaceSubsystem("colonySide", 12, inputs=[
+        InputComponent("colony_I1", 12, InputComponent.Type.Push.value),
+        InputComponent("colony_I2", 13, InputComponent.Type.Switch.value)
+    ], outputs=[
+        OutputComponent("colony_O1", 9, OutputComponent.Type.LED.value)
+    ])
+
+    marsInter.start()
+    interInter.start()
+    colonyInter.start()
+
+    from time import sleep
+
+    sleep(5)
+
+    marsInter.stop()
+    interInter.stop()
+    colonyInter.stop()
     print("Test complete!")
