@@ -37,9 +37,9 @@ class Subsystem(ABC):
         *,
         thread_id,
         loop_delay_ms,
-        on_start,
-        on_stop,
-        on_loop,
+        on_start=None,
+        on_stop=None,
+        on_loop=None
     ):
         self.name = name
         self.thread = Subsystem.SubsystemThread(
