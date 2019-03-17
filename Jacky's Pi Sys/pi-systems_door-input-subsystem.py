@@ -27,8 +27,8 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
     def loop(self):
         response = check_buttons()
-        input2 = GPIO.input(butt2)
-        input3 = GPIO.input(butt3)         
+        #input2 = GPIO.input(butt2) FOLLOWING LINES COMMENTED OUT BC ITS OLD CODE
+        #input3 = GPIO.input(butt3)         
         if response:
             print("Message received from %s: \n%s" % (self.linked_door.name, repr([chr(x) for x in reponse])))
             if response.action is comms.ExecuteProcedure:
@@ -49,7 +49,7 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
         return self.intra_read(self.address)
 
-# Define some buttons as pull down
+# Define some buttons pins
 butt1 = 11
 butt2 = 13
 butt3 = 15
@@ -62,7 +62,8 @@ GPIO.setup(butt2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(butt3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(led, GPIO.OUT)
 
-
+#Below is test code to use push buttons in order to make LEDs flash
+'''
 def check_if_buttons_pressed(self):
         while True:
             # button_state_1 = GPIO.input(butt1)
@@ -99,8 +100,9 @@ def check_if_buttons_pressed(self):
                 GPIO.output(butt1, False)
                 GPIO.output(butt2, False)
                 GPIO.output(butt3, False)   
+'''
 
 if __name__ == "__main__":
     c = DoorInputSubsystem("test", 12, A)
     c.check_buttons()
-    c.check_if_buttons_pressed()
+  #  c.check_if_buttons_pressed()

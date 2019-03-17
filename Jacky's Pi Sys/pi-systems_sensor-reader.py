@@ -1,21 +1,20 @@
 import importlib
 import time
-subsys = importlib.import_module('pi-systems_subsystem-base')
-comms = importlib.import_module('pi-systems_communications')
-
 from collections import namedtuple
-    
 import struct
 from enum import Enum
 
+subsys = importlib.import_module('pi-systems_subsystem-base')
+comms = importlib.import_module('pi-systems_communications')
 
-class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):    
-    
+
+class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem): 
+  
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
 
     class Procedure(Enum):
         GetSensorData = 1
-    
+
     def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
@@ -57,7 +56,6 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
             'pressure':sensor_data[3],
             'CO2':sensor_data[4]
         }
-
 
     def error_check(self):
         CO2 = self.sensor_data.CO2

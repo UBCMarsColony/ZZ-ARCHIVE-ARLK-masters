@@ -131,6 +131,8 @@ class IntraModCommMixin:
         if message:  # .validate()
             return message
 
+        # IF NO VALID SENSOR DATA RECEIVED,
+        # ACCEPT EXCEPTION AS "SENSORS ARE OFF SO DONT CRASH PLS"
 
 class InterModCommMixin:
     pass
