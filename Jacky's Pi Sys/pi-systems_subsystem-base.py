@@ -47,12 +47,10 @@ class Subsystem(ABC):
             loop_delay_ms=loop_delay_ms,
             loop=self._loop)
 
-        if callable(on_start):
-            self.on_start = on_start
-        if callable(on_stop):
-            self.on_stop = on_stop
-        if callable(on_loop):
-            self.on_loop = on_loop
+        def empty(): pass
+        self.on_start = on_start if callable(on_start) else empty
+        self.on_stop = on_stop if callable(on_stop) else empty
+        self.on_loop = on_loop if callable(on_loop) else empty
 
         subsys_pool.add(self)
 

@@ -62,20 +62,20 @@ class InterfaceSubsystem(subsys.Subsystem):
 
 
 class InputComponent:
-    class Type(Enum):
+    class Subtype(Enum):
         Push = "Push Button"
         Switch = "Switch"
 
-    def __init__(self, name, pin, type, initial=False):
+    def __init__(self, name, pin, subtype, initial=False):
         self.name = name
         self.pin = pin
-        self.type = type
+        self.subtype = subtype if type(subtype) is str else subtype.value
         self.state = initial
         self.on_change_callbacks = {}
 
     def __repr__(self):
         return "%s (name=%s, pin=%i, state=%i)" % (
-            self.type, self.name, self.pin, int(self.state))
+            self.subtype, self.name, self.pin, int(self.state))
 
     def attach_callback(self, callback, id):
         self.on_change_callbacks[id] = callback
@@ -87,27 +87,29 @@ class InputComponent:
 
 
 class OutputComponent:
-    class Type(Enum):
+    class Subtype(Enum):
         LED = "LED"
+        Buzzer = "Buzzer"
 
-    def __init__(self, name, pin, type, initial=False):
+    def __init__(self, name, pin, subtype, initial=False):
         self.name = name
         self.pin = pin
-        self.type = type
+        self.subtype = subtype if type(subtype) is str else subtype.value
         self.state = initial
 
     def __repr__(self):
         return "%s (name=%s, pin=%i, state=%i)" % (
-            self.type, self.name, self.pin, int(self.state))
+            self.subtype, self.name, self.pin, int(self.state))
 
 
 if __name__ == "__main__":
     print("START TEST")
     marsInter = InterfaceSubsystem("marsSide", 12, inputs=[
-        InputComponent("Door Toggle", 12, InputComponent.Type.Push.value),
-        InputComponent("Lights", 13, InputComponent.Type.Switch.value)
+        InputComponent("Door Toggle", 12, InputComponent.Subtype.Push),
+        InputComponent("Lights", 13, InputComponent.Subtype.Switch)
     ], outputs=[
-        OutputComponent("Emergency", 9, OutputComponent.Type.LED.value)
+        OutputComponent("Emergency", 9, OutputComponent.Subtype.LED),
+        OutputComponent("Alarm", 5, OutputComponent.Subtype.Buzzer)
     ])
 
     print(marsInter.inputs)
@@ -115,7 +117,7 @@ if __name__ == "__main__":
 
     print(marsInter.get_input_component("Door Toggle").name)
     print(marsInter.get_input_component("Door Toggle").pin)
-    print(marsInter.get_input_component("Door Toggle").type)
+    print(marsInter.get_input_component("Door Toggle").subtype)
 
     print(marsInter.get_input_component("Lights").name)
     print(marsInter.get_output_component("Emergency").name)
@@ -127,17 +129,17 @@ if __name__ == "__main__":
     marsInter.get_input_component("Door Toggle").detach_callback(id)
 
     interInter = InterfaceSubsystem("internalSide", 12, inputs=[
-        InputComponent("Inter_I1", 12, InputComponent.Type.Push.value),
-        InputComponent("Inter_I2", 13, InputComponent.Type.Switch.value)
+        InputComponent("Inter_I1", 12, InputComponent.Subtype.Push.value),
+        InputComponent("Inter_I2", 13, InputComponent.Subtype.Switch.value)
     ], outputs=[
-        OutputComponent("Inter_O1", 9, OutputComponent.Type.LED.value)
+        OutputComponent("Inter_O1", 9, OutputComponent.Subtype.LED.value)
     ])
 
     colonyInter = InterfaceSubsystem("colonySide", 12, inputs=[
-        InputComponent("colony_I1", 12, InputComponent.Type.Push.value),
-        InputComponent("colony_I2", 13, InputComponent.Type.Switch.value)
+        InputComponent("colony_I1", 12, InputComponent.Subtype.Push.value),
+        InputComponent("colony_I2", 13, InputComponent.Subtype.Switch.value)
     ], outputs=[
-        OutputComponent("colony_O1", 9, OutputComponent.Type.LED.value)
+        OutputComponent("colony_O1", 9, OutputComponent.Subtype.LED.value)
     ])
 
     marsInter.start()
