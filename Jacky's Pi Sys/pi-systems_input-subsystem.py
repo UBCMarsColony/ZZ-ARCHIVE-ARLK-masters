@@ -27,14 +27,13 @@ class InterfaceSubsystem(subsys.Subsystem):
 
         self.inputs = inputs if type(inputs) is list else [inputs]
         for i in self.inputs:
-            # pass
-            print(i)
-            # GPIO.input(input.pin)
+            GPIO.setup(i.pin, GPIO.IN)
+            for pp in i.pipe_pins:
+                GPIO.setup(pp, GPIO.OUT)
 
         self.outputs = outputs if type(outputs) is list else [outputs]
         for o in self.outputs:
-            # GPIO.output(output.pin)
-            print(o)
+            GPIO.output(o.pin, GPIO.OUT)
 
     def loop(self):
         self._check_inputs()
@@ -42,40 +41,68 @@ class InterfaceSubsystem(subsys.Subsystem):
 
     def _check_inputs(self):
         for i in self.inputs:
-            prev_state = i.state
-            i.state = i.state  # GPIO.input(i.pin)
-            if prev_state != i.state:
-                for callback in i.on_change_callbacks:
-                    callback(i.state)
+            i.read()
 
     def get_input_component(self, name):
         return [i for i in self.inputs if i.name == name].pop()
 
-    def read_input(self, component):
-        return GPIO.input(component.pin)
+    # def read_input(self, component):
+    #     return GPIO.input(component.pin)
 
     def get_output_component(self, name):
         return [o for o in self.outputs if o.name == name].pop()
 
-    def write_output(self, component, state):
-        GPIO.output(component.pin, state)
+    def get_component(self, name):
+        return \
+            self.get_output_component(name) \
+            or self.get_input_component(name) \
+            or None
+
+    # def write_output(self, component, state):
+    #     GPIO.output(component.pin, state)
 
 
 class InputComponent:
     class Subtype(Enum):
-        Push = "Push Button"
-        Switch = "Switch"
+        Push = "Push Button"  # State is 1 or 0
+        Switch = "Switch"     # State is 1 or 0
 
-    def __init__(self, name, pin, subtype, initial=False):
+    def __init__(self, name, pin, subtype, initial=False, pipe_pins=None):
         self.name = name
         self.pin = pin
         self.subtype = subtype if type(subtype) is str else subtype.value
         self.state = initial
+
+        # The Pi will automatically forward signals to these pins.
+        # If negative, forwads the inverted signal.
+        self.pipe_pins = pipe_pins
+        self._read = self._get_reader()
         self.on_change_callbacks = {}
 
     def __repr__(self):
         return "%s (name=%s, pin=%i, state=%i)" % (
             self.subtype, self.name, self.pin, int(self.state))
+
+    def _get_reader():
+        if self.subtype is InputComponent.Subtype.Push:
+            return lambda: GPIO.input(self.pin)
+        elif self.subtype is InputComponent.Subtype.Switch:
+            return lambda: GPIO.input(self.pin)
+
+    def _read(self):
+        return GPIO.input(self.pin)
+
+    def read(self):
+        prev_state = self.state
+        self.state = self._read()
+        if prev_state != self.state:
+            for cb in self.on_change_callbacks:
+                cb(self.state)
+
+            for pin in self.pipe_pins:
+                GPIO.output(abs(pin), 1 if pin > 0 else 0)
+
+        return self.state
 
     def attach_callback(self, callback, id):
         self.on_change_callbacks[id] = callback
@@ -100,6 +127,10 @@ class OutputComponent:
     def __repr__(self):
         return "%s (name=%s, pin=%i, state=%i)" % (
             self.subtype, self.name, self.pin, int(self.state))
+
+    def write(self, value):
+        GPIO.output(self.pin, value)
+        return value
 
 
 if __name__ == "__main__":
