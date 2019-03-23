@@ -22,8 +22,9 @@ class InterfaceSubsystem(subsys.Subsystem):
             callback on an input component
     """
 
-    def __init__(self, name, thread_id, inputs, outputs):
-        super().__init__(name=name, thread_id=thread_id, loop_delay_ms=100)
+    def __init__(self, name, thread_id, inputs, outputs, loop_delay_ms=100):
+        super().__init__(
+            name=name, thread_id=thread_id, loop_delay_ms=loop_delay_ms)
 
         self.inputs = inputs if type(inputs) is list else [inputs]
         for i in self.inputs:
