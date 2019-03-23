@@ -2,7 +2,6 @@
 # Pressure - Working
 # Lights - Not working yet
 # Door - Working
-
 from statemachine import StateMachine, State
 
 
@@ -72,6 +71,7 @@ class PressureFSM(StateMachine):
 class DoorFSM(StateMachine):
     #   State Definitions
     idle = State("Idle", initial=True)
+    calibrate = State("Calibrating")
     door_open = State("Open")
     door_close = State("Close")
     keep_idling = State("Continuing to idle")
@@ -80,6 +80,8 @@ class DoorFSM(StateMachine):
     done = State("completed door process")
 
     #   State Transitions
+    calibrate = idle.to(calibrate)
+    done_calib = calibrate.to
     keep_idling = idle.to(idle)
     start_open = idle.to(door_open)
     keep_opening = door_open.to(door_open)
@@ -120,8 +122,8 @@ class LightFSM(StateMachine):
     # Define the state transitions
     turn_off = on.to(off)
     turn_on = off.to(on)
-    change = on.to(off)
-    change2 = off.to(on)
+    # change = on.to(off)
+    # change2 = off.to(on)
     # stay_on = on.to(on)
     # stay_off = off.to(off)
     # off2_on = off.to(on)
@@ -132,7 +134,7 @@ class LightFSM(StateMachine):
 
     def on_turn_on(self):
         print("Turn the lights on")
-  '''  
+'''
     def on_stay_on(self):
         print("keeping lights on")
 
@@ -146,6 +148,7 @@ class LightFSM(StateMachine):
     def on_on2_off(self):
         print("going from on to off")
 '''
+
 
 class SensorsFSM(StateMachine):
     # State defintions.
@@ -221,9 +224,10 @@ def loop_all():
         print("I am in idle again? ", fsm_pressure.current_state == fsm_pressure.idle)
         #
         # LIGHT COMMANDS
-        l = 0
         if(command == '0'):
-            fsm_lights.change()      
+            # if(fsm_lights.current_state == "ON"):
+            # fsm_lights.change()
+            break
         #
         # DOOR COMMANDS
         print("we idling? ", fsm_door.current_state == fsm_door.idle)
@@ -247,7 +251,20 @@ def loop_all():
             fsm_door.keep_idling()
 # Emergency is True WEEEOOO WEEEOO WEEOOO!!!
 # we must handle accordingly
-loop_all()
+# loop_all()
+
+
+def loop_test():
+    print(fsm_lights.current_state)
+
+loop_test()
+
+
+
+
+
+
+
 
 # The FSMs,their states and respective transitions have been defined
 # Create loop for PressureFSM to test if it is working as expected
