@@ -32,8 +32,8 @@ class InterfaceSubsystem(subsys.Subsystem):
         on_loop=None
     ):
         super().__init__(
-            name=name, 
-            thread_id=thread_id, 
+            name=name,
+            thread_id=thread_id,
             loop_delay_ms=loop_delay_ms,
             on_loop=on_loop)
 
@@ -202,17 +202,6 @@ if __name__ == "__main__":
                 ["EmergencyStop", 18],
                 ["ExitDemo", 19]
             ]
-        ]
-    )
-
-    noahsInterface = InterfaceSubsystem(
-        name="Noah's",
-        thread_id=10000,
-        inputs=[
-            InputComponent("EmergencyTest", 13, InputComponent.Subtype.Button)
-        ],
-        outputs=[
-            OutputComponent("EmergencyLED", 9, OutputComponent.Subtype.LED)
         ]
     )
 
