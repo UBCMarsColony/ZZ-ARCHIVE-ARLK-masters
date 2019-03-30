@@ -15,15 +15,25 @@ class SensorSubsystem(subsys.Subsystem):
     class Procedure(Enum):
         GetSensorData = 1
 
-    def __init__(self, name=None, thread_id=None, addresses=None):
+    def __init__(self, name=None, thread_id=None, addresses=None, segment_addresses=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
+        self.segment_addresses = segment_addresses
         # namedtuple is temporarily a dict for pickling purposes.
         self.sensor_data = {}  # self.SensorData(0,0,0,0,0)
         # sets addresses to a list of 1 or more addresses
         self.addresses = addresses if isinstance(addresses,
                                                  list) else [addresses]
         self.print_updates = False
+        # initialize readings lists in constructor
+        # index 0 is oldest reading
+        self.O2_readings = []
+        self.C02_readings = []
+        self.temp_readings = []
+        self.humidity_readings = []
+        self.pressure_readings = []
+
+        keep_track_seconds = 5
 
     def loop(self):
         with self.lock:
@@ -31,6 +41,11 @@ class SensorSubsystem(subsys.Subsystem):
 
             if self.print_updates:
                 print(self.sensor_data)
+                # use seven_segment_addresses dict here to
+                # print proper info to displays
+                # remember to convert sensor data to proper format
+                # eg. comms.write(self.sensor_data['C02'],
+                # segment_address['C02'])
 
     def __update_sensor_data(self):
         # return
@@ -38,19 +53,7 @@ class SensorSubsystem(subsys.Subsystem):
         #     action=comms.IntraModCommAction.ExecuteProcedure,
         #     procedure=1
         # ))
-        #
-        # init values to 0
-        O2Val = 0
-        humidityVal = 0
-        temperatureVal = 0
-        pressureVal = 0
-        C02Val = 0
 
-        numReadingsO2 = 0
-        numReadingsHumidity = 0
-        numReadingsTemp = 0
-        numReadingsPressure = 0
-        numReadingsC02 = 0
         # read all the data from multiple addresses if they exist and then
         # get the average of valid readings and store into sensor_data
         # dictionary also checking valid dataFlags bitmask
@@ -68,47 +71,59 @@ class SensorSubsystem(subsys.Subsystem):
                 # sensor_data[3] is validFlag readings mask
                 validData = sensor_data[3]
                 # bitwise AND bitmask to see if data is valid and read
+                # and put into readings list as a list with time associated
+                # in index 1 of sublists in readings list
                 if validData & 1 << 7:
-                    O2Val += sensor_data[4]
-                    numReadingsO2 += 1
+                    self.O2_readings.append([sensor_data[4], time.time()])
                 if validData & 1 << 6:
-                    humidityVal += sensor_data[5]
-                    numReadingsHumidity += 1
+                    self.humidity_readings.append([sensor_data[5], time.time()])
                 if validData & 1 << 5:
-                    temperatureVal += sensor_data[6]
-                    numReadingsTemp += 1
+                    self.temp_readings.append([sensor_data[6], time.time()])
                 if validData & 1 << 4:
-                    pressureVal += sensor_data[7]
-                    numReadingsPressure += 1
+                    self.pressure_readings.append([sensor_data[7], time.time()])
                 if validData & 1 << 3:
-                    C02Val += sensor_data[8]
-                    numReadingsC02 += 1
+                    self.C02_readings.append([sensor_data[8], time.time()])
             except ValueError as ve:
                 print("Invalid object read from I2C.\n\tStackTrace: " +
                       str(ve) + "\n\tSkipping line...")
 
-        # computes average of all readings if they have been read at least once
-        if numReadings02 != 0:
-            O2Val = O2Val / numReadingsO2
-        if numReadingsHumidity != 0:
-            humidityVal = humidityVal / numReadingsHumidity
-        if numReadingsTemp != 0:
-            temperatureVal = temperatureVal / numReadingsTemp
-        if numReadingsPressure != 0:
-            pressureVal = pressureVal / numReadingsPressure
-        if numReadingsC02 != 0:
-            C02Val = C02Val / numReadingsC02
+        # loop through each readings list and check last element with current
+        # element time, and if diff greater than keep_track_seconds, remove
+        # current element list from readings list and then sums value
+        # of all readings after trim
+        O2_val = self.trim_sum_list(self.O2_readings)
+        humidity_val = self.trim_sum_list(self.humidity_readings)
+        temperature_val = self.trim_sum_list(self.temp_readings)
+        pressure_val = self.trim_sum_list(self.pressure_readings)
+        C02_val = self.trim_sum_list(self.C02_readings)
 
-        # stores average readings into dictionary
+        # computers average of all readings after sum computed
+        # and stores average readings into dictionary
         self.sensor_data = {
-            'O2': O2Val,
-            'humidity': humidityVal,
-            'temperature': temperatureVal,
-            'pressure': pressureVal,
-            'CO2': C02Val
+            'O2': O2_val / len(self.O2_readings),
+            'humidity': humidity_val / len(self.humidity_readings),
+            'temperature': temperature_val / len(self.temp_readings),
+            'pressure': pressure_val / len(self.pressure_readings),
+            'CO2': C02_val / len(self.C02_readings)
         }
 
-    def error_check(self):
+    # function to check amount of time we want to keep history of readings
+    # and remove sublists in list that have expired in terms of time to
+    # keep data and then sums value of valid readings and returns
+    def trim_sum_list(self, list):
+        val = 0
+        last = list.index(-1)
+        for curr in list:
+            if (last.index(1) - curr.index(1) > keep_track_seconds):
+                list.remove(curr)
+
+        for curr in list:
+            val += curr.index(0)
+
+        return val
+
+    # DEPRECEATED : NOT USING FUNCTION CURRENTLY
+    '''def error_check(self):
         CO2 = self.sensor_data.CO2
         O2 = self.sensor_data.O2
         TEMP = self.sensor_data.temperature
@@ -124,4 +139,5 @@ class SensorSubsystem(subsys.Subsystem):
         if(80 < PRESS < 140):
             print("Pressure is nominal")
         if(20 < HUM < 80):
-            print("Humidity is nominal")
+            print("Humidity is nominal")'''
+        
