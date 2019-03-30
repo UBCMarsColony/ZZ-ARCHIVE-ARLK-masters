@@ -22,9 +22,20 @@ class InterfaceSubsystem(subsys.Subsystem):
             callback on an input component
     """
 
-    def __init__(self, name, thread_id, inputs, outputs, loop_delay_ms=100):
+    def __init__(
+        self,
+        name,
+        thread_id,
+        inputs=[],
+        outputs=[],
+        loop_delay_ms=100,
+        on_loop=None
+    ):
         super().__init__(
-            name=name, thread_id=thread_id, loop_delay_ms=loop_delay_ms)
+            name=name, 
+            thread_id=thread_id, 
+            loop_delay_ms=loop_delay_ms,
+            on_loop=on_loop)
 
         self.inputs = inputs if type(inputs) is list else [inputs]
         for i in self.inputs:
@@ -34,11 +45,10 @@ class InterfaceSubsystem(subsys.Subsystem):
 
         self.outputs = outputs if type(outputs) is list else [outputs]
         for o in self.outputs:
-            GPIO.output(o.pin, GPIO.OUT)
+            GPIO.setup(o.pin, GPIO.OUT)
 
     def loop(self):
         self._check_inputs()
-        print(self.inputs, self.outputs)
 
     def _check_inputs(self):
         for i in self.inputs:
@@ -65,14 +75,14 @@ class InterfaceSubsystem(subsys.Subsystem):
 
 class InputComponent:
     class Subtype(Enum):
-        Push = "Push Button"  # State is 1 or 0
+        Button = "Button"  # State is 1 or 0
         Switch = "Switch"     # State is 1 or 0
 
-    def __init__(self, name, pin, subtype, initial=False, pipe_pins=None):
+    def __init__(self, name, pin, subtype, initial=False, pipe_pins=[]):
         self.name = name
         self.pin = pin
         self.subtype = subtype if type(subtype) is str else subtype.value
-        self.state = initial
+        self._state = initial or 0
 
         # The Pi will automatically forward signals to these pins.
         # If negative, forwads the inverted signal.
@@ -84,26 +94,34 @@ class InputComponent:
         return "%s (name=%s, pin=%i, state=%i)" % (
             self.subtype, self.name, self.pin, int(self.state))
 
-    def _get_reader():
-        if self.subtype is InputComponent.Subtype.Push:
-            return lambda: GPIO.input(self.pin)
-        elif self.subtype is InputComponent.Subtype.Switch:
-            return lambda: GPIO.input(self.pin)
-
-    def _read(self):
-        return GPIO.input(self.pin)
+    def _get_reader(self):
+        if self.subtype == InputComponent.Subtype.Button.value:
+            def btn_reader():
+                GPIO.input(self.pin)
+                return self.state
+            return btn_reader
+        elif self.subtype == InputComponent.Subtype.Switch.value:
+            def swt_reader():
+                GPIO.input(self.pin)
+                return False
 
     def read(self):
-        prev_state = self.state
         self.state = self._read()
-        if prev_state != self.state:
-            for cb in self.on_change_callbacks:
-                cb(self.state)
+        return self.state
 
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        prev_state = self.state
+        self._state = value
+        if prev_state != self.state:
+            for id in self.on_change_callbacks:
+                self.on_change_callbacks[id](self.state)
             for pin in self.pipe_pins:
                 GPIO.output(abs(pin), 1 if pin > 0 else 0)
-
-        return self.state
 
     def attach_callback(self, callback, id):
         self.on_change_callbacks[id] = callback
@@ -136,53 +154,87 @@ class OutputComponent:
 
 if __name__ == "__main__":
     print("START TEST")
-    marsInter = InterfaceSubsystem("marsSide", 12, inputs=[
-        InputComponent("Door Toggle", 12, InputComponent.Subtype.Push),
-        InputComponent("Lights", 13, InputComponent.Subtype.Switch)
-    ], outputs=[
-        OutputComponent("Emergency", 9, OutputComponent.Subtype.LED),
-        OutputComponent("Alarm", 5, OutputComponent.Subtype.Buzzer)
-    ])
+    from unittest.mock import Mock
+    GPIO = Mock()
+    print("USING MOCK GPIO")
 
-    print(marsInter.inputs)
-    print(marsInter.outputs)
-
-    print(marsInter.get_input_component("Door Toggle").name)
-    print(marsInter.get_input_component("Door Toggle").pin)
-    print(marsInter.get_input_component("Door Toggle").subtype)
-
-    print(marsInter.get_input_component("Lights").name)
-    print(marsInter.get_output_component("Emergency").name)
-    print(marsInter.get_output_component("Emergency").pin)
-
-    id = marsInter.get_input_component("Door Toggle").attach_callback(
-        123, lambda state: print(state)
+    airlockInterface = InterfaceSubsystem(
+        name="airlockInternalInterface",
+        thread_id=12,
+        inputs=[
+            *[
+                InputComponent(n, p, InputComponent.Subtype.Button)
+                for n, p in [
+                    ["LightsToggle", 4],
+                    ["DoorTrigger", 5],
+                    ["DoorToggle", 6],
+                    ["Pressurize", 8],
+                    ["Depressurize", 9],
+                    ["Confirm", 10],
+                    ["EmergencyStop", 11],
+                ]
+            ],
+            InputComponent(
+                "ManualOverride",
+                11,
+                InputComponent.Subtype.Button)
+        ],
+        outputs=[
+            OutputComponent(n, p, OutputComponent.Subtype.LED)
+            for n, p in [
+                ["isPressurizing", 12],
+                ["isInProgress", 13],
+                ["isDepressurizing", 14],
+                ["EmergencyStopOn", 15],
+                ["confirmedIndicator", 16]
+            ]
+        ],
+        on_loop=lambda: print("loop!")
     )
-    marsInter.get_input_component("Door Toggle").detach_callback(id)
 
-    interInter = InterfaceSubsystem("internalSide", 12, inputs=[
-        InputComponent("Inter_I1", 12, InputComponent.Subtype.Push.value),
-        InputComponent("Inter_I2", 13, InputComponent.Subtype.Switch.value)
-    ], outputs=[
-        OutputComponent("Inter_O1", 9, OutputComponent.Subtype.LED.value)
-    ])
+    marsInterface = InterfaceSubsystem(
+        name="marsInterface",
+        thread_id=13,
+        inputs=[
+            InputComponent(n, p, InputComponent.Subtype.Button)
+            for n, p in [
+                ["Entry", 17],
+                ["EmergencyStop", 18],
+                ["ExitDemo", 19]
+            ]
+        ]
+    )
 
-    colonyInter = InterfaceSubsystem("colonySide", 12, inputs=[
-        InputComponent("colony_I1", 12, InputComponent.Subtype.Push.value),
-        InputComponent("colony_I2", 13, InputComponent.Subtype.Switch.value)
-    ], outputs=[
-        OutputComponent("colony_O1", 9, OutputComponent.Subtype.LED.value)
-    ])
+    noahsInterface = InterfaceSubsystem(
+        name="Noah's",
+        thread_id=10000,
+        inputs=[
+            InputComponent("EmergencyTest", 13, InputComponent.Subtype.Button)
+        ],
+        outputs=[
+            OutputComponent("EmergencyLED", 9, OutputComponent.Subtype.LED)
+        ]
+    )
 
-    marsInter.start()
-    interInter.start()
-    colonyInter.start()
+    airlockInterface.start()
+    marsInterface.start()
 
-    from time import sleep
+    import time
+    time.sleep(5)
 
-    sleep(5)
+    airlockInterface.get_input_component('Confirm').attach_callback(
+        lambda st: print("Called back with state %s!" % st), 12
+    )
+    for i in range(5):
+        airlockInterface.get_input_component('Confirm').state = \
+            not airlockInterface.get_input_component('Confirm').state
+        time.sleep(1)
 
-    marsInter.stop()
-    interInter.stop()
-    colonyInter.stop()
-    print("Test complete!")
+    airlockInterface.get_input_component('Confirm').detach_callback(
+        12
+    )
+
+    airlockInterface.stop()
+    marsInterface.stop()
+
+    print("END TEST")
