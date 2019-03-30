@@ -27,7 +27,7 @@ class SensorSubsystem(subsys.Subsystem):
         self.print_updates = False
         # initialize readings lists in constructor
         # index 0 is oldest reading
-        self.02_readings = []
+        self.O2_readings = []
         self.C02_readings = []
         self.temp_readings = []
         self.humidity_readings = []
@@ -74,7 +74,7 @@ class SensorSubsystem(subsys.Subsystem):
                 # and put into readings list as a list with time associated
                 # in index 1 of sublists in readings list
                 if validData & 1 << 7:
-                    self.02_readings.append([sensor_data[4], time.time()])
+                    self.O2_readings.append([sensor_data[4], time.time()])
                 if validData & 1 << 6:
                     self.humidity_readings.append([sensor_data[5], time.time()])
                 if validData & 1 << 5:
@@ -91,7 +91,7 @@ class SensorSubsystem(subsys.Subsystem):
         # element time, and if diff greater than keep_track_seconds, remove
         # current element list from readings list and then sums value
         # of all readings after trim
-        O2_val = self.trim_sum_list(self.02_readings)
+        O2_val = self.trim_sum_list(self.O2_readings)
         humidity_val = self.trim_sum_list(self.humidity_readings)
         temperature_val = self.trim_sum_list(self.temp_readings)
         pressure_val = self.trim_sum_list(self.pressure_readings)
@@ -100,7 +100,7 @@ class SensorSubsystem(subsys.Subsystem):
         # computers average of all readings after sum computed
         # and stores average readings into dictionary
         self.sensor_data = {
-            'O2': O2_val / len(self.02_readings),
+            'O2': O2_val / len(self.O2_readings),
             'humidity': humidity_val / len(self.humidity_readings),
             'temperature': temperature_val / len(self.temp_readings),
             'pressure': pressure_val / len(self.pressure_readings),
