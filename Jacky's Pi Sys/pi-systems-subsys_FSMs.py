@@ -90,6 +90,8 @@ class DoorFSM(StateMachine):
     # emergency states
     detected_emerg_1 = door_open.to(Emergency)
     detected_emerg_2 = door_close.to(Emergency)
+    detected_emerg_3 = idle.to(Emergency)
+    emerg_unresolved = Emergency.to(Emergency)
 
     # Methods for the states
     #   executed when the state transition (defined above) is triggered
@@ -171,26 +173,35 @@ def loop_FSMs():
         # i and j are used for door logic
         i = 0
         j = 0
+
+        # will have to replace this input logic with the code
+        # from thomas' interface code
         print("Command list:\n p: pressurize\n d: depressurize\n o: open door")
         print(" c: close door\n 0: turn on/off\n e: simulate an emergency")
         command = input("Enter command: ")
         #
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # COMMAND TO SIMULATE AN EMERGENCY
+        # this is a button on the interface that will lock the airlock
+        # once the emergency has been resolved:
+        #       (1) first, the the power is cut
+        #       (2) then, the system turns back on
+        #       (3) FSM goes back to initial states
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(command == 'e' or command == "E"):
+        if(command == 'e' or command == "E"):  # change to interface logic
             emergency = True
+            print(fsm_pressure.current_state)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # COMMAND TO PRESSURIZE AND DEPRESSURIZE THE AIRLOCK
-        # inputs: start_pressurize and start_depressurize
+        # inputs: start_pressurize and start_depressurize only work
         #         if emergency is not True
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(command == 'p' or command == 'P' and emergency is False):
+        if(command == 'p' or command == 'P' and emergency is False):  # change to interface logic
             # if command is to pressurize, change states
             target_p = fsm_pressure.start_pressurize(t_range_p)
             # while not done pressurizing and no emergency...
-            while (pressure < target_p) and emergency is False:
+            while (pressure < target_p) and emergency is False: # WHERE DOES IT GO TO WHEN EMERG TRUE?
                 # ... we loop back into our current state
                 fsm_pressure.keep_pressurize()
                 time.sleep(1)
@@ -199,13 +210,15 @@ def loop_FSMs():
             fsm_pressure.done_pressurize()
         else:
             if(emergency is True):
+                if(fsm_pressure.current_state == fsm_pressure.Emergency):
+                    fsm_pressure.emerg_unresolved()
                 fsm_pressure.detected_emerg_3()
             else:
                 fsm_pressure.keep_idling()
         print("I am in idle again? ",
               fsm_pressure.current_state == fsm_pressure.idle)
 
-        if(command == 'd' or command == 'D' and emergency is False):
+        if(command == 'd' or command == 'D' and emergency is False):  # change to interface logic
             target_d = fsm_pressure.start_depressurize(t_range_d)
             while(pressure > target_d) and emergency is False:
                 fsm_pressure.keep_depressurize()
@@ -216,6 +229,7 @@ def loop_FSMs():
             if(emergency is True):
                 # If an emergency has already been detected while pressurizing
                 if(fsm_pressure.current_state == fsm_pressure.Emergency):
+                    # we stay in emergency unresovled
                     fsm_pressure.emerg_unresolved()
                 # Else we are depressurizing when the emergency happens
                 else:
@@ -232,7 +246,7 @@ def loop_FSMs():
         # This is bc lights will not be effected by emergencies
         # Possible implementation: keep them lights on during emergencies???
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(command == '0'):
+        if(command == '0'):  # change to interface logic
             if(fsm_lights.current_state.name == "ON"):
                 fsm_lights.turn_off()
             else:
@@ -247,18 +261,22 @@ def loop_FSMs():
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         print("we idling? ", fsm_door.current_state == fsm_door.idle)
 
-        if (command == 'o' or command == 'O'):
+        if (command == 'o' or command == 'O') and emergency is False:  # change to interface logic
             fsm_door.start_open()
-            while (i is 0):
+            while (i is 0 and emergency is False):
                 fsm_door.keep_opening()
                 # i var represents when the door is in the process of opening
                 i = 1
                 if(i is 1):
                     fsm_door.done_open()
+        elif (emergency is True):
+            # if theres an emerg we gotta handle it unfortunately
+            fsm_door.detected_emerg_3()
         else:
-            # if we dont do any door commands we idle..
+            # no code red so keep idling
             fsm_door.keep_idling()
-        if(command == 'c' or command == 'C'):
+
+        if(command == 'c' or command == 'C') and emergency is False:  # change to interface logic
             fsm_door.start_close()
             while(j is 0):
                 fsm_door.keep_closing()
@@ -266,13 +284,18 @@ def loop_FSMs():
                 j = 1
                 if(j is 1):
                     fsm_door.done_close()
+        elif (emergency is True):
+            if(fsm_door.current_state == fsm_door.Emergency):
+                fsm_door.emerg_unresolved()
+            else:
+                fsm_door.detected_emerg_2()
         else:
             fsm_door.keep_idling()
     # Emergency is True WEEEOOO WEEEOO WEEOOO!!!
     # we must put the FSMs in their respective emergency states
     print(fsm_pressure.current_state)
     print(fsm_door.current_state)
-
+    # go to the loop again
 
 loop_FSMs()
 
