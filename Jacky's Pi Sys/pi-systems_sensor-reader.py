@@ -8,8 +8,8 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 
 
-class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem): 
-  
+class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
+
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
 
     class Procedure(Enum):
@@ -19,10 +19,9 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
         # namedtuple is temporarily a dict for pickling purposes.
-        self.sensor_data = {}#self.SensorData(0,0,0,0,0)
+        self.sensor_data = {} # self.SensorData(0,0,0,0,0)
         self.address = address
         self.print_updates = False
-
 
     def loop(self):
         with self.lock:
@@ -30,7 +29,6 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
             if self.print_updates:
                 print(self.sensor_data)
-
 
     def __update_sensor_data(self):
         # return
@@ -50,11 +48,11 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
         # TODO make this work - accessors are invalid since protocol version.
         self.sensor_data = {
-            'O2':sensor_data[0],
-            'humidity':sensor_data[1],
-            'temperature':sensor_data[2],
-            'pressure':sensor_data[3],
-            'CO2':sensor_data[4]
+            'O2': sensor_data[0],
+            'humidity': sensor_data[1],
+            'temperature': sensor_data[2],
+            'pressure': sensor_data[3],
+            'CO2': sensor_data[4]
         }
 
     def error_check(self):

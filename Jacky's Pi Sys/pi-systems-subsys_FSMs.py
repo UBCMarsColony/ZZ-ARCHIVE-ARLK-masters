@@ -3,6 +3,7 @@
 # Lights - Not working yet
 # Door - Working
 from statemachine import StateMachine, State
+import time
 
 
 class PressureFSM(StateMachine):
@@ -12,7 +13,7 @@ class PressureFSM(StateMachine):
     pressurize = State("pressurize")
     depressurize = State("depressurize")
     done = State("done")
-    emergency = State("Emergency")
+    Emergency = State("Emergency")
 
     #   Next State Transitions
     keep_idling = idle.to(idle)
@@ -22,9 +23,10 @@ class PressureFSM(StateMachine):
     start_depressurize = idle.to(depressurize)
     keep_depressurize = depressurize.to(depressurize)
     done_depressurize = depressurize.to(idle)
-    detected_emerg_1 = pressurize.to(emergency)
-    detected_emerg_2 = depressurize.to(emergency)
-    detected_emerg_3 = idle.to(emergency)
+    detected_emerg_1 = pressurize.to(Emergency)
+    detected_emerg_2 = depressurize.to(Emergency)
+    detected_emerg_3 = idle.to(Emergency)
+    emerg_unresolved = Emergency.to(Emergency)
 
     # Methods for the states actions
     #   executed when the state transition (defined above) is triggered
@@ -58,30 +60,26 @@ class PressureFSM(StateMachine):
         print("I AM DONE DEPRESSURIZING")
 
     def on_detected_emerg_1(self):
-        print("EMERGENCY OF TYPE 1 DETECTED")
+        print("EMERGENCY DETECTED")
 
     def on_detected_emerg_2(self):
-        print("EMERGENCY OF TYPE 2 DETECTED")
+        print("EMERGENCY DETECTED")
 
-    def on_detected_emerg_3(self):
-        print("EMERGENCY OF TYPE 3 DETECTED")
+    def on_emerg_unresolved(self):
+        print("EMERGENCY UNRESOLVED")
 
 
 # Create FSM for Doors
 class DoorFSM(StateMachine):
     #   State Definitions
     idle = State("Idle", initial=True)
-    calibrate = State("Calibrating")
     door_open = State("Open")
     door_close = State("Close")
     keep_idling = State("Continuing to idle")
-    # opening = State("Continuing to open")
-    # closing = State("Continuing to close")
     done = State("completed door process")
+    Emergency = State("Emergency")
 
     #   State Transitions
-    calibrate = idle.to(calibrate)
-    done_calib = calibrate.to
     keep_idling = idle.to(idle)
     start_open = idle.to(door_open)
     keep_opening = door_open.to(door_open)
@@ -89,6 +87,9 @@ class DoorFSM(StateMachine):
     start_close = idle.to(door_close)
     keep_closing = door_close.to(door_close)
     done_close = door_close.to(idle)
+    # emergency states
+    detected_emerg_1 = door_open.to(Emergency)
+    detected_emerg_2 = door_close.to(Emergency)
 
     # Methods for the states
     #   executed when the state transition (defined above) is triggered
@@ -106,12 +107,24 @@ class DoorFSM(StateMachine):
 
     def on_done_close(self):
         print("I AM DONE CLOSING")
-    
+
     def on_keep_opening(self):
         print("I AM OPENING")
-    
+
     def on_keep_closing(self):
         print("I AM CLOSING")
+
+    def on_detected_emerg_1(self):
+        print("EMERGENCY DETECTED")
+
+    def on_detected_emerg_2(self):
+        print("EMERGENCY DETECTED")
+
+    def on_detected_emerg_3(self):
+        print("EMERGENCY DETECTED")
+
+    def on_emerg_unresolved(self):
+        print("EMERGENCY UNRESOLVED")
 
 
 class LightFSM(StateMachine):
@@ -122,50 +135,12 @@ class LightFSM(StateMachine):
     # Define the state transitions
     turn_off = on.to(off)
     turn_on = off.to(on)
-    # change = on.to(off)
-    # change2 = off.to(on)
-    # stay_on = on.to(on)
-    # stay_off = off.to(off)
-    # off2_on = off.to(on)
-    # on2_off = on.to(off)
 
     def on_turn_off(self):
         print("Turn the lights off")
 
     def on_turn_on(self):
         print("Turn the lights on")
-'''
-    def on_stay_on(self):
-        print("keeping lights on")
-
-    def on_stay_ofF(self):
-        print("keeping lights off")
-        '''
-'''
-    def on_off2_on(self):
-        print("going from off to on")   
-
-    def on_on2_off(self):
-        print("going from on to off")
-'''
-
-
-class SensorsFSM(StateMachine):
-    # State defintions.
-    # Sensors either enabled (reading) or disabled (not reading)
-    enable = State("enable", initial=True)
-    disable = State("disable")
-
-    enable_sensors = disable.to(enable)
-    disable_sensors = enable.to(disable)
-
-    # Enable the sensors to read data
-    def on_enable(self):
-        print("Sensors have been enabled")
-
-    # disabling the sensors from reading
-    def on_disable(self):
-        print("Sensors have been disabled")
 
 fsm_pressure = PressureFSM()
 fsm_lights = LightFSM()
@@ -176,8 +151,8 @@ mock_press_data = [None]*100
 for i in range(100):
     mock_press_data[i] = i
 # Specify range of target pressures to pressurize/depressurize to
-t_range_p = [70, 75]
-t_range_d = [30, 35]
+t_range_p = [5, 10]
+t_range_d = [2, 5]
 
 # Fill an array of size 10
 mock_door_data = [None]*10
@@ -188,87 +163,125 @@ mock_door_data[9] = 1
 
 
 # Create loop to run all FSMs
-def loop_all():
+def loop_FSMs():
     emergency = False
     pressure = 0  # Pressure variable
 
     while(emergency is False):
+        # i and j are used for door logic
         i = 0
         j = 0
-        print("Command list:\n p: pressurize\n d: depressurize\n o: open door\n c: close door\n 0: turn on/off")
+        print("Command list:\n p: pressurize\n d: depressurize\n o: open door")
+        print(" c: close door\n 0: turn on/off\n e: simulate an emergency")
         command = input("Enter command: ")
         #
-        # PRESSURE COMMANDS
-        if(command == 'p' or command == 'P'):
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # COMMAND TO SIMULATE AN EMERGENCY
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        if(command == 'e' or command == "E"):
+            emergency = True
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # COMMAND TO PRESSURIZE AND DEPRESSURIZE THE AIRLOCK
+        # inputs: start_pressurize and start_depressurize
+        #         if emergency is not True
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        if(command == 'p' or command == 'P' and emergency is False):
             # if command is to pressurize, change states
             target_p = fsm_pressure.start_pressurize(t_range_p)
-            # while not done pressurizing...
-            while(pressure < target_p):
+            # while not done pressurizing and no emergency...
+            while (pressure < target_p) and emergency is False:
                 # ... we loop back into our current state
                 fsm_pressure.keep_pressurize()
+                time.sleep(1)
                 pressure = pressure + 1
             # When we are done pressurizing, go back to idle
             fsm_pressure.done_pressurize()
         else:
-            fsm_pressure.keep_idling()
-        print("I am in idle again? ", fsm_pressure.current_state == fsm_pressure.idle)
-        if(command == 'd' or command == 'D'):
+            if(emergency is True):
+                fsm_pressure.detected_emerg_3()
+            else:
+                fsm_pressure.keep_idling()
+        print("I am in idle again? ",
+              fsm_pressure.current_state == fsm_pressure.idle)
+
+        if(command == 'd' or command == 'D' and emergency is False):
             target_d = fsm_pressure.start_depressurize(t_range_d)
-            # fsm_pressure.start_depressurize()
-            while(pressure > target_d):
+            while(pressure > target_d) and emergency is False:
                 fsm_pressure.keep_depressurize()
+                time.sleep(1)
                 pressure = pressure - 1
             fsm_pressure.done_depressurize()
         else:
-            fsm_pressure.keep_idling
-        print("I am in idle again? ", fsm_pressure.current_state == fsm_pressure.idle)
-        #
-        # LIGHT COMMANDS
+            if(emergency is True):
+                # If an emergency has already been detected while pressurizing
+                if(fsm_pressure.current_state == fsm_pressure.Emergency):
+                    fsm_pressure.emerg_unresolved()
+                # Else we are depressurizing when the emergency happens
+                else:
+                    fsm_pressure.detected_emerg_2()
+            else:
+                fsm_pressure.keep_idling()
+        print("I am in idle again? ",
+              fsm_pressure.current_state == fsm_pressure.idle)
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # LIGHT COMMANDS:
+        # input: 0 (toggles lights on, off, on, off, ...)
+        # NOTE the light FSM does not have an emergency state
+        # This is bc lights will not be effected by emergencies
+        # Possible implementation: keep them lights on during emergencies???
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if(command == '0'):
-            # if(fsm_lights.current_state == "ON"):
-            # fsm_lights.change()
-            break
-        #
+            if(fsm_lights.current_state.name == "ON"):
+                fsm_lights.turn_off()
+            else:
+                fsm_lights.turn_on()
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # DOOR COMMANDS
+        # inputs: open door, close door.  Self-explanatory commands
+        # emergency detection sends FSM to emerg. state until
+        # the emergency has been resolved.  Essentially locks the
+        # FSM so doors cannot be changed
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         print("we idling? ", fsm_door.current_state == fsm_door.idle)
+
         if (command == 'o' or command == 'O'):
             fsm_door.start_open()
             while (i is 0):
                 fsm_door.keep_opening()
+                # i var represents when the door is in the process of opening
                 i = 1
                 if(i is 1):
                     fsm_door.done_open()
         else:
+            # if we dont do any door commands we idle..
             fsm_door.keep_idling()
         if(command == 'c' or command == 'C'):
             fsm_door.start_close()
             while(j is 0):
                 fsm_door.keep_closing()
+                # j var represents when the door is in the processs of closing
                 j = 1
                 if(j is 1):
                     fsm_door.done_close()
         else:
             fsm_door.keep_idling()
-# Emergency is True WEEEOOO WEEEOO WEEOOO!!!
-# we must handle accordingly
-# loop_all()
+    # Emergency is True WEEEOOO WEEEOO WEEOOO!!!
+    # we must put the FSMs in their respective emergency states
+    print(fsm_pressure.current_state)
+    print(fsm_door.current_state)
 
 
-def loop_test():
-    print(fsm_lights.current_state)
+loop_FSMs()
 
-loop_test()
-
-
-
-
-
-
-
-
+# -------------------------------------------------------------------------------------------------
+# TESTING THE FSMs INDIVIDUALLY
+# -------------------------------------------------------------------------------------------------
 # The FSMs,their states and respective transitions have been defined
 # Create loop for PressureFSM to test if it is working as expected
-#       THIS HAS BEEN TESTED AND WORKS
+# PressureFSM ---> THIS HAS BEEN TESTED AND WORKS!!!
 '''
 # Create instance of the Pressure FSM
 fsm_pressure = PressureFSM()
@@ -325,7 +338,7 @@ pressure_loop()
 '''
 
 # Now create the FSM for the lights and test
-#       THIS HAS BEEN TESTED AND WORKS
+# LightFSM ----> THIS HAS BEEN TESTED AND WORKS
 '''
 fsm_lights = LightFSM()
 

@@ -7,6 +7,7 @@ subsystem = importlib.import_module('pi-systems_subsystem-base')
 # unless otherwise specified (See subsystem-base for the code).
 subsystem_pool = {}
 
+
 def add(subsys, overwrite=False):
     if subsys.name in subsystem_pool and overwrite is False:
         raise KeyError('Subsystem with key %s already exists in the pool!' % (subsys.name))
@@ -18,7 +19,7 @@ def add(subsys, overwrite=False):
 def remove(subsys):
     if isinstance(subsys, subsystem.Subsystem):
         subsys = subsys.name
-    
+
     if not isinstance(subsys, str):
         raise TypeError("Provided subsystem removal key is an invalid type!")
 
@@ -26,7 +27,7 @@ def remove(subsys):
         subsystem_pool.pop(subsys)
     else:
         raise KeyError("Subsystem removal key not found in the pool!")
-    
+
 
 def get(name):
     if name in subsystem_pool.keys():
@@ -34,10 +35,11 @@ def get(name):
     else:
         raise KeyError("No key %s found in subsystem pool!" % (name))
 
+
 def get_all():
     return subsystem_pool
 
-        
+
 def stop_all():
     print("Closing all subsystems.")
     for subsys in subsystem_pool.values():
