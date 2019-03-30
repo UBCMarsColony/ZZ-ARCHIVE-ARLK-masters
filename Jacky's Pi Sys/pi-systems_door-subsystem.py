@@ -1,14 +1,16 @@
 import importlib
+from enum import IntEnum
 subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
-from enum import IntEnum
+
 
 class DoorSubsystem(subsys.Subsystem):
 
     class Procedure(IntEnum):
-        OpenDoor = ord("o")
-        CloseDoor = ord("c")
-
+        OpenDoor = 111
+        CloseDoor = 99
+        setDoorState = 3
+        getDoorState = 4
 
     def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)
@@ -16,24 +18,41 @@ class DoorSubsystem(subsys.Subsystem):
         self.new_state = None
         self.address = address
 
-
     def loop(self):
-        
         with self.lock:
             if self.new_state is not None:
-                print("Door state updating (%s)" % (self.Procedure(self.new_state).name))
+                print("Door state updating (%s)" %
+                      (self.Procedure(self.new_state).name))
 
                 # Check sensors and things
 
                 comms.intra_write(self.address,
-                    self.generate_intra_protocol_message(
-                        action=comms.IntraModCommAction.ExecuteProcedure,
-                        procedure=self.new_state
-                ))
+                                  comms.generate
+                                  (action=comms.IntraModCommAction.
+                                   ExecuteProcedure, procedure=self.new_state))
 
                 self.new_state = None
 
-    
+    # function to get current door state from door control arduino using I2C
+    # return: doorState and doorAngle as a tuple
+    def getCurrentDoorState(self):
+        doorStateRaw = comms.intra_read(self.address,
+                                        self.Procedure.getDoorState.value)
+        # March9doorcontrol_I2C.ino struct returns 4 bytes and a short struct
+        doorStateVals = struct.unpack('cccch', bytes(doorStateRaw.raw_array[
+                                      0:struct.calcsize('cccch')]))
+
+        doorState = doorStateVals[3]
+        doorAngle = doorStateVals[4]
+
+        return doorState, doorAngle
+
+    #add calibrate message to be sent to doorcontrol
+    #def calibrateDoor(self):
+    #   comms.intra_write(self.address, )
+
+    # other subsystems use this function to get the door subsys to get
+    # the door state form the arduino controller through I2C on the loop
     def request_door_state(self, state=None):
         if not state:
             raise TypeError("Door state must be an integer defined in DoorSubsystem.Procedure")
