@@ -16,6 +16,7 @@ door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
 lights_ss = importlib.import_module('pi-systems_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
+hexdisplay_ss = importlib.import_module('pi-systems_hexdisplay-subsystem')
 
 """
 Purpose: Performs initial system setup and begins airlock loop cycle.
@@ -77,6 +78,18 @@ def begin(runtime_params):
 
     # lights = light_ss.LightingSubsystem("lights", 4)
     # lights.start()
+
+    # subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
+    #   name="hexdisplay_internal",
+    #   thread_id=0x1EDB0A12D1,
+    #   address="FILL ME IN",
+    #   display_data_fns=[
+    #       lambda: sensors.sensor_data['O2'],
+    #       lambda: sensors.sensor_data['CO2'],
+    #       lambda: sensors.sensor_data['Temperature'],
+    #       lambda: sensors.sensor_data['Pressure']
+    #   ]
+    # ))
 
     print("---AIRLOCK SYSTEMS INITIALIZED---\n")
 
