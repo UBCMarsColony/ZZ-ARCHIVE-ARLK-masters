@@ -2,137 +2,143 @@ from enum import Enum
 from threading import Lock
 import struct
 
-# SerialMixin class enables the subsystem to use I2C methods for data transfer
-# between arduino and pi.
+# pi-ststems_communications file enables the subsystem to use I2C methods
+# for data transfer between arduino and pi.
+
+try:
+    # Initialization needed for the class to run properly
+    __lock = Lock()
+    import smbus
+    import RPi.GPIO as gpio
+    # Static bus object
+    gpio.setmode(gpio.BCM)
+    __bus = smbus.SMBus(1)
+    # NOTE: for RPI version 1, use “__bus = smbus.SMBus(0)”
+except ModuleNotFoundError:
+    print("RPi not being used, skipping RPi imports...")
 
 
-class IntraModCommMixin:
+class IntraModCommMessage:
+    def __init__(self, raw_array):
+        self.raw_array = raw_array
 
-    try:
-        # Initialization needed for the class to run properly
-        import smbus
-        import RPi.GPIO as gpio
+    @property
+    def action(self):
+        # Gets the action without the signed bit.
+        return self.raw_array[0] & ~(1 << 7)
 
-        # Static bus object
-        gpio.setmode(gpio.BCM)
-        __bus = smbus.SMBus(1)  # NOTE: for RPI version 1, use “bus = smbus.SMBus(0)”
-        __lock = Lock()
-    except ModuleNotFoundError:
-        print("RPi not being used, skipping RPi imports...")
+    @property
+    def is_response(self):
+        return (self.raw_array[0] >> 7) & 0b1
 
-    class IntraModCommMessage:
-        def __init__(self, raw_array):
-            self.raw_array = raw_array
+    @property
+    def procedure(self):
+        # Gets the procedure byte without the signed bit.
+        return self.raw_array[1] & ~(1 << 7)
 
-        @property
-        def action(self):
-            # Gets the action without the signed bit.
-            return self.raw_array[0] & ~(1 << 7)
+    @property
+    def has_data(self):
+        # Checks the high-bit of the procedure byte.
+        # If set, more data is present.
+        return (self.raw_array[1] >> 7) & 0b1
 
-        @property
-        def is_response(self):
-            return (self.raw_array[0] >> 7) & 0b1
+    @property
+    def data(self):
+        return self.raw_array[2:]
 
-        @property
-        def procedure(self):
-            # Gets the procedure byte without the signed bit.
-            return self.raw_array[1] & ~(1 << 7)
+    def validate(self):
+        # Check if the specified action is a valid integer value.
+        if self.action not in set(a.value for a in IntraModCommAction):
+            return False
 
-        @property
-        def has_data(self):
-            # Checks the high-bit of the procedure byte. If set, more data is present.
-            return (self.raw_array[1] >> 7) & 0b1
+        # TODO Implement this at a later date
+        # Check if:
+            # Procedure is within the expected range of [0, 127]
+            # The high bit of the Procedure byte is signed if there is
+            # data present
+            # Length of message is within maximum length (32)
+            # Each byte in the range is within the valid range of [0, 255]
+        return True
 
-        @property
-        def data(self):
-            return self.raw_array[2:]
+    @staticmethod
+    def generate(*, action=-1, procedure=-1, data=None, is_response=False):
+        max_value = 1 << 7
+        high_bit = 1 << 7
 
-        def validate(self):
-            # Check if the specified action is a valid integer value.
-            if self.action not in set(a.value for a in IntraModCommMixin.IntraModCommAction):
-                return False
+        if isinstance(action, IntraModCommAction):
+            action = action.value
 
-            # TODO Implement this at a later date
-            # Check if:
-                # Procedure is within the expected range of [0, 127]
-                # The high bit of the Procedure byte is signed if there is data present
-                # Length of message is within maximum length (32)
-                # Each byte in the range is within the valid range of [0, 255] 
-            return True
+        if action > max_value:
+            raise ValueError("action must not use the signing bit!")
 
-        @staticmethod
-        def generate(*, action=-1, procedure=-1, data=None, is_response=False):
-            max_value = 1 << 7
-            high_bit = 1 << 7
+        if action not in set(action.value for action in IntraModCommAction):
+            raise ValueError("specified action %i is not defined!" % (action))
 
-            if isinstance(action, IntraModCommMixin.IntraModCommAction):
-                action = action.value
+        if is_response:
+            action += high_bit
 
-            if action > max_value:
-                raise ValueError("action must not use the signing bit!")
+        if procedure > max_value:
+            raise ValueError("procedure must not use the signing bit!")
 
-            if action not in set(action.value for action in IntraModCommMixin.IntraModCommAction):
-                raise ValueError(
-                    "specified action %i is not defined!" % (action))
+        if data is not None:
+            procedure += high_bit
 
-            if is_response:
-                action += high_bit
+        generated_message = [action, procedure]
+        if data is not None:
+            generated_message.extend(data)
 
-            if procedure > max_value:
-                raise ValueError("procedure must not use the signing bit!")
+        return IntraModCommMessage(generated_message)
 
-            if data is not None:
-                procedure += high_bit
 
-            generated_message = [action, procedure]
-            if data is not None:
-                generated_message.extend(data)
+class IntraModCommAction(Enum):
+    ExecuteProcedure = 1
+    SelfCheck = 2
+    Restart = 3
+    Shutdown = 4
 
-            return IntraModCommMixin.IntraModCommMessage(generated_message)
-
-    class IntraModCommAction(Enum):
-        ExecuteProcedure = 1
-        SelfCheck = 2
-        Restart = 3
-        Shutdown = 4
 
 # WRITING
-    @classmethod
-    def intra_write(cls, address, message):
-        if isinstance(message, IntraModCommMixin.IntraModCommMessage):
-            message = message.raw_array
+def intra_write(address, message):
+    if isinstance(message, IntraModCommMessage):
+        message = message.raw_array
 
-        cmd, data = message.pop(0), message
-        with cls.__lock:
-            cls.__bus.write_i2c_block_data(address, cmd, data)
-        # for byte in message:
-            # cls.__bus.write_byte(address, ord(byte))
-            # time.sleep(1)
+    cmd, data = message.pop(0), message
+    global __bus
+    global __lock
+    with __lock:
+        pass
+        __bus.write_i2c_block_data(address, cmd, data)
+    # for byte in message:
+        # __bus.write_byte(address, ord(byte))
+        # time.sleep(1)
 
 
 # READING
-    @classmethod
-    def intra_read(cls, address, procedure):
-        if not isinstance(procedure, int):
-            raise TypeError('rocedure value provided is not an integer!')
-        with cls.__lock:
-            msg = cls.__bus.read_i2c_block_data(address, procedure)
-        # for index in range(93):
-        #     num = cls.__bus.read_byte(address)
-        #     if num:
-        #         msg.append(num)
-      
-        if not msg:
-            print('I2C message expected but not read. Discarding')
-            return
+def intra_read(address, procedure):
+    if not isinstance(procedure, int):
+        raise TypeError('rocedure value provided is not an integer!')
+    global __lock
+    global __bus
+    with __lock:
+        pass
+        msg = __bus.read_i2c_block_data(address, procedure)
+    # for index in range(93):
+    #     num = __bus.read_byte(address)
+    #     if num:
+    #         msg.append(num)
 
-        message = IntraModCommMixin.IntraModCommMessage(msg)
+    if not msg:
+        print('I2C message expected but not read. Discarding')
+        return
 
-        if message:  # .validate()
-            return message
+    message = IntraModCommMessage(msg)
 
-        # IF NO VALID SENSOR DATA RECEIVED,
-        # ACCEPT EXCEPTION AS "SENSORS ARE OFF SO DONT CRASH PLS"
+    if message:  # .validate()
+        return message
+
+
+# IF NO VALID SENSOR DATA RECEIVED,
+# ACCEPT EXCEPTION AS "SENSORS ARE OFF SO DONT CRASH PLS"
 
 class InterModCommMixin:
     pass

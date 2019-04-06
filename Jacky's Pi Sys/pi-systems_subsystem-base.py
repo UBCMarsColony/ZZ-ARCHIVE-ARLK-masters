@@ -37,22 +37,20 @@ class Subsystem(ABC):
         *,
         thread_id,
         loop_delay_ms,
-        on_start,
-        on_stop,
-        on_loop,
+        on_start=None,
+        on_stop=None,
+        on_loop=None,
     ):
         self.name = name
         self.thread = Subsystem.SubsystemThread(
             thread_id=thread_id,
             loop_delay_ms=loop_delay_ms,
-            target=self._loop)
+            loop=self._loop)
 
-        if callable(on_start):
-            self.on_start = on_start
-        if callable(on_stop):
-            self.on_stop = on_stop
-        if callable(on_loop):
-            self.on_loop = on_loop
+        def empty(): pass
+        self.on_start = on_start if callable(on_start) else empty
+        self.on_stop = on_stop if callable(on_stop) else empty
+        self.on_loop = on_loop if callable(on_loop) else empty
 
         subsys_pool.add(self)
 
@@ -63,7 +61,7 @@ class Subsystem(ABC):
         if self.thread.running:
             return
 
-        self.thread.start(_loop)
+        self.thread.start()
 
         if (self.on_start):  # Run callback method if it exists
             self.on_start()
@@ -145,7 +143,7 @@ class Subsystem(ABC):
             self.lock = threading.Lock()
             self._thread = threading.Thread(
                 name=thread_id,
-                target=self.run,
+                target=self._run,
                 args=(loop, loop_delay_ms))
 
         def start(self):
@@ -155,7 +153,7 @@ class Subsystem(ABC):
         def stop(self):
             self.running = False
 
-        def run(self, loop, loop_delay_ms):
+        def _run(self, loop, loop_delay_ms):
             # Wrapper function to make loop logic statement look nicer
             def millis():
                 return time.time() * 1000
@@ -165,11 +163,11 @@ class Subsystem(ABC):
                 # convert loop_delay_ms to seconds.
                 if millis() - last_runtime >= loop_delay_ms:
                     try:
-                        self.loop()
+                        loop()
                     except Exception as e:
                         print(
-                            'Error: Subsystem exception has occured for %s'
-                            % repr(self.subsystem), e, '\n')
+                            'Error: Subsystem exception has occured for subsystem thread %s: %s' %
+                            (self.thread_id, e))
                     last_runtime = millis()
 
                 time.sleep(0.05)

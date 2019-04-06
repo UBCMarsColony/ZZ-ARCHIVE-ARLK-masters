@@ -10,6 +10,11 @@ comms = importlib.import_module('pi-systems_communications')
 
 class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
+<<<<<<< HEAD
+=======
+class SensorSubsystem(comms, subsys.Subsystem):
+    
+>>>>>>> 3a2f9020045153955f84cf3578821ec11e74bb00
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
 
     class Procedure(Enum):
@@ -34,11 +39,11 @@ class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         # return
 
         try:
-            # self.intra_write(self.address, self.IntraModCommMessage.generate(
-            #     action=self.IntraModCommAction.ExecuteProcedure,
+            # comms.intra_write(self.address, comms.IntraModCommMessage.generate(
+            #     action=comms.IntraModCommAction.ExecuteProcedure,
             #     procedure=1
             # ))
-            sensor_data_raw = self.intra_read(self.address, self.Procedure.GetSensorData.value)
+            sensor_data_raw = comms.intra_read(self.address, self.Procedure.GetSensorData.value)
         
             sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('>xxBBHHH')]))
 

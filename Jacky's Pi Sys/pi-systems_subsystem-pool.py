@@ -10,7 +10,9 @@ subsystem_pool = {}
 
 def add(subsys, overwrite=False):
     if subsys.name in subsystem_pool and overwrite is False:
-        raise KeyError('Subsystem with key %s already exists in the pool!' % (subsys.name))
+        raise KeyError(
+            'Subsystem with key %s already exists in the pool!'
+            % (subsys.name))
 
     subsystem_pool[subsys.name] = subsys
     print('Subsystem added to pool: %s' % (subsys.name))

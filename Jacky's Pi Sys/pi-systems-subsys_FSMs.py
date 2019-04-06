@@ -4,6 +4,41 @@
 # Door - Working
 from statemachine import StateMachine, State
 import time
+from enum import Enum
+from abc import ABC, abstractmethod
+import threading
+from threading import Lock
+import struct
+import struct
+import importlib
+subsys_input = importlib.import_module('pi-systems_input-subsystem')
+subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
+pressure_ss = importlib.import_module('pi-systems_pressure-manager')
+subsys_base = importlib.import_module('pi-systems_subsystem-base')
+
+# Define the pins used for the following inputs to the FSMs
+# ### pressure_butt   -   Button to start pressurize procedure
+# ### depressure_butt -   Button to start depressurizing
+# ### lights_toggle   -   Button to turn on/off lights
+# ### door_open_butt  -   Button to open door
+# ### door_close_butt -   Button to close door
+pressure_butt = 10
+depressure_butt = 9
+lights_toggle = 8
+door_open_butt = 7
+door_close_butt = 6
+
+# Now we will instantiate the FSM subsystems
+# Subsystems needed: Pressure, Lighting, and Door
+
+subsystems = []
+press_sys = pressure_ss.PressureSubsystem(name="pressure", thread_id=50)
+
+print(press_sys.name)
+print(type(press_sys))
+subsystems.append(press_sys)
+subsys_base.Subsystem.start(press_sys)
+print(subsystems)  # subsystem has been added to pool and is running
 
 
 class PressureFSM(StateMachine):
@@ -197,7 +232,7 @@ def loop_FSMs():
         # inputs: start_pressurize and start_depressurize only work
         #         if emergency is not True
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(command == 'p' or command == 'P' and emergency is False):  # change to interface logic
+        if(command == 'p' or command == 'P' and emergency is False):
             # if command is to pressurize, change states
             target_p = fsm_pressure.start_pressurize(t_range_p)
             # while not done pressurizing and no emergency...
@@ -298,6 +333,8 @@ def loop_FSMs():
     # go to the loop again
 
 loop_FSMs()
+
+
 
 # -------------------------------------------------------------------------------------------------
 # TESTING THE FSMs INDIVIDUALLY
