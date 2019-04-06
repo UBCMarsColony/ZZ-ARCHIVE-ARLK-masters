@@ -14,6 +14,8 @@ import importlib
 subsys_input = importlib.import_module('pi-systems_input-subsystem')
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
+light_ss = importlib.import_module('pi-systems_lights-manager')
+door_ss = importlib.import_module('pi-systems_door-subsytem')
 subsys_base = importlib.import_module('pi-systems_subsystem-base')
 
 # Define the pins used for the following inputs to the FSMs
@@ -28,18 +30,15 @@ lights_toggle = 8
 door_open_butt = 7
 door_close_butt = 6
 
-# Now we will instantiate the FSM subsystems
-# Subsystems needed: Pressure, Lighting, and Door
-
 subsystems = []
-press_sys = pressure_ss.PressureSubsystem(name="pressure", thread_id=50)
 
+# Start with the pressure FSM
+press_sys = pressure_ss.PressureSubsystem(name="pressure", thread_id=50)
 print(press_sys.name)
 print(type(press_sys))
 subsystems.append(press_sys)
 subsys_base.Subsystem.start(press_sys)
-print(subsystems)  # subsystem has been added to pool and is running
-
+#press_sys.start() 
 
 class PressureFSM(StateMachine):
 
@@ -332,6 +331,29 @@ def loop_FSMs():
     print(fsm_door.current_state)
     # go to the loop again
 
+# Now we will instantiate the FSM subsystems
+# Subsystems needed: Pressure, Lighting, and Door
+'''
+subsystems = []
+
+# Start with the pressure FSM
+press_sys = pressure_ss.PressureSubsystem(name="pressure", thread_id=50)
+print(press_sys.name)
+print(type(press_sys))
+subsystems.append(press_sys)
+subsys_base.Subsystem.start(press_sys)
+
+# Now do the light subsystem
+light_sys = light_ss.LightingSubsystem(name="lights", thread_id=40)
+print(light_sys.name)
+print(type(light_sys))
+subsystems.append(light_sys)
+subsys_base.Subsystem.start(light_sys)
+
+# Now do the door
+# INSERT THE CODE
+print(subsystems)  # subsystem has been added to pool and is running
+'''
 loop_FSMs()
 
 
