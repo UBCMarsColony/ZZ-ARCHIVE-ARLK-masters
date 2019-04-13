@@ -43,23 +43,22 @@ def begin(runtime_params):
     #   thread_id=0x5EE,
     #   pins=18))
 
-    global incrementer
-    incrementer = 0
-    def p(base):
-        global incrementer
-        print(base + incrementer)
-        return base + incrementer
-    subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
-      name="hexdisplay_internal",
-      thread_id=0x1EDB0A12D1,
-      address=41,
-      display_data_fns=[
-          lambda: p(12),
-          lambda: p(13),
-          lambda: p(22),
-          lambda: p(101)
-      ]
-    ))
+    #global incrementer
+    #incrementer = 0
+    #def p(base):
+    #    global incrementer
+    #    return base + incrementer
+    #subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
+  #    name="hexdisplay_internal",
+   #   thread_id=0x1EDB0A12D1,
+  #    address=41,
+  #    display_data_fns=[
+   #       lambda: p(12),
+  #        lambda: p(13),
+   #       lambda: p(22),
+   #       lambda: p(101)
+  #    ]
+   # ))
 
     # door_col = door_ss.DoorSubsystem(
     #   name="airlock1_door_col",
@@ -67,9 +66,9 @@ def begin(runtime_params):
     #   address=0)
     # subsystems.append(door_col)
 
-    #subsystems.append(pressure_ss.PressureSubsystem(
-    #    name="airlock1_pressurization",
-    #    thread_id=0xAE120))
+    subsystems.append(pressure_ss.PressureSubsystem(
+        name="airlock1_pressurization",
+        thread_id=0xAE120))
     #     door_input_ss.DoorInputSubsystem(
     #         name="airlock1_doorinput_col",
     # thread_id=0xC01, address="FILL ME IN", linked_door=door_col),
@@ -157,7 +156,7 @@ def handle_cmd(cmd):
         print("Requesting door open")
         subsystems["airlock1_doors"].request_door_state(
             subsystems["airlock1_doors"].Procedure.OpenDoor)
-    elif cmd is 'c' or cmd is 'C':
+    elif cmd is ',' or cmd is '.':
         print("Requesting door close")
         subsystems["airlock1_doors"].request_door_state(
             subsystems["airlock1_doors"].Procedure.CloseDoor)
@@ -172,6 +171,11 @@ def handle_cmd(cmd):
         subsystems['airlock1_pressurization'].request_new_state(
             subsystems['airlock1_pressurization'].TargetState.Depressurize)
         print("Depressurizing")
+
+    elif cmd is 'c' or cmd is 'C':
+        subsystems['airlock1_pressurization'].request_new_state(
+            subsystems['airlock1_pressurization'].TargetState.close)
+        print("Closing")
 
     # Sensors SS Debugging
     elif cmd is 's':
@@ -195,7 +199,7 @@ def handle_cmd(cmd):
     elif cmd is "I":
         print("Current subsystem pool items:\n---------\n")
         print(repr(subsystems))
-    elif cmd is '?':
+    elif cmd is '-':
         print(
             "----- KEYBOARD COMMANDS -----" +
             "\no: Request door open\nc: Request door close" +
@@ -212,6 +216,9 @@ def handle_cmd(cmd):
         global incrementer
         incrementer = incrementer + 1
         print(incrementer)
+    elif cmd is 'f':
+        import os
+        os.system('i2cdetect -y 1')
     elif cmd is '!':
         print('---STOPPING COLONY---')
         ss_pool.stop_all()

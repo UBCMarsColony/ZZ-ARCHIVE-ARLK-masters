@@ -24,7 +24,7 @@ class HexDisplaySubsystem(subsys.Subsystem):
         thread_id,
         address,
         display_data_fns,
-        loop_delay_ms=1000
+        loop_delay_ms=100
     ):
         super().__init__(
             name=name,
