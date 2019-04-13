@@ -49,9 +49,9 @@ typedef struct ValveState_t {
     : pressurizer(p)
     , depressurizer(dp) {}
 };
-const struct ValveState_t* PRESSURIZE = new ValveState_t(HIGH, LOW);
-const struct ValveState_t* DEPRESSURIZE = new ValveState_t(LOW, HIGH);
-const struct ValveState_t* CLOSE = new ValveState_t(LOW, LOW);
+const struct ValveState_t* PRESSURIZE = new ValveState_t(LOW, LOW);
+const struct ValveState_t* DEPRESSURIZE = new ValveState_t(HIGH, HIGH);
+const struct ValveState_t* CLOSE = new ValveState_t(HIGH, LOW);
 
 
 // Function Signatures
