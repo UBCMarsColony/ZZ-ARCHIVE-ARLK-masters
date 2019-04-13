@@ -43,15 +43,33 @@ def begin(runtime_params):
     #   thread_id=0x5EE,
     #   pins=18))
 
+    global incrementer
+    incrementer = 0
+    def p(base):
+        global incrementer
+        print(base + incrementer)
+        return base + incrementer
+    subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
+      name="hexdisplay_internal",
+      thread_id=0x1EDB0A12D1,
+      address=41,
+      display_data_fns=[
+          lambda: p(12),
+          lambda: p(13),
+          lambda: p(22),
+          lambda: p(101)
+      ]
+    ))
+
     # door_col = door_ss.DoorSubsystem(
     #   name="airlock1_door_col",
     #   thread_id=0xD00121,
     #   address=0)
     # subsystems.append(door_col)
 
-    subsystems.append(pressure_ss.PressureSubsystem(
-        name="airlock1_pressurization",
-        thread_id=0xAE120))
+    #subsystems.append(pressure_ss.PressureSubsystem(
+    #    name="airlock1_pressurization",
+    #    thread_id=0xAE120))
     #     door_input_ss.DoorInputSubsystem(
     #         name="airlock1_doorinput_col",
     # thread_id=0xC01, address="FILL ME IN", linked_door=door_col),
@@ -189,6 +207,11 @@ def handle_cmd(cmd):
             "#n!: Stop Colony" +
             "\n?: Help window (this text)" +
             "\n-------------------")
+    elif cmd is 'q':
+        print("Incrementing")
+        global incrementer
+        incrementer = incrementer + 1
+        print(incrementer)
     elif cmd is '!':
         print('---STOPPING COLONY---')
         ss_pool.stop_all()

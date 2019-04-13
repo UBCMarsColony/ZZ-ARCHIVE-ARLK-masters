@@ -38,7 +38,7 @@ class HexDisplaySubsystem(subsys.Subsystem):
     def loop(self):
         data = []
         for d in self.display_data_fns:
-            data.extend([*list(d().to_bytes(2, 'little'))])
+            data.extend(list(d().to_bytes(2, 'big')))
 
         comms.intra_write(
             self.address,
