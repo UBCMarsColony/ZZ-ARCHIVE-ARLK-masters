@@ -25,6 +25,14 @@ class SensorSubsystem(subsys.Subsystem):
                                                  list) else [addresses]
         self.print_updates = False
 
+        self.sensor_data = {
+            'O2': 0,
+            'humidity': 0,
+            'temperature': 0,
+            'pressure': 0,
+            'CO2': 0
+        }
+
     def loop(self):
         with self.lock:
             self.__update_sensor_data()
@@ -88,7 +96,7 @@ class SensorSubsystem(subsys.Subsystem):
                       str(ve) + "\n\tSkipping line...")
 
         # computes average of all readings if they have been read at least once
-        if numReadings02 != 0:
+        if numReadingsO2 != 0:
             O2Val = O2Val / numReadingsO2
         if numReadingsHumidity != 0:
             humidityVal = humidityVal / numReadingsHumidity

@@ -33,10 +33,11 @@ def begin(runtime_params):
     # Start initializing the vital airlock systems
     subsystems = []
 
-    # subsystems.append(sensor_ss.SensorSubsystem(
-    #   name="airlock1_sensors",
-    #   thread_id=0xDE7EC7,
-    #   address=0x0A))
+    sensors = sensor_ss.SensorSubsystem(
+      name="airlock1_sensors",
+      thread_id=0xDE7EC7,
+      addresses=0x0A)
+    subsystems.append(sensors)
 
     # subsystems.append(lights_ss.LightingSubsystem(
     #   name="airlock1_lights-internal",
@@ -66,9 +67,9 @@ def begin(runtime_params):
     #   address=0)
     # subsystems.append(door_col)
 
-    subsystems.append(pressure_ss.PressureSubsystem(
-        name="airlock1_pressurization",
-        thread_id=0xAE120))
+    #subsystems.append(pressure_ss.PressureSubsystem(
+    #    name="airlock1_pressurization",
+    #    thread_id=0xAE120))
     #     door_input_ss.DoorInputSubsystem(
     #         name="airlock1_doorinput_col",
     # thread_id=0xC01, address="FILL ME IN", linked_door=door_col),
@@ -96,17 +97,17 @@ def begin(runtime_params):
     # lights = light_ss.LightingSubsystem("lights", 4)
     # lights.start()
 
-    # subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
-    #   name="hexdisplay_internal",
-    #   thread_id=0x1EDB0A12D1,
-    #   address="FILL ME IN",
-    #   display_data_fns=[
-    #       lambda: sensors.sensor_data['O2'],
-    #       lambda: sensors.sensor_data['CO2'],
-    #       lambda: sensors.sensor_data['Temperature'],
-    #       lambda: sensors.sensor_data['Pressure']
-    #   ]
-    # ))
+    subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
+      name="hexdisplay_internal",
+      thread_id="hexdisp",
+      address=0x29,
+      display_data_fns=[
+          lambda: sensors.sensor_data['O2'],
+          lambda: sensors.sensor_data['CO2'],
+          lambda: sensors.sensor_data['temperature'],
+          lambda: sensors.sensor_data['pressure']
+      ]
+    ))
 
     print("---AIRLOCK SYSTEMS INITIALIZED---\n")
 

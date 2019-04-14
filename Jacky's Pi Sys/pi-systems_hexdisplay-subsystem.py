@@ -1,4 +1,5 @@
 from enum import Enum
+import struct
 import importlib
 subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
@@ -38,7 +39,7 @@ class HexDisplaySubsystem(subsys.Subsystem):
     def loop(self):
         data = []
         for d in self.display_data_fns:
-            data.extend(list(d().to_bytes(2, 'big')))
+            data.extend(struct.unpack('BB', struct.pack('h', int(d()))))
 
         comms.intra_write(
             self.address,
@@ -48,7 +49,7 @@ class HexDisplaySubsystem(subsys.Subsystem):
                 data=data
             )
         )
-
+        
     # Define any other methods here.
 
 if __name__ == "__main__":
