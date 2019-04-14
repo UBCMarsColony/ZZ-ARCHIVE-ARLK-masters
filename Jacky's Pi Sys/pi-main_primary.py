@@ -82,7 +82,7 @@ def begin(runtime_params):
     # subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
     #   name="hexdisplay_internal",
     #   thread_id=0x1EDB0A12D1,
-    #   address="FILL ME IN",
+    #   address=41,
     #   display_data_fns=[
     #       lambda: sensors.sensor_data['O2'],
     #       lambda: sensors.sensor_data['CO2'],
