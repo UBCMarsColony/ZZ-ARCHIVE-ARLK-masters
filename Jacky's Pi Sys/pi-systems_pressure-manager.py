@@ -11,6 +11,8 @@ import struct
 subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 
+# needed to define a missing argument (loop delay) for the subsystems FSM, 
+# so we make a global constant
 DEFAULT_LOOP_DELAY = 750
 
 

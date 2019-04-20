@@ -17,11 +17,16 @@
 #from random import *
 #import sys
 #import gpio
-#import time
+import time
+#import RPi.GPIO as GPIO
 #from collections import namedtuple
 #import importlib
 import importlib
 subsys = importlib.import_module("pi-systems_subsystem-base")
+
+# needed to define a missing argument (loop delay) for the subsystems FSM, 
+# so we make a global constant
+DEFAULT_LOOP_DELAY = 750
 
 #Try importing, gives error message if it fails
 try:
@@ -34,7 +39,7 @@ except ModuleNotFoundError:
 
 class LightingSubsystem(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None, pins=None):
-        super().__init__(name=name, thread_id=thread_id)
+        super().__init__(name=name, thread_id=thread_id, loop_delay_ms = DEFAULT_LOOP_DELAY)
 
         self.pins = pins if isinstance(pins, list) else [pins]
 
