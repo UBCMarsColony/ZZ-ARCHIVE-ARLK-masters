@@ -3,7 +3,7 @@
 #include <EEPROM.h>
 #include <Wire.h>
 
-SoftwareSerial K_30_Serial(12,13);  //Sets up a virtual serial port
+SoftwareSerial K_30_Serial(11,12);  //Sets up a virtual serial port
                                     //Using pin 12 for Rx and pin 13 for Tx
 SoftwareSerial O2_Serial(8,9); //Software Serial port with pin 8 as Rx
                             //and pin 9 as Tx
@@ -56,9 +56,9 @@ typedef struct{
     byte priority;
     byte dataFlags;
     byte s_O2;
+    byte s_humidity;
     byte s_tempL;
     byte s_tempH;
-    short s_humidity;
     byte s_pressL;
     byte s_pressH;
     byte s_CO2L;
@@ -167,8 +167,11 @@ void poll_all(void){
     Serial.print(" C \n");
     EEPROMstore(1, temperature_string, strsize);
     temperature = String(temperature_string);
-    u_send_data.s_tempH = (int(atof(temperature_string))>>8)& 0xFF;
-    u_send_data.s_tempL = (int(atof(temperature_string)))& 0xFF;
+    u_send_data.s_tempH = (int(atoi(temperature_string))>>8)& 0xFF;
+    u_send_data.s_tempL = (int(atoi(temperature_string)))& 0xFF;
+    Serial.print(u_send_data.s_tempH);
+    Serial.print(", ");
+    Serial.println(u_send_data.s_tempL);
 
     get_Humidity();
     Serial.print("Humidity: ");
@@ -226,7 +229,7 @@ void get_Temp(void){
     delay(2000);
     return_char();
     buffer=byte_temp(response_O2);
-    temperature_celsius = atof(buffer)/1000;
+    temperature_celsius = int(atof(buffer)/1000);
     dtostrf(temperature_celsius,5,2,temperature_string);
 }
 void get_Humidity(void){
