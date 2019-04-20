@@ -30,12 +30,8 @@ class PressureSubsystem(subsys.Subsystem):
         # and so on...
 
     class priority(Enum):
-        Low_pri = 0  # Low priority; for all normal operations pri=0
-        High_pri = 1  # High priority; for aborting pri=1
-
-    @classmethod
-    def pressure_control(cls, flag):
-        pass
+        low = 0  # Low priority; for all normal operations pri=0
+        high = 1  # High priority; for aborting pri=1
 
     # Replaced Procedure as the important state-teller
     class TargetState(Enum):

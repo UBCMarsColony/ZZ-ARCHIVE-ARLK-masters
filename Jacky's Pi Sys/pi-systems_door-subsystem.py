@@ -6,9 +6,16 @@ from enum import IntEnum
 class DoorSubsystem(subsys.Subsystem):
 
     class Procedure(IntEnum):
-        OpenDoor = ord("o")
-        CloseDoor = ord("c")
+        #OpenDoor = ord("o")
+        #CloseDoor = ord("c")
+        #Idle = ord("I")
+        OpenDoor = 1
+        CloseDoor = 2
+        Idle = 0
 
+    class priority(Enum):
+        low = 0
+        high = 1
 
     def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)

@@ -18,7 +18,6 @@
 #import sys
 #import gpio
 import time
-#import RPi.GPIO as GPIO
 #from collections import namedtuple
 #import importlib
 import importlib
@@ -48,12 +47,11 @@ class LightingSubsystem(subsys.Subsystem):
         for pin in self.pins:            
             GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
 
-    #Check input signal, if high, turn lights on, if low, turn lights off
+    # Check input signal, if high, turn lights on, if low, turn lights off
     def loop(self):
         with self.lock:
             for pin in self.pins:
                 GPIO.output(pin, self.light_state)
-
 
     def toggle(self, state=None): # State should be a bool or int 0/1
         if state is not None:
