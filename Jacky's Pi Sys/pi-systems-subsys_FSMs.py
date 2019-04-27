@@ -158,8 +158,8 @@ def loop_FSMs(subsystems,
             print("Skipping button reading...Module GPIO not found")
 
         # For now, manually set the GPIO button states.
-        inputs[0].state = 0  # emergency_status
-        inputs[1].state = 1  # start_pressurize
+        inputs[0].state = 1  # emergency_status
+        inputs[1].state = 0  # start_pressurize
         inputs[2].state = 0  # start_depressurize
         inputs[3].state = 0  # switch_position
         inputs[4].state = 0  # door_open
@@ -183,8 +183,12 @@ def loop_FSMs(subsystems,
         # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
         if inputs[1].state == 1:
             # if command is to pressurize, change states
-            target_p = fsm_pressure.start_pressurize(t_range_p,
-                                                     airlock_press_ss)
+            try:
+                target_p = fsm_pressure.start_pressurize(t_range_p,
+                                                         airlock_press_ss)
+            except:
+                print("Exit, cannot pressurize.  Possibly in emergency state.")
+                break
             # while not done pressurizing and no emergency...
             #inputs[0].state = 1
             #while (sensor_ss.sensor_data[3] < target_p) and emergency is False:
@@ -192,8 +196,8 @@ def loop_FSMs(subsystems,
                 if inputs[0].state == 0:
                     # ... we loop back into our current state
                     fsm_pressure.keep_pressurize(airlock_press_ss)
-                    time.sleep(1)  # take this out
-                    pressure = pressure + 1  # take this out
+                    time.sleep(1)  # take this out after sensor
+                    pressure = pressure + 1  # take this out after sensor
                     #sensor_ss.__update_sensor_data()
                     print("PRESSURIZING...")
                 else:
@@ -213,8 +217,12 @@ def loop_FSMs(subsystems,
         # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
         if inputs[2].state == 1:
             pressure = 10
-            target_d = fsm_pressure.start_depressurize(t_range_d,
-                                                       airlock_press_ss)
+            try:
+                target_d = fsm_pressure.start_depressurize(t_range_d,
+                                                           airlock_press_ss)
+            except:
+                print("Exit, cannot depressurize.  Possibly in emergency state.")
+                break
             #while (sensor_ss.sensor_data[3] < target_d) and emergency is False:  # CHANGE TO THIS (GPIO)
             while(pressure > target_d):
                 if inputs[0].state == 0:
