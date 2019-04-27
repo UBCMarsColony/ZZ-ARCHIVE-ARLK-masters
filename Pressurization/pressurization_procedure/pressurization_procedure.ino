@@ -49,9 +49,9 @@ typedef struct ValveState_t {
     : pressurizer(p)
     , depressurizer(dp) {}
 };
-const struct ValveState_t* PRESSURIZE = new ValveState_t(HIGH, LOW);
-const struct ValveState_t* DEPRESSURIZE = new ValveState_t(LOW, HIGH);
-const struct ValveState_t* CLOSE = new ValveState_t(LOW, LOW);
+const struct ValveState_t* PRESSURIZE = new ValveState_t(LOW, LOW);
+const struct ValveState_t* DEPRESSURIZE = new ValveState_t(HIGH, HIGH);
+const struct ValveState_t* CLOSE = new ValveState_t(HIGH, LOW);
 
 
 // Function Signatures
@@ -62,13 +62,15 @@ void sendData();
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("UBC MARS COLONY 2019");
+  Serial.println("Pressurization Peripheral");
 
   // Register valves
   pinMode(VALVE_PRESSURIZER, OUTPUT);
   pinMode(VALVE_DEPRESSURIZER, OUTPUT);
 
   // Set up I2C
-  Serial.print("Using address: ");
+  Serial.print("\nUSING I2C ADDRESS: ");
   Serial.println(SLAVE_ADDRESS);
   Wire.begin(SLAVE_ADDRESS);
   Wire.onReceive(receiveData);
