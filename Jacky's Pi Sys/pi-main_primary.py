@@ -10,9 +10,9 @@ sys.path.insert(0, '../pi-systems/')
 ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 # Import all subsystem files so we can create new instances of each one.
-#sensor_ss = importlib.import_module('pi-systems_sensor-reader')
+sensor_ss = importlib.import_module('pi-systems_sensor-reader')
 #door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
-#lights_ss = importlib.import_module('pi-systems_lights-manager')
+lights_ss = importlib.import_module('pi-systems_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
 hexdisplay_ss = importlib.import_module('pi-systems_hexdisplay-subsystem')
@@ -80,21 +80,11 @@ def begin(runtime_params):
     #   thread_id=0xD00122,
     #   address="FILL ME IN")
     #
-    subsystems.append(
-        door_mars,
-        door_input_ss.DoorInputSubsystem(
-           name="airlock1_doorinput_mars",
-           thread_id=0x12ED,
-           address="FILL ME IN",
-           linked_door=door_mars))
 
-    input = input_ss.InputSubsystem("input", 5)
-    input.start()
-
-    valves = valve_ss.PressureSubsystem("valves", 6)
+    valves = pressure_ss.PressureSubsystem("valves", 6)
     valves.start()
 
-    lights = light_ss.LightingSubsystem("lights", 4)
+    lights = lights_ss.LightingSubsystem("lights", 4)
     lights.start()
 
     subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
@@ -109,57 +99,7 @@ def begin(runtime_params):
       ]
     ))
 
-    subsystems.append(interface_ss.InterfaceSubsystem(
-        name="airlockInternalInterface",
-        thread_id=12,
-        inputs=[
-            interface_ss.InputComponent(
-                'manualoveride',
-                12,
-                interface_ss.InputComponent.Subtype.Switch
-            ),
-            interface_ss.InputComponent(
-                'pressurize',
-                16,
-                interface_ss.InputComponent.Subtype.Button,
-                on_change_callbacks={
-                    1: lambda state: None if state == 0 else print("pressure")
-                       #subsystems['airlock1_pressurization'].request_new_state(
-                        #    subsystems['airlock1_pressurization'].TargetState.Pressurize)
-                }
-            ),
-            interface_ss.InputComponent(
-                'depressurize',
-                20,
-                interface_ss.InputComponent.Subtype.Button,
-                on_change_callbacks={
-                    1: lambda state: None if state == 0 else print("depressure")
-                        #subsystems['airlock1_pressurization'].request_new_state(
-                            #subsystems['airlock1_pressurization'].TargetState.Depressurize)
-                }
-                    
-            ),
-            interface_ss.InputComponent(
-                'pause',
-                21,
-                interface_ss.InputComponent.Subtype.Button,
-                on_change_callbacks={
-                    1: lambda state: None if state == 0 else print("close")
-                        #subsystems['airlock1_pressurization'].request_new_state(
-                         #   subsystems['airlock1_pressurization'].TargetState.Close)
-                }
-            )
-        ],
-        outputs=[
-            interface_ss.OutputComponent(
-                n,
-                p,
-                interface_ss.OutputComponent.Subtype.LED)
-            for n, p in [
-                ["test", 14]
-            ]
-        ]
-    ))
+    
     
 
     print("---AIRLOCK SYSTEMS INITIALIZED---\n")
@@ -173,7 +113,10 @@ def begin(runtime_params):
                 "WARNING: Subsystem could not start as due to an" +
                 "unexpected exception:\n\t", e)
 
-    print("\n---ALL SUBSYSTEMS STARTED---")
+    print("\n---ALL SUBSYSTEMS STARTED---\n")
+    print("\n---STARTING FSMs---")
+    fsms = importlib.import_module('pi-systems-subsys_FSMs')
+    print("\n---FSM HAS STARTED---")
 
     keyboard.on_press(handle_cmd)
     print("\n---COMMAND INPUT ENABLED---\n.")

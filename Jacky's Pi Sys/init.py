@@ -48,10 +48,10 @@ if __name__ == "__main__":
     #Start the initial system setup
     # Navigate to main system directory
 
-    pi_main_sys = importlib.import_module('pi-main-PRESSURE-TEST')
     # Wait for new user input to proceediIsl
     print("Preliminary setup completed.\nSYSTEM READY")
     # os.system("PAUSE")
+    pi_main_sys = importlib.import_module('pi-main_primary')
 
     # Move to the main system file. System begins lifecycle here.
     pi_main_sys.begin(runtime_params)

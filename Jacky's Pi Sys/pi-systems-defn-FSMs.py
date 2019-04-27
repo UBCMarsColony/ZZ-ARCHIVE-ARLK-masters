@@ -197,11 +197,11 @@ class LightFSM(StateMachine):
     def on_turn_off(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
         self.airlock_light_ss.toggle()  # Debug this part/ ask thomas about lights-manager code
-        self.airlock_light_ss.loop()
+        #self.airlock_light_ss.loop()
         print("Turn the lights off")
 
     def on_turn_on(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
         self.airlock_light_ss.toggle()
-        self.airlock_light_ss.loop()
+        #self.airlock_light_ss.loop()
         print("Turn the lights on")

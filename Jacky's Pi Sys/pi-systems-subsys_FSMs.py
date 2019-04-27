@@ -18,7 +18,7 @@ except ModuleNotFoundError:
     print("Running on non-pi machine")
 
 # Import the subsystems & relevant modules
-subsys_input = importlib.import_module('pi-systems_input-subsystem')
+subsys_inter = importlib.import_module('pi-systems_interface-subsystem')
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 light_ss = importlib.import_module('pi-systems_lights-manager')
@@ -32,12 +32,12 @@ inputs = []
 
 #  Define the pins used for the following butt/switch
 #  inputs to the FSM interface
-pressure_butt = subsys_input.InputComponent(name='P', pin=10, subtype='Button')  # CHECK PIN NUMs
-depressure_butt = subsys_input.InputComponent(name='D', pin=9, subtype='Button')  # screw u pep8
-lights_toggle = subsys_input.InputComponent(name='L', pin=8, subtype='Switch')
-door_open_butt = subsys_input.InputComponent(name='O', pin=7, subtype='Button')
-door_close_butt = subsys_input.InputComponent(name='C', pin=6, subtype='Button')
-emergency_butt = subsys_input.InputComponent(name='E', pin=5, subtype='Button')
+pressure_butt = subsys_inter.InputComponent(name='P', pin=19, subtype='Button')  
+depressure_butt = subsys_inter.InputComponent(name='D', pin=13 , subtype='Button')  
+lights_toggle = subsys_inter.InputComponent(name='L', pin=12, subtype='Switch')
+door_open_butt = subsys_inter.InputComponent(name='O', pin=6, subtype='Button') 
+door_close_butt = subsys_inter.InputComponent(name='C', pin=16, subtype='Button') 
+emergency_butt = subsys_inter.InputComponent(name='E', pin=5, subtype='Button') # physical pin 29
 
 # Add to inputs list
 inputs.append(emergency_butt)
@@ -48,20 +48,20 @@ inputs.append(door_open_butt)
 inputs.append(door_close_butt) 
 
 outputs = []
-
-light_led = subsys_input.OutputComponent(name='Airlock Lights',
+'''
+light_led = subsys_inter.OutputComponent(name='Airlock Lights',
                                          pin=3,         # CHECK PIN NUM.
                                          subtype='LED')  # initial state OFF
-buzzer = subsys_input.OutputComponent(name='Emergency Buzzer',
+buzzer = subsys_inter.OutputComponent(name='Emergency Buzzer',
                                       pin=4,            # CHECK PIN NUM.
                                       subtype='Buzzer')  # initial state OFF
-
-outputs.append(light_led)
-outputs.append(buzzer)
+'''
+#outputs.append(light_led)
+#outputs.append(buzzer)
 
 #  Now create the interface where the buttons are pooled
 try:
-    interface = subsys_input.InterfaceSubsystem(name="Airlock-Colony",
+    interface = subsys_inter.InterfaceSubsystem(name="Airlock-Colony",
                                                 thread_id=12,   # CHECK PIN NUM.
                                                 inputs=inputs,
                                                 outputs=outputs)
@@ -157,28 +157,24 @@ def loop_FSMs(subsystems,
         except NameError:
             print("Skipping button reading...Module GPIO not found")
 
-        # For now, manually set the GPIO button states.
-        inputs[0].state = 0  # emergency_status
-        inputs[1].state = 0  # start_pressurize
-        inputs[2].state = 0  # start_depressurize
-        inputs[3].state = 0  # switch_position
-        inputs[4].state = 0  # door_open
-        inputs[5].state = 0  # door_close
-
-        print("E button: ", inputs[0].state,
-              "P button: ", inputs[1].state,
-              "D button: ", inputs[2].state,
-              "L switch: ", inputs[3].state,
-              "O button: ", inputs[4].state,
-              "C button: ", inputs[5].state)
+        print("E button: ",inputs[0].state)
+        print("P button: ",inputs[1].state)
+        print("D button: ",inputs[2].state)
+        print("L switch: ",inputs[3].state)
+        print("O button: ",inputs[4].state)
+        print("C button: ",inputs[5].state)
 
         # Check if user pressed E
         # Check if emergency happens while all FSMs idling
-        if inputs[0].state == 1:
+        # EMERG LOGIC IS ACTIVE LOW
+        if inputs[0].state == 0:
             emergency = True  # theres really no point in this besides an easier way to display Emergencies to user
-            fsm_pressure.detected_emerg_3(airlock_press_ss)
-            fsm_door.detected_emerg_3(airlock_door_ss)
-
+            if(fsm_pressure.current_state.name == 'idle'):
+                fsm_pressure.detected_emerg_3(airlock_press_ss)
+            elif(fsm_pressure.current_state.name == 'Emergency'):
+                fsm_pressure.emerg_unresolved(airlock_press_ss)
+            #@fsm_door.detected_emerg_3(airlock_door_ss)
+            
         # Check if user pressed P
         # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
         if inputs[1].state == 1:
@@ -193,7 +189,7 @@ def loop_FSMs(subsystems,
             #inputs[0].state = 1
             #while (sensor_ss.sensor_data[3] < target_p) and emergency is False:
             while (pressure < target_p):
-                if inputs[0].state == 0:
+                if inputs[0].state == 1:
                     # ... we loop back into our current state
                     fsm_pressure.keep_pressurize(airlock_press_ss)
                     time.sleep(1)  # take this out after sensor
@@ -225,7 +221,7 @@ def loop_FSMs(subsystems,
                 break
             #while (sensor_ss.sensor_data[3] < target_d) and emergency is False:  # CHANGE TO THIS (GPIO)
             while(pressure > target_d):
-                if inputs[0].state == 0:
+                if inputs[0].state == 1:
                     fsm_pressure.keep_depressurize(airlock_press_ss)
                     time.sleep(1)           # Take this out
                     pressure = pressure - 1 # Take this out
@@ -277,7 +273,7 @@ def loop_FSMs(subsystems,
                 break
 
             while i is 0:
-                if inputs[0].state == 0:
+                if inputs[0].state == 1:
                     fsm_door.keep_opening(airlock_door_ss)
                     # i var represents when the door is in the process of opening
                     i = 1
@@ -300,10 +296,10 @@ def loop_FSMs(subsystems,
                 print("Exit, cannot move door.  Possibly in emergency state.")
                 break
             while(j is 0):
-                if inputs[0].state == 0:
+                if inputs[0].state == 1:
                     fsm_door.keep_closing(airlock_door_ss)
                     # j var represents when the door is in the processs of closing
-                    j = 0
+                    j = 1
                     if(j is 1):
                         fsm_door.done_close(airlock_door_ss)
                 else:

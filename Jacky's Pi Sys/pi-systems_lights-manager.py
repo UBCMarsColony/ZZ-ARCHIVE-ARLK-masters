@@ -41,7 +41,7 @@ except ModuleNotFoundError:
 
 
 class LightingSubsystem(subsys.Subsystem):
-    def __init__(self, name=None, thread_id=None, pins=None):
+    def __init__(self, name=None, thread_id=None, pins=[]):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms = DEFAULT_LOOP_DELAY)
 
         self.pins = pins if isinstance(pins, list) else [pins]
