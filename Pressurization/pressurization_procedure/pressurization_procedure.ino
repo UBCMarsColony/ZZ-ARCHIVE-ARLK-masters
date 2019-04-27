@@ -116,6 +116,7 @@ bool evaluateMessage(byte message[], int type) {
               applyValveState(DEPRESSURIZE);
               break;
             case Close:
+            case Idle:
               applyValveState(CLOSE);
               break;
           }
