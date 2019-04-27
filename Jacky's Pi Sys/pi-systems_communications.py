@@ -61,7 +61,7 @@ class IntraModCommMessage:
         return True
 
     @staticmethod
-    def generate(*, action=-1, procedure=-1, data=None, is_response=False):
+    def generate(*, action=-1, procedure=-1, priority=0, data=None, is_response=False):
         max_value = 1 << 7
         high_bit = 1 << 7
 
@@ -83,7 +83,7 @@ class IntraModCommMessage:
         if data is not None:
             procedure += high_bit
 
-        generated_message = [action, procedure]
+        generated_message = [action, procedure, priority]
         if data is not None:
             generated_message.extend(data)
 
