@@ -74,7 +74,7 @@ subsystems = []
 
 # Initiate PressureSubsystem
 airlock_press_ss = pressure_ss.PressureSubsystem(name="Airlock Pressure",
-                                                 thread_id=50) 
+                                                 thread_id=50)
 subsystems.append(airlock_press_ss)
 airlock_press_ss.start()
 
@@ -141,7 +141,7 @@ def loop_FSMs(subsystems,
         # i and j are used for door logic
         # Change to sensor data as well
         i = 0   # Col_Airlock_door = sensor_ss.sensor_data[3]
-        j = 0
+        j = 0   
 
         # Read the button states
         # Assume buttons are always pressed by user one at a time.

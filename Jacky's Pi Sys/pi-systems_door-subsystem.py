@@ -6,6 +6,8 @@ from enum import IntEnum
 class DoorSubsystem(subsys.Subsystem):
 
     class Procedure(IntEnum):
+        # ASK ABOUT THIS TOMORROW
+        # I feel like this messes up I2C IN DOOR-INPUT-SUBSYSTEM !!!!!!!!!!!!!!
         #OpenDoor = ord("o")
         #CloseDoor = ord("c")
         #Idle = ord("I")
