@@ -158,7 +158,7 @@ def loop_FSMs(subsystems,
             print("Skipping button reading...Module GPIO not found")
 
         # For now, manually set the GPIO button states.
-        inputs[0].state = 1  # emergency_status
+        inputs[0].state = 0  # emergency_status
         inputs[1].state = 0  # start_pressurize
         inputs[2].state = 0  # start_depressurize
         inputs[3].state = 0  # switch_position
@@ -270,7 +270,12 @@ def loop_FSMs(subsystems,
         #Check if user pressed O button
         # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
         if inputs[4].state == 1:  
-            fsm_door.start_open(airlock_door_ss)
+            try:
+                fsm_door.start_open(airlock_door_ss)
+            except:
+                print("Exit, cannot move door.  Possibly in emergency state.")
+                break
+
             while i is 0:
                 if inputs[0].state == 0:
                     fsm_door.keep_opening(airlock_door_ss)
@@ -289,12 +294,16 @@ def loop_FSMs(subsystems,
 
         # Check if user pressed C
         if inputs[5].state == 1:  # change to interface logic
-            fsm_door.start_close(airlock_door_ss)
+            try:
+                fsm_door.start_close(airlock_door_ss)
+            except:
+                print("Exit, cannot move door.  Possibly in emergency state.")
+                break
             while(j is 0):
                 if inputs[0].state == 0:
                     fsm_door.keep_closing(airlock_door_ss)
                     # j var represents when the door is in the processs of closing
-                    j = 1
+                    j = 0
                     if(j is 1):
                         fsm_door.done_close(airlock_door_ss)
                 else:
@@ -307,6 +316,9 @@ def loop_FSMs(subsystems,
                 fsm_door.emerg_unresolved(airlock_door_ss)
             else:
                 fsm_door.keep_idling(airlock_door_ss)
+        print("Current Pressure State: ", fsm_pressure.current_state.name)
+        print("Current Door State: ", fsm_door.current_state.name)
+        print("Current Light State: ", fsm_lights.current_state.name, "\n")
 
 loop_FSMs(subsystems,
           inputs)
