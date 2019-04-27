@@ -1,4 +1,4 @@
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 from enum import Enum
 
 import importlib
@@ -41,7 +41,7 @@ class InterfaceSubsystem(subsys.Subsystem):
         for i in self.inputs:
             GPIO.setup(i.pin, GPIO.IN)
             for pp in i.pipe_pins:
-                GPIO.setup(pp, GPIO.OUT)
+                GPIO.setup(abs(pp), GPIO.OUT)
 
         self.outputs = outputs if type(outputs) is list else [outputs]
         for o in self.outputs:
@@ -78,7 +78,7 @@ class InputComponent:
         Button = "Button"  # State is 1 or 0
         Switch = "Switch"     # State is 1 or 0
 
-    def __init__(self, name, pin, subtype, initial=False, pipe_pins=[]):
+    def __init__(self, name, pin, subtype, initial=False, on_change_callbacks={}, pipe_pins=[]):
         self.name = name
         self.pin = pin
         self.subtype = subtype if type(subtype) is str else subtype.value
@@ -86,9 +86,9 @@ class InputComponent:
 
         # The Pi will automatically forward signals to these pins.
         # If negative, forwads the inverted signal.
-        self.pipe_pins = pipe_pins
+        self.pipe_pins = pipe_pins if isinstance(pipe_pins, list) else [pipe_pins]
         self._read = self._get_reader()
-        self.on_change_callbacks = {}
+        self.on_change_callbacks = on_change_callbacks
 
     def __repr__(self):
         return "%s (name=%s, pin=%i, state=%i)" % (
@@ -97,13 +97,12 @@ class InputComponent:
     def _get_reader(self):
         if self.subtype == InputComponent.Subtype.Button.value:
             def btn_reader():
-                GPIO.input(self.pin)
-                return self.state
+                return GPIO.input(self.pin)
             return btn_reader
         elif self.subtype == InputComponent.Subtype.Switch.value:
             def swt_reader():
-                GPIO.input(self.pin)
-                return False
+                return GPIO.input(self.pin)
+            return swt_reader
 
     def read(self):
         self.state = self._read()
@@ -121,7 +120,7 @@ class InputComponent:
             for id in self.on_change_callbacks:
                 self.on_change_callbacks[id](self.state)
             for pin in self.pipe_pins:
-                GPIO.output(abs(pin), 1 if pin > 0 else 0)
+                GPIO.output(abs(pin), int((self.state + pin/abs(pin)) % 2))
 
     def attach_callback(self, callback, id):
         self.on_change_callbacks[id] = callback
@@ -158,22 +157,22 @@ if __name__ == "__main__":
     GPIO = Mock()
     print("USING MOCK GPIO")
 
-    airlockInterface = InterfaceSubsystem(
+    airlockInterface = InterfaceSubsyistem(
         name="airlockInternalInterface",
         thread_id=12,
         inputs=[
-            *[
-                InputComponent(n, p, InputComponent.Subtype.Button)
-                for n, p in [
-                    ["LightsToggle", 4],
-                    ["DoorTrigger", 5],
-                    ["DoorToggle", 6],
-                    ["Pressurize", 8],
-                    ["Depressurize", 9],
-                    ["Confirm", 10],
-                    ["EmergencyStop", 11],
-                ]
-            ],
+            #*[
+            #    InputComponent(n, p, InputComponent.Subtype.Button)
+            #    for n, p in [
+            #        ["LightsToggle", 4],
+            #        ["DoorTrigger", 5],
+            #        ["DoorToggle", 6],
+            #        ["Pressurize", 8],
+            #        ["Depressurize", 9],
+            #        ["Confirm", 10],
+            #        ["EmergencyStop", 11],
+            #    ]
+            #],
             InputComponent(
                 "ManualOverride",
                 11,

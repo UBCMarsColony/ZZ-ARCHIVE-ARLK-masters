@@ -17,6 +17,7 @@ lights_ss = importlib.import_module('pi-systems_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
 hexdisplay_ss = importlib.import_module('pi-systems_hexdisplay-subsystem')
+interface_ss = importlib.import_module('pi-systems_interface-subsystem')
 
 """
 Purpose: Performs initial system setup and begins airlock loop cycle.
@@ -56,7 +57,7 @@ def begin(runtime_params):
   #    display_data_fns=[
    #       lambda: p(12),
   #        lambda: p(13),
-   #       lambda: p(22),
+   #       lambda: p(22),interface_ss
    #       lambda: p(101)
   #    ]
    # ))
@@ -108,6 +109,59 @@ def begin(runtime_params):
           lambda: sensors.sensor_data['pressure']
       ]
     ))
+
+    subsystems.append(interface_ss.InterfaceSubsystem(
+        name="airlockInternalInterface",
+        thread_id=12,
+        inputs=[
+            interface_ss.InputComponent(
+                'manualoveride',
+                12,
+                interface_ss.InputComponent.Subtype.Switch
+            ),
+            interface_ss.InputComponent(
+                'pressurize',
+                16,
+                interface_ss.InputComponent.Subtype.Button,
+                on_change_callbacks={
+                    1: lambda state: None if state == 0 else print("pressure")
+                       #subsystems['airlock1_pressurization'].request_new_state(
+                        #    subsystems['airlock1_pressurization'].TargetState.Pressurize)
+                }
+            ),
+            interface_ss.InputComponent(
+                'depressurize',
+                20,
+                interface_ss.InputComponent.Subtype.Button,
+                on_change_callbacks={
+                    1: lambda state: None if state == 0 else print("depressure")
+                        #subsystems['airlock1_pressurization'].request_new_state(
+                            #subsystems['airlock1_pressurization'].TargetState.Depressurize)
+                }
+                    
+            ),
+            interface_ss.InputComponent(
+                'pause',
+                21,
+                interface_ss.InputComponent.Subtype.Button,
+                on_change_callbacks={
+                    1: lambda state: None if state == 0 else print("close")
+                        #subsystems['airlock1_pressurization'].request_new_state(
+                         #   subsystems['airlock1_pressurization'].TargetState.Close)
+                }
+            )
+        ],
+        outputs=[
+            interface_ss.OutputComponent(
+                n,
+                p,
+                interface_ss.OutputComponent.Subtype.LED)
+            for n, p in [
+                ["test", 14]
+            ]
+        ]
+    ))
+    
 
     print("---AIRLOCK SYSTEMS INITIALIZED---\n")
 
