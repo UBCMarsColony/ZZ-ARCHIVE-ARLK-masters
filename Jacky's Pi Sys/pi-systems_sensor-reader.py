@@ -8,13 +8,11 @@ subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 
 
-class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
+class SensorSubsystem(comms.IntraModCommMessage, subsys.Subsystem):
+#class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
-<<<<<<< HEAD
-=======
-class SensorSubsystem(comms, subsys.Subsystem):
+#class SensorSubsystem(comms, subsys.Subsystem):
     
->>>>>>> 3a2f9020045153955f84cf3578821ec11e74bb00
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
 
     class Procedure(Enum):
@@ -24,7 +22,7 @@ class SensorSubsystem(comms, subsys.Subsystem):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
         # namedtuple is temporarily a dict for pickling purposes.
-        self.sensor_data = {} # self.SensorData(0,0,0,0,0)
+        self.sensor_data = {}  # self.SensorData(0,0,0,0,0)
         self.address = address
         self.print_updates = False
 

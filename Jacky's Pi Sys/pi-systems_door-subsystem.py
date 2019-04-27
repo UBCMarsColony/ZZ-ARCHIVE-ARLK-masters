@@ -13,7 +13,7 @@ class DoorSubsystem(subsys.Subsystem):
         CloseDoor = 2
         Idle = 0
 
-    class priority(Enum):
+    class priority(IntEnum):
         low = 0
         high = 1
 

@@ -1,7 +1,14 @@
-# import RPi.GPIO as GPIO
 from enum import Enum
 
 import importlib
+
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    print("Error importing RPi.GPIO!")
+except ModuleNotFoundError:
+    print("Running on non-pi machine")
+
 subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 

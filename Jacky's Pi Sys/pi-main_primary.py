@@ -39,21 +39,22 @@ def begin(runtime_params):
     # Start initializing the vital airlock systems
     subsystems = []
 
-    # subsystems.append(sensor_ss.SensorSubsystem(
-    #   name="airlock1_sensors",
-    #   thread_id=0xDE7EC7,
-    #   address=0x0A))
+    # DO THESE WORK!!!!!!!
 
-    # subsystems.append(lights_ss.LightingSubsystem(
-    #   name="airlock1_lights-internal",
-    #   thread_id=0x5EE,
-    #   pins=18))
+    subsystems.append(sensor_ss.SensorSubsystem(
+       name="airlock1_sensors",
+       thread_id=0xDE7EC7,
+       address=0x0A))
 
-    # door_col = door_ss.DoorSubsystem(
-    #   name="airlock1_door_col",
-    #   thread_id=0xD00121,
-    #   address=0)
-    # subsystems.append(door_col)
+    subsystems.append(lights_ss.LightingSubsystem(
+       name="airlock1_lights-internal",
+       thread_id=0x5EE,
+       pins=18))
+
+    subsystems.append(door_ss.DoorSubsystem(
+       name="airlock1_door_col",
+       thread_id=0xD00121,
+       address=0))
 
     subsystems.append(pressure_ss.PressureSubsystem(
         name="airlock1_pressurization",
@@ -68,22 +69,22 @@ def begin(runtime_params):
     #   thread_id=0xD00122,
     #   address="FILL ME IN")
     #
-    # subsystems.append(
-    #   door_mars,
-    #   door_input_ss.DoorInputSubsystem(
-    #       name="airlock1_doorinput_mars",
-    #       thread_id=0x12ED,
-    #       address="FILL ME IN",
-    #       linked_door=door_mars))
+    subsystems.append(
+        door_mars,
+        door_input_ss.DoorInputSubsystem(
+           name="airlock1_doorinput_mars",
+           thread_id=0x12ED,
+           address="FILL ME IN",
+           linked_door=door_mars))
 
-    # input = input_ss.InputSubsystem("input", 5)
-    # input.start()
+    input = input_ss.InputSubsystem("input", 5)
+    input.start()
 
-    # valves = valve_ss.PressureSubsystem("valves", 6)
-    # valves.start()
+    valves = valve_ss.PressureSubsystem("valves", 6)
+    valves.start()
 
-    # lights = light_ss.LightingSubsystem("lights", 4)
-    # lights.start()
+    lights = light_ss.LightingSubsystem("lights", 4)
+    lights.start()
 
     print("---AIRLOCK SYSTEMS INITIALIZED---\n")
 

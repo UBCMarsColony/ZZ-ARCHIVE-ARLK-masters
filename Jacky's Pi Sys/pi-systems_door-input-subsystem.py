@@ -26,9 +26,7 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         self.linked_door = linked_door
 
     def loop(self):
-        response = check_buttons()
-        #input2 = GPIO.input(butt2) FOLLOWING LINES COMMENTED OUT BC ITS OLD CODE
-        #input3 = GPIO.input(butt3)         
+        response = check_buttons()    
         if response:
             print("Message received from %s: \n%s" % (self.linked_door.name, repr([chr(x) for x in reponse])))
             if response.action is comms.ExecuteProcedure:
@@ -49,60 +47,7 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
 
         return self.intra_read(self.address)
 
-# Define some buttons pins
-butt1 = 11
-butt2 = 13
-butt3 = 15
-led = 8
-
-# use the pins P.29 P.31 P.33 for the door input buttons
-# low when not pressed, high when pressed
-GPIO.setup(butt1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(butt2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(butt3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(led, GPIO.OUT)
-
-#Below is test code to use push buttons in order to make LEDs flash
-'''
-def check_if_buttons_pressed(self):
-        while True:
-            # button_state_1 = GPIO.input(butt1)
-            button_state_1 = False
-            button_state_2 = GPIO.input(butt2)
-            button_state_3 = GPIO.input(butt3)
-
-            # might have to check this logic
-            if (button_state_1 is False):
-                print("Hello")
-                GPIO.output(butt1, True)
-                print("button 1 pressed")
-                GPIO.output(led, True)
-                time.sleep(1)
-                GPIO.output(led, False)
-                time.sleep(0.02)
-
-            else if (button_state_2 is False):
-                GPIO.output(butt2, True)
-                print("button 2 pressed")
-                GPIO.output(led, True)
-                time.sleep(2)
-                GPIO.output(led, False)
-                time.sleep(0.02)
-
-            else if (button_state_3 is False):
-                GPIO.output(butt3, True)
-                print("button 3 pressed")
-                GPIO.output(led, True)
-                time.sleep(3)
-                GPIO.output(led, False)
-                time.sleep(0.02)
-            else:
-                GPIO.output(butt1, False)
-                GPIO.output(butt2, False)
-                GPIO.output(butt3, False)   
-'''
 
 if __name__ == "__main__":
     c = DoorInputSubsystem("test", 12, A)
     c.check_buttons()
-  #  c.check_if_buttons_pressed()
