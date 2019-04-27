@@ -8,13 +8,17 @@ SoftwareSerial K_30_Serial(11,12);  //Sets up a virtual serial port
 SoftwareSerial O2_Serial(8,9); //Software Serial port with pin 8 as Rx
                             //and pin 9 as Tx
 
-#define DATA_MASK 0b11101000
+#define DATA_MASK 0b11111000
 #define max_index 10
 #define SIZE 100
 #define strsize 10
 #define maxval 6
 //Setup is all good
 #define SLAVE_ADDRESS 10
+
+#define VIRTUAL_VCC 3
+#define VIRTUAL_GND 4
+
 typedef unsigned char   BYTE;
 int send_index;
 int send_length;
@@ -74,6 +78,12 @@ void setup()
 
     //pinMode(A0, INPUT_PULLUP);
     //Initial setup
+    pinMode(VIRTUAL_VCC, OUTPUT);
+    digitalWrite(VIRTUAL_VCC, HIGH);
+    pinMode(VIRTUAL_GND, OUTPUT);
+    digitalWrite(VIRTUAL_GND, LOW);
+    pinMode(A3, INPUT);
+    
     count = 0;
     Serial.begin(9600);
     O2_Serial.begin(9600);
@@ -185,7 +195,7 @@ void poll_all(void){
     get_Pressure();
     Serial.print("Pressure: ");
     Serial.print(pressure_string);
-    Serial.print(" KPa \n");
+    Serial.print(" HPa \n");
     EEPROMstore(3, pressure_string, strsize);
     pressure = String(pressure_string);
     u_send_data.s_pressH = (int(atof(pressure_string))>>8)& 0xFF;
@@ -246,18 +256,26 @@ void get_Humidity(void){
     dtostrf(humidity_percentage, 5, 2, humidity_string);
 }
 
-void get_Pressure(void){
-    float pressure_kpa;
-    char* buffer;
+//void get_Pressure(void){
+//    float pressure_kpa;
+//    char* buffer;
+//
+//       sendchar('B'); //Pressure: 01011 -> 101.1 kpa 
+//
+//    delay(2000);
+//    return_char();
+//    buffer=printbytes(response_O2);
+//    pressure_kpa = atof(buffer)/10;
+//    dtostrf(pressure_kpa, 5,1,pressure_string);
+//
+//}
 
-       sendchar('B'); //Pressure: 01011 -> 101.1 kpa 
-
-    delay(2000);
-    return_char();
-    buffer=printbytes(response_O2);
-    pressure_kpa = atof(buffer)/10;
-    dtostrf(pressure_kpa, 5,1,pressure_string);
-
+void get_Pressure(void) { 
+  int rawValue = analogRead(A3);
+  float Vout = rawValue * (5.0/1023.0); //converting value read from arduino to volts (Vin/max number on A/D scale (1023 in this case))
+  
+  float hPa_pressure = (((Vout/5.0)+0.04)/0.004) * 10;
+  dtostrf((int)hPa_pressure, 5,1,pressure_string);
 }
 
 void sendchar(char letter){

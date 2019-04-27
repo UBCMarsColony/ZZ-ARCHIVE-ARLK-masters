@@ -38,8 +38,8 @@ namespace Disp {
     // Params: CLK, DAT
     TM1637 o2(2, 3);
     TM1637 co2(4, 5);
-    TM1637 temperature(6, 7);
-    TM1637 pressure(8, 9);
+    TM1637 pressure(6, 7);
+    TM1637 temperature(8, 9);
 }
 
 typedef struct UpdateDisplay_t {
@@ -77,6 +77,7 @@ void loop() {
   displayWrite(Disp::o2, updateDisplay.o2);
   displayWrite(Disp::co2, updateDisplay.co2);
   displayWrite(Disp::temperature, updateDisplay.temperature);
+  displayWrite(Disp::pressure, updateDisplay.pressure);
 
   delay(500);
 }
@@ -90,13 +91,13 @@ void displayWrite(TM1637 disp, int16_t output) {
 }
 
 void onReceive(int firstByte) {
-    Serial.println("Received transmission from Master");
+//    Serial.println("Received transmission from Master");
     byte data[MSG_LEN] = {};
     
     // Read the incoming message.
     for (int i = 0; Wire.available(); i++) {
         data[i] = Wire.read();
-        Serial.println(data[i]);
+//        Serial.println(data[i]);
     }
         
 //    if (data[1] % (1<<7) >= NumProcedures) {
