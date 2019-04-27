@@ -41,13 +41,14 @@ if __name__ == "__main__":
     os.system("cls")
 
     print("\n-----------------------")
+    print("UBC MARS COLONY - PRESSURIZATION TEST SUITE")
     print("Mars Colony Airlock preliminary systems initializing...")
     print("-----------------------\n")
 
     #Start the initial system setup
     # Navigate to main system directory
 
-    pi_main_sys = importlib.import_module('pi-main_primary')
+    pi_main_sys = importlib.import_module('pi-main-PRESSURE-TEST')
     # Wait for new user input to proceediIsl
     print("Preliminary setup completed.\nSYSTEM READY")
     # os.system("PAUSE")

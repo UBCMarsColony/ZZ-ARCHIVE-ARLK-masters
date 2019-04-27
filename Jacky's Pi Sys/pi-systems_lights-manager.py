@@ -1,7 +1,34 @@
+# Written By: Thomas Richmond
+# Email: Thomas.joakim@gmail.com
+#
+# This module is meant to decide how to set up the lights. It starts by deciding what lighting scheme to use - that is, 
+# what lights are on, which are off, and what other associated logic. Once the lighting scheme has been decided, the
+# lights can be set by passing the LightScheme structure returned by the decideLighting() function into the
+# controlLights() function.
+#
+# In the event of an error, lights may flash. This has yet to be implemented.
+
+# --------------------
+# IMPORTS
+# --------------------
+
+#TAG = "pi-systems_lighting_lights-manager"
+
+#from random import *
+#import sys
+#import gpio
+import time
+#from collections import namedtuple
+#import importlib
 import importlib
 subsys = importlib.import_module("pi-systems_subsystem-base")
 
-# Try importing, gives error message if it fails
+# needed to define a missing argument (loop delay) for the subsystems FSM, 
+# so we make a global constant
+DEFAULT_LOOP_DELAY = 750
+
+#Try importing, gives error message if it fails
+
 try:
     import RPi.GPIO as GPIO
 except RuntimeError:
@@ -15,7 +42,7 @@ except ModuleNotFoundError:
 
 class LightingSubsystem(subsys.Subsystem):
     def __init__(self, name=None, thread_id=None, pins=None):
-        super().__init__(name=name, thread_id=thread_id, loop_delay_ms=750)
+        super().__init__(name=name, thread_id=thread_id, loop_delay_ms = DEFAULT_LOOP_DELAY)
 
         self.pins = pins if isinstance(pins, list) else [pins]
 
