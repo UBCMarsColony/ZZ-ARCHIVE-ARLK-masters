@@ -58,29 +58,28 @@ class IntraModCommMessage:
             # data present
             # Length of message is within maximum length (32)
             # Each byte in the range is within the valid range of [0, 255]
-        
         return True
-    
+
     @staticmethod
     def generate(*, action=-1, procedure=-1, priority=0, data=None, is_response=False):
         max_value = 1 << 7
         high_bit = 1 << 7
-        
+
         if isinstance(action, IntraModCommAction):
             action = action.value
 
         if action > max_value:
             raise ValueError("action must not use the signing bit!")
-        
+
         if action not in set(action.value for action in IntraModCommAction):
             raise ValueError("specified action %i is not defined!" % (action))
 
         if is_response:
             action += high_bit
-        
+
         if procedure > max_value:
             raise ValueError("procedure must not use the signing bit!")
-        
+
         if data is not None:
             procedure += high_bit
 
@@ -127,16 +126,19 @@ def intra_read(address, procedure):
     #     num = __bus.read_byte(address)
     #     if num:
     #         msg.append(num)
-    
+
     if not msg:
         print('I2C message expected but not read. Discarding')
         return
-    
+
     message = IntraModCommMessage(msg)
 
     if message:  # .validate()
         return message
 
+
+# IF NO VALID SENSOR DATA RECEIVED,
+# ACCEPT EXCEPTION AS "SENSORS ARE OFF SO DONT CRASH PLS"
 
 class InterModCommMixin:
     pass

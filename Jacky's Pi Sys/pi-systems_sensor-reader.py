@@ -8,7 +8,6 @@ comms = importlib.import_module('pi-systems_communications')
 
 
 class SensorSubsystem(subsys.Subsystem):
-
     # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature",
     # "humidity", "pressure"])
 
@@ -32,6 +31,7 @@ class SensorSubsystem(subsys.Subsystem):
             'pressure': 0,
             'CO2': 0
         }
+
 
     def loop(self):
         with self.lock:

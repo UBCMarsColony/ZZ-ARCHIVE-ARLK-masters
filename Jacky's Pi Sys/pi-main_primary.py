@@ -3,7 +3,6 @@ import importlib
 from time import sleep, time
 import keyboard
 
-
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
 
@@ -11,9 +10,9 @@ sys.path.insert(0, '../pi-systems/')
 ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 
 # Import all subsystem files so we can create new instances of each one.
-sensor_ss = importlib.import_module('pi-systems_sensor-reader')
-door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
-lights_ss = importlib.import_module('pi-systems_lights-manager')
+#sensor_ss = importlib.import_module('pi-systems_sensor-reader')
+#door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
+#lights_ss = importlib.import_module('pi-systems_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 door_ss = importlib.import_module('pi-systems_door-subsystem')
 hexdisplay_ss = importlib.import_module('pi-systems_hexdisplay-subsystem')
@@ -40,10 +39,10 @@ def begin(runtime_params):
       addresses=0x0A)
     subsystems.append(sensors)
 
-    # subsystems.append(lights_ss.LightingSubsystem(
-    #   name="airlock1_lights-internal",
-    #   thread_id=0x5EE,
-    #   pins=18))
+    subsystems.append(lights_ss.LightingSubsystem(
+       name="airlock1_lights-internal",
+       thread_id=0x5EE,
+       pins=18))
 
     #global incrementer
     #incrementer = 0
@@ -81,22 +80,22 @@ def begin(runtime_params):
     #   thread_id=0xD00122,
     #   address="FILL ME IN")
     #
-    # subsystems.append(
-    #   door_mars,
-    #   door_input_ss.DoorInputSubsystem(
-    #       name="airlock1_doorinput_mars",
-    #       thread_id=0x12ED,
-    #       address="FILL ME IN",
-    #       linked_door=door_mars))
+    subsystems.append(
+        door_mars,
+        door_input_ss.DoorInputSubsystem(
+           name="airlock1_doorinput_mars",
+           thread_id=0x12ED,
+           address="FILL ME IN",
+           linked_door=door_mars))
 
-    # input = input_ss.InputSubsystem("input", 5)
-    # input.start()
+    input = input_ss.InputSubsystem("input", 5)
+    input.start()
 
-    # valves = valve_ss.PressureSubsystem("valves", 6)
-    # valves.start()
+    valves = valve_ss.PressureSubsystem("valves", 6)
+    valves.start()
 
-    # lights = light_ss.LightingSubsystem("lights", 4)
-    # lights.start()
+    lights = light_ss.LightingSubsystem("lights", 4)
+    lights.start()
 
     subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
       name="hexdisplay_internal",
@@ -205,7 +204,7 @@ def loop(runtime_params):
 def handle_cmd(cmd):
     cmd = cmd.name
     subsystems = ss_pool.get_all()
-
+    
     # Door Toggles
     if cmd is 'o' or cmd is 'O':
         print("Requesting door open")
@@ -217,7 +216,7 @@ def handle_cmd(cmd):
             subsystems["airlock1_doors"].Procedure.CloseDoor)
 
     # Pressure Toggles
-    elif cmd is 'p' or cmd is 'P':
+    if cmd is 'p' or cmd is 'P':
         print("Pressurizing...")
         subsystems['airlock1_pressurization'].request_new_state(
             subsystems['airlock1_pressurization'].TargetState.Pressurize)
