@@ -80,6 +80,7 @@ def begin(runtime_params):
     #   thread_id=0xD00122,
     #   address="FILL ME IN")
     #
+
     subsystems.append(
         door_mars,
         door_input_ss.DoorInputSubsystem(
@@ -160,7 +161,6 @@ def begin(runtime_params):
             ]
         ]
     ))
-    
 
     print("---AIRLOCK SYSTEMS INITIALIZED---\n")
 
