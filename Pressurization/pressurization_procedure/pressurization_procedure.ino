@@ -62,13 +62,15 @@ void sendData();
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("UBC MARS COLONY 2019");
+  Serial.println("Pressurization Peripheral");
 
   // Register valves
   pinMode(VALVE_PRESSURIZER, OUTPUT);
   pinMode(VALVE_DEPRESSURIZER, OUTPUT);
 
   // Set up I2C
-  Serial.print("Using address: ");
+  Serial.print("\nUSING I2C ADDRESS: ");
   Serial.println(SLAVE_ADDRESS);
   Wire.begin(SLAVE_ADDRESS);
   Wire.onReceive(receiveData);
@@ -135,6 +137,7 @@ bool evaluateMessage(byte message[], int type) {
               applyValveState(DEPRESSURIZE);
               break;
             case Close:
+            case Idle:
               applyValveState(CLOSE);
               break;
           }

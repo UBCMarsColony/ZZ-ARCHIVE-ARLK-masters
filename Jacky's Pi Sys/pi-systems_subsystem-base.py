@@ -36,10 +36,10 @@ class Subsystem(ABC):
         name,
         *,
         thread_id,
-        loop_delay_ms,
-        on_start,
-        on_stop,
-        on_loop,
+        loop_delay_ms=None,
+        on_start=None,
+        on_stop=None,
+        on_loop=None
     ):
         self.name = name
         self.thread = Subsystem.SubsystemThread(
@@ -47,12 +47,10 @@ class Subsystem(ABC):
             loop_delay_ms=loop_delay_ms,
             loop=self._loop)
 
-        if callable(on_start):
-            self.on_start = on_start
-        if callable(on_stop):
-            self.on_stop = on_stop
-        if callable(on_loop):
-            self.on_loop = on_loop
+        def empty(): pass
+        self.on_start = on_start if callable(on_start) else empty
+        self.on_stop = on_stop if callable(on_stop) else empty
+        self.on_loop = on_loop if callable(on_loop) else empty
 
         subsys_pool.add(self)
 
@@ -121,7 +119,7 @@ class Subsystem(ABC):
         than calling it just once. It also holds a lock object unique to
         the subsystem.
     """
-    class SubsystemThread():
+    class SubsystemThread:
         DEFAULT_LOOP_DELAY_MS = 750
 
         """
@@ -135,18 +133,22 @@ class Subsystem(ABC):
             self,
             thread_id,
             loop,
-            loop_delay_ms=DEFAULT_LOOP_DELAY_MS
+            loop_delay_ms=None
         ):
             # Thread Data
             self.thread_id = thread_id
             self.running = False
+            self.loop_delay_ms = loop_delay_ms \
+                                 or Subsystem.\
+                                    SubsystemThread.\
+                                    DEFAULT_LOOP_DELAY_MS
+            self.loop = loop
 
             # Create Objects
             self.lock = threading.Lock()
             self._thread = threading.Thread(
                 name=thread_id,
-                target=self._run,
-                args=(loop, loop_delay_ms))
+                target=self._run)
 
         def start(self):
             self.running = True
@@ -155,7 +157,7 @@ class Subsystem(ABC):
         def stop(self):
             self.running = False
 
-        def _run(self, loop, loop_delay_ms):
+        def _run(self):
             # Wrapper function to make loop logic statement look nicer
             def millis():
                 return time.time() * 1000
@@ -163,13 +165,14 @@ class Subsystem(ABC):
             last_runtime = millis()
             while self.running:
                 # convert loop_delay_ms to seconds.
-                if millis() - last_runtime >= loop_delay_ms:
+                if millis() - last_runtime >= self.loop_delay_ms:
                     try:
-                        loop()
+                        self.loop()
                     except Exception as e:
                         print(
-                            'Error: Subsystem exception has occured for subsystem thread %s: %s' %
-                            (self.thread_id, e))
+                            'Error: Subsystem exception has occured \
+                             for subsystem thread %s: %s' % (
+                                self.thread_id, e))
                     last_runtime = millis()
 
                 time.sleep(0.05)
