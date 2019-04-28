@@ -7,10 +7,21 @@ comms = importlib.import_module('pi-systems_communications')
 class DoorSubsystem(subsys.Subsystem):
 
     class Procedure(IntEnum):
-        OpenDoor = 111
-        CloseDoor = 99
+        calibrate = 2
         setDoorState = 3
         getDoorState = 4
+
+    class DoorState(IntEnum):
+        unknown = 0
+        transit = 3
+        open = 111
+        close = 99
+        manualCalibrate = 113
+
+    class DoorPosition(IntEnum):
+        doorIsOpen = 2 * (2308)  # Arduino-encoded value for right.
+        doorIsClosed = 0
+        doorInTransit = 1
 
     def __init__(self, name=None, thread_id=None, address=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=5000)

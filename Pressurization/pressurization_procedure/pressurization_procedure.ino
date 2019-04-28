@@ -6,8 +6,8 @@ void receiveData(int);
 void sendData();
 
 // Arduino GPIO
-#define VALVE_PRESSURIZER 8
-#define VALVE_DEPRESSURIZER 9
+#define VALVE_PRESSURIZER 2
+#define VALVE_DEPRESSURIZER 3
 
 // Other constants
 #define MSG_LEN 32
@@ -49,9 +49,9 @@ typedef struct ValveState_t {
     : pressurizer(p)
     , depressurizer(dp) {}
 };
-const struct ValveState_t* PRESSURIZE = new ValveState_t(HIGH, LOW);
-const struct ValveState_t* DEPRESSURIZE = new ValveState_t(LOW, HIGH);
-const struct ValveState_t* CLOSE = new ValveState_t(LOW, LOW);
+const struct ValveState_t* PRESSURIZE = new ValveState_t(LOW, LOW);
+const struct ValveState_t* DEPRESSURIZE = new ValveState_t(HIGH, HIGH);
+const struct ValveState_t* CLOSE = new ValveState_t(HIGH, LOW);
 
 
 // Function Signatures
@@ -89,6 +89,25 @@ void loop() {
   msgIndex = (msgIndex + 1) % NumMessages;
 
 //  TEST_ROUTINE();
+
+  if (Serial.available()) {
+    char s = Serial.read();
+
+    switch(s) {
+      case 'p':
+        applyValveState(PRESSURIZE);
+        Serial.println("PRESSURIZE");
+        break;
+      case 'd':
+        applyValveState(DEPRESSURIZE);
+        Serial.println("DEPRESSURIZE");
+        break;
+      case 'c':
+        applyValveState(CLOSE);
+        Serial.println("CLOSE");
+        break;
+    }
+  }
 }
 
 
