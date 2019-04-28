@@ -46,7 +46,7 @@ class DoorSubsystem(subsys.Subsystem):
 
     # function to get current door state from door control arduino using I2C
     # return: doorState and doorAngle as a tuple
-    def getCurrentDoorState(self):
+    def get_current_door_state(self):
         doorStateRaw = comms.intra_read(self.address,
                                         self.Procedure.getDoorState.value)
         # March9doorcontrol_I2C.ino struct returns 4 bytes and a short struct
