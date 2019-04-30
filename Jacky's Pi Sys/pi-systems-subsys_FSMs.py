@@ -48,16 +48,33 @@ inputs.append(door_open_butt)
 inputs.append(door_close_butt) 
 
 outputs = []
-'''
-light_led = subsys_inter.OutputComponent(name='Airlock Lights',
-                                         pin=3,         # CHECK PIN NUM.
+
+led1 = subsys_inter.OutputComponent(name='LED_1',
+                                         pin=23,         # CHECK PIN NUM.
                                          subtype='LED')  # initial state OFF
-buzzer = subsys_inter.OutputComponent(name='Emergency Buzzer',
-                                      pin=4,            # CHECK PIN NUM.
-                                      subtype='Buzzer')  # initial state OFF
-'''
-#outputs.append(light_led)
-#outputs.append(buzzer)
+led2 = subsys_inter.OutputComponent(name='LED_2',
+                                         pin=24,
+                                         subtype='LED')
+led3 = subsys_inter.OutputComponent(name='LED_3',
+                                         pin=25,
+                                         subtype='LED')
+led4 = subsys_inter.OutputComponent(name='LED_4',
+                                         pin=12,
+                                         subtype='LED')
+led5 = subsys_inter.OutputComponent(name='LED_5',
+                                         pin=16,
+                                         subtype='LED')
+led5 = subsys_inter.OutputComponent(name='LED_6',
+                                         pin=18,
+                                         subtype='LED')
+
+# Add outputs to the list                             
+outputs.append(led1)
+outputs.append(led2)
+outputs.append(led3)
+outputs.append(led4)
+outputs.append(led5)
+outputs.append(led6)
 
 #  Now create the interface where the buttons are pooled
 try:
@@ -97,8 +114,6 @@ except NameError:
 except ModuleNotFoundError:
     print("GPIO could not be found. Skipping...")
 
-# FIX THIS 
-# Why is there a name error?? hopefully GPIO
 try:
     airlock_sensor_ss = sensor_ss.SensorSubsystem(#name='Airlock Sensors',
                                               thread_id=53,
@@ -141,7 +156,7 @@ def loop_FSMs(subsystems,
         # i and j are used for door logic
         # Change to sensor data as well
         i = 0   # Col_Airlock_door = sensor_ss.sensor_data[3]
-        j = 0   
+        j = 0
 
         # Read the button states
         # Assume buttons are always pressed by user one at a time.
@@ -186,8 +201,7 @@ def loop_FSMs(subsystems,
                 print("Exit, cannot pressurize.  Possibly in emergency state.")
                 break
             # while not done pressurizing and no emergency...
-            #inputs[0].state = 1
-            #while (sensor_ss.sensor_data[3] < target_p) and emergency is False:
+            #while (sensor_ss.sensor_data[3] < target_p):
             while (pressure < target_p):
                 if inputs[0].state == 1:
                     # ... we loop back into our current state
