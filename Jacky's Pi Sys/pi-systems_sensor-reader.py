@@ -1,30 +1,37 @@
 import importlib
 import time
-from collections import namedtuple
 import struct
 from enum import Enum
-
+from collections import namedtuple
 subsys = importlib.import_module('pi-systems_subsystem-base')
 comms = importlib.import_module('pi-systems_communications')
 
 
-class SensorSubsystem(comms.IntraModCommMessage, subsys.Subsystem):
-#class SensorSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
-
-#class SensorSubsystem(comms, subsys.Subsystem):
-    
-    # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature", "humidity", "pressure"])
+class SensorSubsystem(subsys.Subsystem):
+    # SensorData = namedtuple("SensorData", ["CO2", "O2", "temperature",
+    # "humidity", "pressure"])
 
     class Procedure(Enum):
         GetSensorData = 1
 
-    def __init__(self, name=None, thread_id=None, address=None):
+    def __init__(self, name=None, thread_id=None, addresses=None):
         super().__init__(name=name, thread_id=thread_id, loop_delay_ms=2000)
 
         # namedtuple is temporarily a dict for pickling purposes.
         self.sensor_data = {}  # self.SensorData(0,0,0,0,0)
-        self.address = address
+        # sets addresses to a list of 1 or more addresses
+        self.addresses = addresses if isinstance(addresses,
+                                                 list) else [addresses]
         self.print_updates = False
+
+        self.sensor_data = {
+            'O2': 0,
+            'humidity': 0,
+            'temperature': 0,
+            'pressure': 0,
+            'CO2': 0
+        }
+
 
     def loop(self):
         with self.lock:
@@ -35,27 +42,78 @@ class SensorSubsystem(comms.IntraModCommMessage, subsys.Subsystem):
 
     def __update_sensor_data(self):
         # return
+        # comms._write(self.address, comms.IntraModCommMessage.generate(
+        #     action=comms.IntraModCommAction.ExecuteProcedure,
+        #     procedure=1
+        # ))
+        #
+        # init values to 0
+        O2Val = 0
+        humidityVal = 0
+        temperatureVal = 0
+        pressureVal = 0
+        C02Val = 0
 
-        try:
-            # comms.intra_write(self.address, comms.IntraModCommMessage.generate(
-            #     action=comms.IntraModCommAction.ExecuteProcedure,
-            #     procedure=1
-            # ))
-            sensor_data_raw = comms.intra_read(self.address, self.Procedure.GetSensorData.value)
-        
-            sensor_data = struct.unpack('>xxBBHHH', bytes(sensor_data_raw.raw_array[0:struct.calcsize('>xxBBHHH')]))
+        numReadingsO2 = 0
+        numReadingsHumidity = 0
+        numReadingsTemp = 0
+        numReadingsPressure = 0
+        numReadingsC02 = 0
+        # read all the data from multiple addresses if they exist and then
+        # get the average of valid readings and store into sensor_data
+        # dictionary also checking valid dataFlags bitmask
+        for addressVal in self.addresses:
+            try:
+                # extract raw sensor data
+                sensor_data_raw = comms.intra_read(
+                    addressVal, self.Procedure.GetSensorData.value)
+                # unpack sensor_data_raw into sensor_data following
+                # struct created in AirlockMasters/sensors/Integrated
+                # sensors/integrated_sensors/integrated_sensors.ino
+                sensor_data = struct.unpack(
+                    'cccBBBhHH', bytes(sensor_data_raw.raw_array[
+                        0:struct.calcsize('cccBBBhHH')]))
+                # sensor_data[3] is validFlag readings mask
+                validData = sensor_data[3]
+                # bitwise AND bitmask to see if data is valid and read
+                if validData & 1 << 7:
+                    O2Val += sensor_data[4]
+                    numReadingsO2 += 1
+                if validData & 1 << 6:
+                    humidityVal += sensor_data[5]
+                    numReadingsHumidity += 1
+                if validData & 1 << 5:
+                    temperatureVal += sensor_data[6]
+                    numReadingsTemp += 1
+                if validData & 1 << 4:
+                    pressureVal += sensor_data[7]
+                    numReadingsPressure += 1
+                if validData & 1 << 3:
+                    C02Val += sensor_data[8]
+                    numReadingsC02 += 1
+            except ValueError as ve:
+                print("Invalid object read from I2C.\n\tStackTrace: " +
+                      str(ve) + "\n\tSkipping line...")
 
-        except ValueError as ve:
-            print("Invalid object read from I2C.\n\tStack Trace: " + str(ve) + "\n\tSkipping line...")
-            return
+        # computes average of all readings if they have been read at least once
+        if numReadingsO2 != 0:
+            O2Val = O2Val / numReadingsO2
+        if numReadingsHumidity != 0:
+            humidityVal = humidityVal / numReadingsHumidity
+        if numReadingsTemp != 0:
+            temperatureVal = temperatureVal / numReadingsTemp
+        if numReadingsPressure != 0:
+            pressureVal = pressureVal / numReadingsPressure
+        if numReadingsC02 != 0:
+            C02Val = C02Val / numReadingsC02
 
-        # TODO make this work - accessors are invalid since protocol version.
+        # stores average readings into dictionary
         self.sensor_data = {
-            'O2': sensor_data[0],
-            'humidity': sensor_data[1],
-            'temperature': sensor_data[2],
-            'pressure': sensor_data[3],
-            'CO2': sensor_data[4]
+            'O2': O2Val,
+            'humidity': humidityVal,
+            'temperature': temperatureVal,
+            'pressure': pressureVal,
+            'CO2': C02Val
         }
 
     def error_check(self):

@@ -3,14 +3,6 @@ import importlib
 from time import sleep, time
 import keyboard
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
-=======
-
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
 # Begin systems get
 sys.path.insert(0, '../pi-systems/')
 
@@ -22,7 +14,9 @@ ss_pool = importlib.import_module('pi-systems_subsystem-pool')
 #door_input_ss = importlib.import_module('pi-systems_door-input-subsystem')
 #lights_ss = importlib.import_module('pi-systems_lights-manager')
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
-#door_ss = importlib.import_module('pi-systems_door-subsystem')
+door_ss = importlib.import_module('pi-systems_door-subsystem')
+hexdisplay_ss = importlib.import_module('pi-systems_hexdisplay-subsystem')
+interface_ss = importlib.import_module('pi-systems_interface-subsystem')
 
 """
 Purpose: Performs initial system setup and begins airlock loop cycle.
@@ -39,26 +33,43 @@ def begin(runtime_params):
     # Start initializing the vital airlock systems
     subsystems = []
 
-    # DO THESE WORK!!!!!!!
-
-    subsystems.append(sensor_ss.SensorSubsystem(
-       name="airlock1_sensors",
-       thread_id=0xDE7EC7,
-       address=0x0A))
+    sensors = sensor_ss.SensorSubsystem(
+      name="airlock1_sensors",
+      thread_id=0xDE7EC7,
+      addresses=0x0A)
+    subsystems.append(sensors)
 
     subsystems.append(lights_ss.LightingSubsystem(
        name="airlock1_lights-internal",
        thread_id=0x5EE,
        pins=18))
 
-    subsystems.append(door_ss.DoorSubsystem(
-       name="airlock1_door_col",
-       thread_id=0xD00121,
-       address=0))
+    #global incrementer
+    #incrementer = 0
+    #def p(base):
+    #    global incrementer
+    #    return base + incrementer
+    #subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
+  #    name="hexdisplay_internal",
+   #   thread_id=0x1EDB0A12D1,
+  #    address=41,
+  #    display_data_fns=[
+   #       lambda: p(12),
+  #        lambda: p(13),
+   #       lambda: p(22),interface_ss
+   #       lambda: p(101)
+  #    ]
+   # ))
 
-    subsystems.append(pressure_ss.PressureSubsystem(
-        name="airlock1_pressurization",
-        thread_id=0xAE120))
+    # door_col = door_ss.DoorSubsystem(
+    #   name="airlock1_door_col",
+    #   thread_id=0xD00121,
+    #   address=0)
+    # subsystems.append(door_col)
+
+    #subsystems.append(pressure_ss.PressureSubsystem(
+    #    name="airlock1_pressurization",
+    #    thread_id=0xAE120))
     #     door_input_ss.DoorInputSubsystem(
     #         name="airlock1_doorinput_col",
     # thread_id=0xC01, address="FILL ME IN", linked_door=door_col),
@@ -85,6 +96,71 @@ def begin(runtime_params):
 
     lights = light_ss.LightingSubsystem("lights", 4)
     lights.start()
+
+    subsystems.append(hexdisplay_ss.HexDisplaySubsystem(
+      name="hexdisplay_internal",
+      thread_id="hexdisp",
+      address=0x29,
+      display_data_fns=[
+          lambda: sensors.sensor_data['O2'],
+          lambda: sensors.sensor_data['CO2'],
+          lambda: sensors.sensor_data['temperature'],
+          lambda: sensors.sensor_data['pressure']
+      ]
+    ))
+
+    subsystems.append(interface_ss.InterfaceSubsystem(
+        name="airlockInternalInterface",
+        thread_id=12,
+        inputs=[
+            interface_ss.InputComponent(
+                'manualoveride',
+                12,
+                interface_ss.InputComponent.Subtype.Switch
+            ),
+            interface_ss.InputComponent(
+                'pressurize',
+                16,
+                interface_ss.InputComponent.Subtype.Button,
+                on_change_callbacks={
+                    1: lambda state: None if state == 0 else print("pressure")
+                       #subsystems['airlock1_pressurization'].request_new_state(
+                        #    subsystems['airlock1_pressurization'].TargetState.Pressurize)
+                }
+            ),
+            interface_ss.InputComponent(
+                'depressurize',
+                20,
+                interface_ss.InputComponent.Subtype.Button,
+                on_change_callbacks={
+                    1: lambda state: None if state == 0 else print("depressure")
+                        #subsystems['airlock1_pressurization'].request_new_state(
+                            #subsystems['airlock1_pressurization'].TargetState.Depressurize)
+                }
+                    
+            ),
+            interface_ss.InputComponent(
+                'pause',
+                21,
+                interface_ss.InputComponent.Subtype.Button,
+                on_change_callbacks={
+                    1: lambda state: None if state == 0 else print("close")
+                        #subsystems['airlock1_pressurization'].request_new_state(
+                         #   subsystems['airlock1_pressurization'].TargetState.Close)
+                }
+            )
+        ],
+        outputs=[
+            interface_ss.OutputComponent(
+                n,
+                p,
+                interface_ss.OutputComponent.Subtype.LED)
+            for n, p in [
+                ["test", 14]
+            ]
+        ]
+    ))
+    
 
     print("---AIRLOCK SYSTEMS INITIALIZED---\n")
 
@@ -130,26 +206,14 @@ def handle_cmd(cmd):
     subsystems = ss_pool.get_all()
     
     # Door Toggles
-    # <<<<<<< HEAD
-    # if cmd is 'o' or cmd is 'O':
-    #     print("Requesting door open")
-    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.OpenDoor)
-    # elif cmd is 'c' or cmd is 'C':
-    #     print("Requesting door close")
-    #     subsystems["airlock1_doors"].request_door_state(subsystems["airlock1_doors"].Procedure.CloseDoor)
-=======
     if cmd is 'o' or cmd is 'O':
         print("Requesting door open")
         subsystems["airlock1_doors"].request_door_state(
             subsystems["airlock1_doors"].Procedure.OpenDoor)
-    elif cmd is 'c' or cmd is 'C':
+    elif cmd is ',' or cmd is '.':
         print("Requesting door close")
         subsystems["airlock1_doors"].request_door_state(
             subsystems["airlock1_doors"].Procedure.CloseDoor)
-<<<<<<< HEAD
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
-=======
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
 
     # Pressure Toggles
     if cmd is 'p' or cmd is 'P':
@@ -162,21 +226,11 @@ def handle_cmd(cmd):
             subsystems['airlock1_pressurization'].TargetState.Depressurize)
         print("Depressurizing")
 
-<<<<<<< HEAD
+    elif cmd is 'c' or cmd is 'C':
+        subsystems['airlock1_pressurization'].request_new_state(
+            subsystems['airlock1_pressurization'].TargetState.close)
+        print("Closing")
 
-    # # Sensors SS Debugging
-    # elif cmd is 's':
-    #     with subsystems["airlock1_sensors"] as sensors:
-    #         sensors.print_updates = not sensors.print_updates
-    #         print('Sensors printout %s' % ("enabled" if sensors.print_updates else "disabled"))
-
-    # # Light SS Debugging
-    # elif cmd is 'l':
-    #     with subsystems['airlock1_lights-internal'] as lights:
-    #         lights.toggle()
-    #         print('\nLights %s' % ('on' if lights.light_state else 'off'))
-    
-=======
     # Sensors SS Debugging
     elif cmd is 's':
         with subsystems["airlock1_sensors"] as sensors:
@@ -191,10 +245,6 @@ def handle_cmd(cmd):
             lights.toggle()
             print('\nLights %s' % ('on' if lights.light_state else 'off'))
 
-<<<<<<< HEAD
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
-=======
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
     # General System Information/
     elif cmd is "i":
         print("Current subsystem pool items:\n---------\n")
@@ -203,20 +253,7 @@ def handle_cmd(cmd):
     elif cmd is "I":
         print("Current subsystem pool items:\n---------\n")
         print(repr(subsystems))
-    elif cmd is '?':
-<<<<<<< HEAD
-<<<<<<< HEAD
-        print("----- KEYBOARD COMMANDS -----" +
-            #"\no: Request door open\nc: Request door close" +
-            #"\nl: Toggle Lights" + 
-            #"\ns: Toggle sensor debug printing" +
-            "\ni: Show items in subsystem pool" +
-            "\nI: Show details of items int the subsystem pool" +
-            "\n!: Stop Colony" +
-            "\n?: Help window (this text)" + 
-=======
-=======
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
+    elif cmd is '-':
         print(
             "----- KEYBOARD COMMANDS -----" +
             "\no: Request door open\nc: Request door close" +
@@ -227,11 +264,15 @@ def handle_cmd(cmd):
             "\nI: Show details of items int the subsystem pool" +
             "#n!: Stop Colony" +
             "\n?: Help window (this text)" +
-<<<<<<< HEAD
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
-=======
->>>>>>> 6786c97cdd78e5f78e38495af5685a0b98cdab74
             "\n-------------------")
+    elif cmd is 'q':
+        print("Incrementing")
+        global incrementer
+        incrementer = incrementer + 1
+        print(incrementer)
+    elif cmd is 'f':
+        import os
+        os.system('i2cdetect -y 1')
     elif cmd is '!':
         print('---STOPPING COLONY---')
         ss_pool.stop_all()
