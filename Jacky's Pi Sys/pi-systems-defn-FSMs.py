@@ -1,3 +1,6 @@
+# Code for the airlock FSMs
+# Written by Noah Caleanu
+
 # _________________________________________________________________________
 # DEFINE THE FSM CLASSES:
 # i.   PressureFSM
@@ -16,7 +19,6 @@ class PressureFSM(StateMachine):
     idle = State("idle", initial=True)
     pressurize = State("pressurize")
     depressurize = State("depressurize")
-    done = State("done")
     Emergency = State("Emergency")
 
     #   Next State Transitions
@@ -39,14 +41,10 @@ class PressureFSM(StateMachine):
         self.airlock_press_ss.TargetState = 'Idle' # int 3
         self.airlock_press_ss.priority = 'low'      #   int 0 
 
-    def on_start_pressurize(self, range, airlock_press_ss):
+    def on_start_pressurize(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Pressurize' # int 1
         self.airlock_press_ss.priority = 'low'          # int 0
-        self.range = range
-        target_pressure = range[0] + ((range[1]-range[0])/2)
-        self.target = int(target_pressure)
-        return self.target
 
     def on_keep_pressurize(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
@@ -58,14 +56,10 @@ class PressureFSM(StateMachine):
         self.airlock_press_ss.TargetState = 'Idle'  # int 3
         self.airlock_press_ss.priority = 'low'      # int 0
 
-    def on_start_depressurize(self, range, airlock_press_ss):
+    def on_start_depressurize(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = "Depressurize" # int 2
         self.airlock_press_ss.priority = 'low'              # int 0
-        self.range = range
-        target_pressure = range[0] + ((range[1]-range[0])/2)
-        self.target = int(target_pressure)
-        return self.target
 
     def on_keep_depressurize(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
@@ -106,7 +100,6 @@ class DoorFSM(StateMachine):
     door_open = State("Open")
     door_close = State("Close")
     keep_idling = State("Continuing to idle")
-    done = State("completed door process")
     Emergency = State("Emergency")
 
     #   State Transitions
