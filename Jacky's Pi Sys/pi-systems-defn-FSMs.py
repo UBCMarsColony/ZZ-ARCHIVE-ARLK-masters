@@ -74,25 +74,45 @@ class PressureFSM(StateMachine):
         self.airlock_press_ss.TargetState = "Idle"           # int 3
         self.airlock_press_ss.priority = 'low'              # int 0
 
-    def on_detected_emerg_1(self, airlock_press_ss):
+    def on_detected_emerg_1(self, airlock_press_ss, led):
         self.airlock_press_ss = airlock_press_ss
+        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
-        self.airlock_press_ss.priority = 'high'              # int 1
+        self.airlock_press_ss.priority = 'high'   
+        while(True):
+            self.led.write(ON)
+            time.sleep(0.75)
+            self.led.write(OFF)
 
-    def on_detected_emerg_2(self, airlock_press_ss):
+    def on_detected_emerg_2(self, airlock_press_ss, led):
         self.airlock_press_ss = airlock_press_ss
+        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'              # int 1
+        while(True):
+            self.led.write(ON)
+            time.sleep(0.75)
+            self.led.write(OFF)
 
-    def on_detected_emerg_3(self, airlock_press_ss):
+    def on_detected_emerg_3(self, airlock_press_ss, led):
         self.airlock_press_ss = airlock_press_ss
+        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
-        self.airlock_press_ss.priority = 'high'              # int 1
+        self.airlock_press_ss.priority = 'high' 
+        while(True):
+            self.led.write(ON)
+            time.sleep(0.75)
+            self.led.write(OFF)
 
-    def on_emerg_unresolved(self, airlock_press_ss):
+    def on_emerg_unresolved(self, airlock_press_ss, led):
         self.airlock_press_ss = airlock_press_ss
+        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'              # int 1
+        while(True):
+            self.led.write(ON)
+            time.sleep(0.75)
+            self.led.write(OFF)
 
 
 # ii. Create a Door FSM that controls Procedure and Priority of

@@ -161,6 +161,7 @@ class led:
 
 led6 = led(name="Emergency LED")
 
+
 # loop that checks the inputs and takes the appropriate actions
 def loop_FSMs(subsystems,
               inputs):
@@ -192,13 +193,13 @@ def loop_FSMs(subsystems,
             if inputs[0] == 0:
                 emergency = True  # theres really no point in this besides an easier way to display Emergencies to user
                 if(fsm_pressure.current_state.name == 'idle'):
-                    fsm_pressure.detected_emerg_3(airlock_press_ss)
+                    fsm_pressure.detected_emerg_3(airlock_press_ss, led6)
                 elif(fsm_pressure.current_state.name == 'Emergency'):
-                    fsm_pressure.emerg_unresolved(airlock_press_ss)
+                    fsm_pressure.emerg_unresolved(airlock_press_ss, led6)
                 if(fsm_door.current_state.name == 'Idle'):
-                    fsm_door.detected_emerg_3(airlock_door_ss)
+                    fsm_door.detected_emerg_3(airlock_door_ss, led6)
                 elif(fsm_door.current_state.name == 'Emergency'):
-                    fsm_door.emerg_unresolved(airlock_door_ss)
+                    fsm_door.emerg_unresolved(airlock_door_ss, led6)
 
             # Check if user pressed P
             # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
