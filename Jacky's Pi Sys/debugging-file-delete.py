@@ -144,7 +144,7 @@ fsm_door = FSM.DoorFSM()
 target_p = 1013  # Earth atmosphere roughly 101.3kPa
 target_d = 6     # Martian Atmosphere 600 Pascals
 
-inputs = [1, 0, 0, 0, 1, 0, 1]  # this is for debugging purposes only.
+inputs = [0, 0, 0, 0, 0, 0, 1]  # this is for debugging purposes only.
 outputs = [0, 0, 0, 0, 0, 0]    # Testing FSM led setting
 
 class led:
@@ -193,13 +193,13 @@ def loop_FSMs(subsystems,
             if inputs[0] == 0:
                 emergency = True  # theres really no point in this besides an easier way to display Emergencies to user
                 if(fsm_pressure.current_state.name == 'idle'):
-                    fsm_pressure.detected_emerg_3(airlock_press_ss, led6)
+                    fsm_pressure.detected_emerg_3(airlock_press_ss)
                 elif(fsm_pressure.current_state.name == 'Emergency'):
-                    fsm_pressure.emerg_unresolved(airlock_press_ss, led6)
+                    fsm_pressure.emerg_unresolved(airlock_press_ss)
                 if(fsm_door.current_state.name == 'Idle'):
-                    fsm_door.detected_emerg_3(airlock_door_ss, led6)
+                    fsm_door.detected_emerg_3(airlock_door_ss)
                 elif(fsm_door.current_state.name == 'Emergency'):
-                    fsm_door.emerg_unresolved(airlock_door_ss, led6)
+                    fsm_door.emerg_unresolved(airlock_door_ss)
 
             # Check if user pressed P
             # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
@@ -293,13 +293,13 @@ def loop_FSMs(subsystems,
                         #door_state, door_angle = door_ss.get_current_door_state(airlock_door_ss)
                     else:
                         if fsm_door.current_state.name == "Open":
-                            fsm_door.detected_emerg_1(airlock_door_ss, led6)
+                            fsm_door.detected_emerg_1(airlock_door_ss)
                         elif fsm_door.current_state.name == "Emergency":
-                            fsm_door.emerg_unresolved(airlock_door_ss, led6)
+                            fsm_door.emerg_unresolved(airlock_door_ss)
                 fsm_door.done_open(airlock_door_ss)
             else:
                 if(fsm_door.current_state == fsm_door.Emergency):
-                    fsm_door.emerg_unresolved(airlock_door_ss, led6)
+                    fsm_door.emerg_unresolved(airlock_door_ss)
                 else:
                     # no code red so keep idling
                     fsm_door.keep_idling(airlock_door_ss)
@@ -315,13 +315,13 @@ def loop_FSMs(subsystems,
                         j = 1
                     else:
                         if(fsm_door.current_state == fsm_door.Emergency):
-                            fsm_door.emerg_unresolved(airlock_door_ss, led6)
+                            fsm_door.emerg_unresolved(airlock_door_ss)
                         else:
-                            fsm_door.detected_emerg_2(airlock_door_ss, led6)
+                            fsm_door.detected_emerg_2(airlock_door_ss)
                 fsm_door.done_close(airlock_door_ss)
             else:
                 if(fsm_door.current_state == fsm_door.Emergency):
-                    fsm_door.emerg_unresolved(airlock_door_ss, led6)
+                    fsm_door.emerg_unresolved(airlock_door_ss)
                 else:
                     fsm_door.keep_idling(airlock_door_ss)
             print("Current Pressure State: ", fsm_pressure.current_state.name)

@@ -11,10 +11,6 @@
 from statemachine import StateMachine, State
 import time
 
-# Constants for writing to LEDs
-OFF = 0
-ON = 1
-
 # i. Create a pressure FSM that controls TargetState and Priority of
 #    the Pressure subsystem
 class PressureFSM(StateMachine):
@@ -74,45 +70,25 @@ class PressureFSM(StateMachine):
         self.airlock_press_ss.TargetState = "Idle"           # int 3
         self.airlock_press_ss.priority = 'low'              # int 0
 
-    def on_detected_emerg_1(self, airlock_press_ss, led):
+    def on_detected_emerg_1(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
-        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
-        self.airlock_press_ss.priority = 'high'   
-        while(True):
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
+        self.airlock_press_ss.priority = 'high'
 
-    def on_detected_emerg_2(self, airlock_press_ss, led):
+    def on_detected_emerg_2(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
-        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'              # int 1
-        while(True):
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
 
-    def on_detected_emerg_3(self, airlock_press_ss, led):
+    def on_detected_emerg_3(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
-        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
-        self.airlock_press_ss.priority = 'high' 
-        while(True):
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
+        self.airlock_press_ss.priority = 'high'
 
-    def on_emerg_unresolved(self, airlock_press_ss, led):
+    def on_emerg_unresolved(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
-        self.led = led
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'              # int 1
-        while(True):
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
 
 
 # ii. Create a Door FSM that controls Procedure and Priority of
@@ -177,45 +153,25 @@ class DoorFSM(StateMachine):
         self.airlock_door_ss.Procedure = "CloseDoor"  # int 2
         self.priority = 'low'
 
-    def on_detected_emerg_1(self, airlock_door_ss, led):
-        self.airlock_door_ss = airlock_door_ss
-        self.led = led
-        self.airlock_door_ss.Procedure = 'Emergency'  # int 0
-        self.priority = 'high'
-        while(True):    #  LEDs blink
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
-
-    def on_detected_emerg_2(self, airlock_door_ss, led):
-        self.airlock_door_ss = airlock_door_ss
-        self.led = led
-        self.airlock_door_ss.Procedure = 'Emergency'  # int 0
-        self.priority = 'high'
-        while(True):
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
-
-    def on_detected_emerg_3(self, airlock_door_ss, led):
-        self.airlock_door_ss = airlock_door_ss
-        self.led = led
-        self.airlock_door_ss.Procedure = 'Emergency'  # int 0
-        self.priority = 'high'
-        while(True):
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
-
-    def on_emerg_unresolved(self, airlock_door_ss, led):
+    def on_detected_emerg_1(self, airlock_door_ss):
         self.airlock_door_ss = airlock_door_ss
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
-        while(True):
-            self.led.write(ON)
-            time.sleep(0.75)
-            self.led.write(OFF)
 
+    def on_detected_emerg_2(self, airlock_door_ss):
+        self.airlock_door_ss = airlock_door_ss
+        self.airlock_door_ss.Procedure = 'Emergency'  # int 0
+        self.priority = 'high'
+
+    def on_detected_emerg_3(self, airlock_door_ss):
+        self.airlock_door_ss = airlock_door_ss
+        self.airlock_door_ss.Procedure = 'Emergency'  # int 0
+        self.priority = 'high'
+
+    def on_emerg_unresolved(self, airlock_door_ss):
+        self.airlock_door_ss = airlock_door_ss
+        self.airlock_door_ss.Procedure = 'Emergency'  # int 0
+        self.priority = 'high'
 
 # iii. Create FSM for Lighting that controls the state
 #      of the lighting subsystem
