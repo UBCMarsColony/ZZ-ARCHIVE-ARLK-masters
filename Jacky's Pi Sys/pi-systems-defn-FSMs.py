@@ -22,10 +22,16 @@ class PressureFSM(StateMachine):
     idle = State("idle", initial=True)
     pressurize = State("pressurize")
     depressurize = State("depressurize")
+    pause = State("pause")
     Emergency = State("Emergency")
 
     #   Next State Transitions
     keep_idling = idle.to(idle)
+    pause_press = pressurize.to(pause)
+    pause_depress = depressurize.to(pause)
+    resume_press = pause.to(pressurize)
+    resume_depress = pause.to(depressurize)
+    keep_pausing = pause.to(pause)
     start_pressurize = idle.to(pressurize)
     keep_pressurize = pressurize.to(pressurize)
     done_pressurize = pressurize.to(idle)
@@ -42,11 +48,51 @@ class PressureFSM(StateMachine):
     def on_keep_idling(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Idle' # int 3
+        #self.airlock_press_ss.request_new_state(3) 
         self.airlock_press_ss.priority = 'low'      #   int 0
+
+    def on_pause_press(self, airlock_press_ss, leds):
+        self.airlock_press_ss = airlock_press_ss
+        self.airlock_press_ss.TargetState = 'close'
+        #self.airlock_press_ss.request_new_state(0)
+        self.airlock_press_ss.priority = 'low'
+        self.leds = leds
+        self.leds[6].write(ON)
+
+    def on_pause_depress(self, airlock_press_ss, leds):
+        self.airlock_press_ss = airlock_press_ss
+        self.airlock_press_ss.TargetState = 'close'
+        #self.airlock_press_ss.request_new_state(0)
+        self.airlock_press_ss.priority = 'low'
+        self.leds = leds
+        self.leds[6].write(ON)
+
+    def on_resume_press(self, airlock_press_ss, leds):
+        self.airlock_press_ss = airlock_press_ss
+        self.airlock_press_ss.TargetState = 'Pressurize'  # even though this is paused idle serves the same purpose.
+        #self.airlock_press_ss.request_new_state(1)
+        self.airlock_press_ss.priority = 'low'
+        self.leds = leds
+        self.leds[6].write(OFF)
+
+    def on_resume_depress(self, airlock_press_ss, leds):
+        self.airlock_press_ss = airlock_press_ss
+        self.airlock_press_ss.TargetState = 'Depressurize'
+        #self.airlock_press_ss.request_new_state(2)
+        self.airlock_press_ss.priority = 'low'
+        self.leds = leds
+        self.leds[6].write(OFF)
+
+    def on_keep_pausing(self, airlock_press_ss):
+        self.airlock_press_ss = airlock_press_ss
+        self.airlock_press_ss.TargetState = 'close'
+        #self.airlock_press_ss.request_new_state(0)
+        self.airlock_press_ss.priority = 'low'
 
     def on_start_pressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Pressurize' # int 1
+        #self.airlock_press_ss.request_new_state(1)
         self.airlock_press_ss.priority = 'low'          # int 0
         self.leds = leds
         self.leds[0].write(OFF)  # All LEDs off except In_progress LED
@@ -61,10 +107,12 @@ class PressureFSM(StateMachine):
         self.leds[0].write(OFF)  # All LEDs off except In_progress LED
         self.leds[1].write(ON)
         self.leds[2].write(OFF)
+        self.leds[6].write(OFF)  # hold off when we keep depressurizing
 
     def on_done_pressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Idle'  # int 3
+        #self.airlock_press_ss.request_new_state(3)
         self.airlock_press_ss.priority = 'low'      # int 0
         self.leds = leds
         self.leds[0].write(ON)  # All LEDs off except Pressurized LED
@@ -74,6 +122,7 @@ class PressureFSM(StateMachine):
     def on_start_depressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = "Depressurize" # int 2
+        #self.airlock_press_ss.request_new_state(2)
         self.airlock_press_ss.priority = 'low'              # int 0
         self.leds = leds
         self.leds[0].write(OFF)  # All LEDs off except In_progress LED
@@ -88,10 +137,12 @@ class PressureFSM(StateMachine):
         self.leds[0].write(OFF)  # All LEDs off except In_progress LED
         self.leds[1].write(ON)
         self.leds[2].write(OFF)
+        self.leds[6].write(OFF)  # hold off when we keep depressurizing
 
     def on_done_depressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = "Idle"           # int 3
+        #self.airlock_press_ss.request_new_state(3)
         self.airlock_press_ss.priority = 'low'              # int 0
         self.leds = leds
         self.leds[0].write(OFF)  # All LEDs off except Depressurized LED
@@ -101,6 +152,7 @@ class PressureFSM(StateMachine):
     def on_detected_emerg_1(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
+        #self.airlock_press_ss.request_new_state(0)
         self.airlock_press_ss.priority = 'high'
         self.leds = leds
         self.leds[5].write(ON)  # Turn on emergency LED
