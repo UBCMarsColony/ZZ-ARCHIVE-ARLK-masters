@@ -41,6 +41,7 @@ try:
     door_close_butt = subsys_inter.InputComponent(name='C', pin=35, subtype='Button')
     emergency_butt = subsys_inter.InputComponent(name='E', pin=36, subtype='Button')
     power_toggle = subsys_inter.InputComponent(name='Power', pin=37, subtype='Switch')
+    pause_butt = subsys_inter.InputComponent(name='H', pin=38, subtype='Button')
     # Add to inputs list
     inputs.append(emergency_butt)
     inputs.append(pressure_butt)
@@ -57,12 +58,12 @@ except NameError:
 outputs = []
 
 try:
-    led1 = subsys_inter.OutputComponent(name='LED_1',
+    led1 = subsys_inter.OutputComponent(name='Pressurized',
                                         pin=11,
-                                        subtype='LED')  # LED initial state OFF
-    led2 = subsys_inter.OutputComponent(name='LED_2',
+                                        subtype='LED')  # LEDs initial state OFF
+    led2 = subsys_inter.OutputComponent(name='In Progress',
                                         pin=12,
-                                        subtype='LED')
+                                        subtype='Depressurized')
     led3 = subsys_inter.OutputComponent(name='LED_3',
                                         pin=13,
                                         subtype='LED')
@@ -75,13 +76,18 @@ try:
     led6 = subsys_inter.OutputComponent(name='Emergency LED',
                                         pin=18,
                                         subtype='LED')
-    # Add outputs to the list                   
+    led7 = subsys_inter.OutputComponent(name='Hold LED',
+                                        pin=19,
+                                        subtype='LED')
+    # Add outputs to the list
     outputs.append(led1)
     outputs.append(led2)
     outputs.append(led3)
     outputs.append(led4)
     outputs.append(led5)
     outputs.append(led6)
+    outputs.append(led7)
+
 except NameError:
         print("Skipping output declarations")
 
@@ -128,7 +134,7 @@ try:
     airlock_sensor_ss = sensor_ss.SensorSubsystem(name='Airlock Sensors',
                                                   thread_id=53,
                                                   address=10)  # check address for repeats?
-    subsystems.append(airlock_sensor_ss)                      
+    subsystems.append(airlock_sensor_ss)
     airlock_sensor_ss.start()
 except TypeError:
     print("Unexpected name occured.")
@@ -144,9 +150,10 @@ fsm_door = FSM.DoorFSM()
 target_p = 1013  # Earth atmosphere roughly 101.3kPa
 target_d = 6     # Martian Atmosphere 600 Pascals
 
-inputs = [0, 0, 0, 0, 0, 0, 1]  # this is for debugging purposes only.
-outputs = [0, 0, 0, 0, 0, 0]    # Testing FSM led setting
+inputs = [0, 0, 1, 0, 0, 0, 1, 0]  # this is for debugging purposes only.
+#outputs = [0, 0, 0, 0, 0, 0, 0]    # Testing FSM led setting
 
+# For debugging purposes bc i cant use an output component remotely
 class led:
     def __init__(self, name, initial=False):
         self.name = name
@@ -159,12 +166,21 @@ class led:
     def write(self, value):
         self.state = value
 
+led1 = led(name="Pressurized LED")
+led2 = led(name="IP LED")
+led3 = led(name="Depressurized LED")
+led4 = led(name='LED_4')
+led5 = led(name="LED_5")
 led6 = led(name="Emergency LED")
+led7 = led(name="Pause LED")
+
+outputs = [led1, led2, led3, led4, led5, led6, led7]
 
 
 # loop that checks the inputs and takes the appropriate actions
 def loop_FSMs(subsystems,
-              inputs):
+              inputs,
+              outputs):
     #pressure = sensor_ss.sensor_data[3]  # Replace the line below once sensors
     pressure = 0
 
@@ -193,9 +209,9 @@ def loop_FSMs(subsystems,
             if inputs[0] == 0:
                 emergency = True  # theres really no point in this besides an easier way to display Emergencies to user
                 if(fsm_pressure.current_state.name == 'idle'):
-                    fsm_pressure.detected_emerg_3(airlock_press_ss)
+                    fsm_pressure.detected_emerg_3(airlock_press_ss, outputs)
                 elif(fsm_pressure.current_state.name == 'Emergency'):
-                    fsm_pressure.emerg_unresolved(airlock_press_ss)
+                    fsm_pressure.emerg_unresolved(airlock_press_ss, outputs)
                 if(fsm_door.current_state.name == 'Idle'):
                     fsm_door.detected_emerg_3(airlock_door_ss)
                 elif(fsm_door.current_state.name == 'Emergency'):
@@ -204,52 +220,52 @@ def loop_FSMs(subsystems,
             # Check if user pressed P
             # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
             if (inputs[1] == 1 and inputs[0] == 1):
-                fsm_pressure.start_pressurize(airlock_press_ss)
+                fsm_pressure.start_pressurize(airlock_press_ss, outputs)
 
                 # while not done pressurizing and no emergency...
                 #while (sensor_ss.sensor_data[3] < target_p):  # REPLACE LINE BELOW WITH THIS FOR SENSORS
                 while (pressure < target_p):
                     if inputs[0] == 1:
-                        fsm_pressure.keep_pressurize(airlock_press_ss)
+                        fsm_pressure.keep_pressurize(airlock_press_ss, outputs)
                         time.sleep(0.001)           # Take this out when sensors implemented
                         pressure = pressure + 1  # Take this out when sensors implemented
                         #sensor_ss.__update_sensor_data()  # Not sure if the sensors are read continuously but update the sensor value
                         print("PRESSURIZING...")
                     else:
                         if(fsm_pressure.current_state == fsm_pressure.Emergency):
-                            fsm_pressure.emerg_unresolved(airlock_press_ss) # Emerg to Emerg
+                            fsm_pressure.emerg_unresolved(airlock_press_ss, outputs) # Emerg to Emerg
                         else:
-                            fsm_pressure.detected_emerg_1(airlock_press_ss) # Press to Emerg
+                            fsm_pressure.detected_emerg_1(airlock_press_ss, outputs) # Press to Emerg
 
-                fsm_pressure.done_pressurize(airlock_press_ss)
+                fsm_pressure.done_pressurize(airlock_press_ss, outputs)
             else:
                 if(fsm_pressure.current_state == fsm_pressure.Emergency):
-                    fsm_pressure.emerg_unresolved(airlock_press_ss)
+                    fsm_pressure.emerg_unresolved(airlock_press_ss, outputs)
                 else:
                     fsm_pressure.keep_idling(airlock_press_ss)
 
-            pressure = 1013  # For debugging. Delete when sensors implemented
             # Check if user pressed D
             # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
             if inputs[2] == 1 and inputs[0] == 1:
-                fsm_pressure.start_depressurize(airlock_press_ss)
+                pressure = 1013  # For debugging. Delete when sensors implemented
+                fsm_pressure.start_depressurize(airlock_press_ss, outputs)
                 #while (sensor_ss.sensor_data[3] < target_d):  # REPLACE LINE BELOW WITH THIS FOR SENSORS
                 while(pressure > target_d):
                     if inputs[0] == 1:
-                        fsm_pressure.keep_depressurize(airlock_press_ss)
+                        fsm_pressure.keep_depressurize(airlock_press_ss, outputs)
                         time.sleep(0.001)            # Take this out when sensors implemented
                         pressure = pressure - 1  # Take this out when sensors implemented
                         print("DEPRESSURIZING")
                     else:
                         if(fsm_pressure.current_state == fsm_pressure.Emergency):
-                            fsm_pressure.emerg_unresolved(airlock_press_ss)
+                            fsm_pressure.emerg_unresolved(airlock_press_ss, outputs)
                         else:
-                            fsm_pressure.detected_emerg_2(airlock_press_ss)    
+                            fsm_pressure.detected_emerg_2(airlock_press_ss, outputs)    
                     # sensor_ss.__update_sensor_data()  # Might need to manually update. check how sensors are read
-                fsm_pressure.done_depressurize(airlock_press_ss)
+                fsm_pressure.done_depressurize(airlock_press_ss, outputs)
             else:
                 if(fsm_pressure.current_state == fsm_pressure.Emergency):
-                    fsm_pressure.emerg_unresolved(airlock_press_ss)
+                    fsm_pressure.emerg_unresolved(airlock_press_ss, outputs)
                 else:
                     fsm_pressure.keep_idling(airlock_press_ss)
 
@@ -288,8 +304,8 @@ def loop_FSMs(subsystems,
                 while i is not 1:
                     if inputs[0] == 1:
                         fsm_door.keep_opening(airlock_door_ss)
-                        inputs = [0, 0, 0, 0, 1, 0, 1]
-                        #i = 1  # Delete once sensor data is implemented & replace with line below to get updated door_state every loop
+                        #inputs = [0, 0, 0, 0, 1, 0, 1]
+                        i = 1  # Delete once sensor data is implemented & replace with line below to get updated door_state every loop
                         #door_state, door_angle = door_ss.get_current_door_state(airlock_door_ss)
                     else:
                         if fsm_door.current_state.name == "Open":
@@ -337,4 +353,5 @@ def loop_FSMs(subsystems,
         led6_status = led6.write(OFF)
 
 loop_FSMs(subsystems,
-          inputs)
+          inputs,
+          outputs)

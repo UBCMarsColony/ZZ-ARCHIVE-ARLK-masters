@@ -11,6 +11,10 @@
 from statemachine import StateMachine, State
 import time
 
+ON = 1
+OFF = 0
+
+
 # i. Create a pressure FSM that controls TargetState and Priority of
 #    the Pressure subsystem
 class PressureFSM(StateMachine):
@@ -38,57 +42,89 @@ class PressureFSM(StateMachine):
     def on_keep_idling(self, airlock_press_ss):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Idle' # int 3
-        self.airlock_press_ss.priority = 'low'      #   int 0 
+        self.airlock_press_ss.priority = 'low'      #   int 0
 
-    def on_start_pressurize(self, airlock_press_ss):
+    def on_start_pressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Pressurize' # int 1
         self.airlock_press_ss.priority = 'low'          # int 0
+        self.leds = leds
+        self.leds[0].write(OFF)  # All LEDs off except In_progress LED
+        self.leds[1].write(ON)
+        self.leds[2].write(OFF)
 
-    def on_keep_pressurize(self, airlock_press_ss):
+    def on_keep_pressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Pressurize' # int 1
         self.airlock_press_ss.priority = 'low'          # int 0
+        self.leds = leds
+        self.leds[0].write(OFF)  # All LEDs off except In_progress LED
+        self.leds[1].write(ON)
+        self.leds[2].write(OFF)
 
-    def on_done_pressurize(self, airlock_press_ss):
+    def on_done_pressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Idle'  # int 3
         self.airlock_press_ss.priority = 'low'      # int 0
+        self.leds = leds
+        self.leds[0].write(ON)  # All LEDs off except Pressurized LED
+        self.leds[1].write(OFF)
+        self.leds[2].write(OFF)
 
-    def on_start_depressurize(self, airlock_press_ss):
+    def on_start_depressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = "Depressurize" # int 2
         self.airlock_press_ss.priority = 'low'              # int 0
+        self.leds = leds
+        self.leds[0].write(OFF)  # All LEDs off except In_progress LED
+        self.leds[1].write(ON)
+        self.leds[2].write(OFF)
 
-    def on_keep_depressurize(self, airlock_press_ss):
+    def on_keep_depressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Depressurize'  # int 2
         self.airlock_press_ss.priority = 'low'              # int 0
+        self.leds = leds
+        self.leds[0].write(OFF)  # All LEDs off except In_progress LED
+        self.leds[1].write(ON)
+        self.leds[2].write(OFF)
 
-    def on_done_depressurize(self, airlock_press_ss):
+    def on_done_depressurize(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = "Idle"           # int 3
         self.airlock_press_ss.priority = 'low'              # int 0
+        self.leds = leds
+        self.leds[0].write(OFF)  # All LEDs off except Depressurized LED
+        self.leds[1].write(OFF)
+        self.leds[2].write(ON)
 
-    def on_detected_emerg_1(self, airlock_press_ss):
+    def on_detected_emerg_1(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
 
-    def on_detected_emerg_2(self, airlock_press_ss):
+    def on_detected_emerg_2(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'              # int 1
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
 
-    def on_detected_emerg_3(self, airlock_press_ss):
+    def on_detected_emerg_3(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
 
-    def on_emerg_unresolved(self, airlock_press_ss):
+    def on_emerg_unresolved(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Emergency'          # int 3
         self.airlock_press_ss.priority = 'high'              # int 1
+        self.leds = leds
+        self.leds[5].write(ON)
 
 
 # ii. Create a Door FSM that controls Procedure and Priority of
@@ -173,6 +209,7 @@ class DoorFSM(StateMachine):
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
 
+
 # iii. Create FSM for Lighting that controls the state
 #      of the lighting subsystem
 class LightFSM(StateMachine):
@@ -187,11 +224,9 @@ class LightFSM(StateMachine):
     def on_turn_off(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
         self.airlock_light_ss.toggle()  # Debug this part/ ask thomas about lights-manager code
-        #self.airlock_light_ss.loop()
         print("Turn the lights off")
 
     def on_turn_on(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
         self.airlock_light_ss.toggle()
-        #self.airlock_light_ss.loop()
         print("Turn the lights on")
