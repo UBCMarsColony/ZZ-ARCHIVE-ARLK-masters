@@ -157,14 +157,14 @@ except TypeError:
 
 # this is for debugging purposes only.
 inputs = [1,  # E
-          0,  # P
-          1,  # D
+          1,  # P
+          0,  # D
           0,  # L
           0,  # O
           0,  # Cl
           1,  # SPST
           0,  # H
-          1]  # C
+          0]  # C
 
 
 class led:                          # this is for debugging purposes only.
@@ -229,7 +229,7 @@ def loop_FSMs(subsystems,
 
         # Check if user pressed Emergency button
         # NOTE EMERG LOGIC IS ACTIVE LOW
-        if inputs[0] == 0:
+        if inputs[0].state == 0:
             emergency = True  # theres really no point in this besides an easier way to display Emergencies to user
             if(fsm_pressure.current_state.name == 'idle'):
                 fsm_pressure.detected_emerg_3(airlock_press_ss, outputs)
@@ -241,22 +241,22 @@ def loop_FSMs(subsystems,
                 fsm_door.emerg_unresolved(airlock_door_ss)
 
         # Check if the STSD switch enables the P/D/H buttons
-        if inputs[6] == 1:
+        if inputs[6].state == 1:
             led4.write(ON)
 
             # Check if user pressed P
             # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA: pressure
-            if (inputs[1] == 1 and inputs[0] == 1):
+            if (inputs[1].state == 1 and inputs[0].state == 1):
                 fsm_pressure.start_pressurize(airlock_press_ss, outputs)
 
                 # While not done pressurizing to targer...
                 #while (sensor_ss.sensor_data[3] < target_p):  # REPLACE LINE BELOW WITH THIS FOR SENSORS
                 while (pressure < target_p):
-                    if inputs[0] is 1:  # check for emerg. while pressurizing
-                        if inputs[7] == 1:  # check if user wants to pause
+                    if inputs[0].state is 1:  # check for emerg. while pressurizing
+                        if inputs[7].state == 1:  # check if user wants to pause
                             if fsm_pressure.current_state.name == "pressurize":
                                 fsm_pressure.pause_press(airlock_press_ss, outputs)
-                                while inputs[7] is 1:
+                                while inputs[7].state is 1:
                                     fsm_pressure.keep_pausing(airlock_press_ss)
                                 fsm_pressure.resume_press(airlock_press_ss, outputs)
                         else:
@@ -280,17 +280,16 @@ def loop_FSMs(subsystems,
 
             # Check if user pressed D
             # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
-            if inputs[2] == 1 and inputs[0] == 1:
+            if inputs[2].state == 1 and inputs[0].state == 1:
                 pressure = 1013  # For debugging. Delete when sensors implemented
                 fsm_pressure.start_depressurize(airlock_press_ss, outputs)
                 #while (sensor_ss.sensor_data[3] < target_d):  # REPLACE LINE BELOW WITH THIS FOR SENSORS
                 while(pressure > target_d):
-                    if inputs[0] == 1:
-                        inputs[7] = 1
-                        if inputs[7] == 1:
+                    if inputs[0].state == 1:
+                        if inputs[7].state == 1:
                             if fsm_pressure.current_state.name == 'depressurize':
                                 fsm_pressure.pause_depress(airlock_press_ss, outputs)
-                                while inputs[7] is 1:
+                                while inputs[7].state is 1:
                                     fsm_pressure.keep_pause(airlock_press_ss)
                                 fsm_pressure.resume_depress(airlock_press_ss, outputs)
                         else:
@@ -317,7 +316,7 @@ def loop_FSMs(subsystems,
             led4.write(OFF)
 
         # Check if user pressed L
-        if inputs[3] == 0:
+        if inputs[3].state == 0:
             # we want the lights off and theyre on
             if(fsm_lights.current_state.name == "ON"):
                 try:
@@ -339,14 +338,14 @@ def loop_FSMs(subsystems,
 
         #Check if user pressed O button
         # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
-        if inputs[4] == 1 and inputs[0] == 1:
+        if inputs[4].state == 1 and inputs[0].state == 1:
             fsm_door.start_open(airlock_door_ss)
             #door_state, door_angle = door_ss.get_current_door_state()
 
             # While the door is not open
             #while door_state is not 111:  # replace the line below when sensors implemeneted
             while i is not 1:
-                if inputs[0] == 1:
+                if inputs[0].state == 1:
                     fsm_door.keep_opening(airlock_door_ss)
                     #inputs = [0, 0, 0, 0, 1, 0, 1]
                     i = 1  # Delete once sensor data is implemented & replace with line below to get updated door_state every loop
@@ -365,11 +364,11 @@ def loop_FSMs(subsystems,
                 fsm_door.keep_idling(airlock_door_ss)
 
         # Check if user pressed Cl for close door
-        if inputs[5] == 1 and inputs[0] == 1:  # change to interface logic
+        if inputs[5].state == 1 and inputs[0].state == 1:  # change to interface logic
             fsm_door.start_close(airlock_door_ss)
 
             while(j is 0):
-                if inputs[0] == 1:
+                if inputs[0].state == 1:
                     fsm_door.keep_closing(airlock_door_ss)
                     # j var represents when the door is in the processs of closing
                     j = 1
@@ -388,7 +387,7 @@ def loop_FSMs(subsystems,
         # Check if the user has confirmed the Door Action
         # This should be moved up into the inputs[4] and inputs[5] loops.
         # CHANGE LATER ^^^ for now it just turns on/off LED
-        if inputs[8] == 1:
+        if inputs[8].state == 1:
             led5.write(ON)
         else:
             led5.write(OFF)
