@@ -24,7 +24,7 @@ ON = 1
 OFF = 0
 
 # Import the subsystems & relevant modules
-# subsys_inter = importlib.import_module('pi-systems_interface-subsystem')
+#subsys_inter = importlib.import_module('pi-systems_interface-subsystem')  # UNCOMMENT THIS TO RUN ON PI
 subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
 pressure_ss = importlib.import_module('pi-systems_pressure-manager')
 light_ss = importlib.import_module('pi-systems_lights-manager')
