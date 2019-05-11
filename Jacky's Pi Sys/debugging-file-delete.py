@@ -150,7 +150,7 @@ fsm_door = FSM.DoorFSM()
 target_p = 1013  # Earth atmosphere roughly 101.3kPa
 target_d = 6     # Martian Atmosphere 600 Pascals
 
-inputs = [0, 0, 1, 0, 0, 0, 1, 0]  # this is for debugging purposes only.
+inputs = [1, 0, 1, 0, 0, 0, 1, 0]  # this is for debugging purposes only.
 #outputs = [0, 0, 0, 0, 0, 0, 0]    # Testing FSM led setting
 
 # For debugging purposes bc i cant use an output component remotely
@@ -254,6 +254,7 @@ def loop_FSMs(subsystems,
                     if inputs[0] == 1:
                         fsm_pressure.keep_depressurize(airlock_press_ss, outputs)
                         time.sleep(0.001)            # Take this out when sensors implemented
+                        inputs = [0, 0, 1, 0, 0, 0, 1, 0]
                         pressure = pressure - 1  # Take this out when sensors implemented
                         print("DEPRESSURIZING")
                     else:
