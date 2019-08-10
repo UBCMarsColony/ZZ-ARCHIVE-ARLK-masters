@@ -7,11 +7,6 @@
 # in pi-main_primary.py.  Comment out the duplicates if necessary
 
 import time
-from enum import Enum
-from abc import ABC, abstractmethod
-import threading
-from threading import Lock
-import struct
 import importlib
 try:
     import RPi.GPIO as GPIO
@@ -23,16 +18,19 @@ except ModuleNotFoundError:
 ON = 1
 OFF = 0
 
-# Import the subsystems & relevant modules
-#subsys_inter = importlib.import_module('pi-systems_interface-subsystem')  # UNCOMMENT THIS TO RUN ON PI
-subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
-pressure_ss = importlib.import_module('pi-systems_pressure-manager')
-light_ss = importlib.import_module('pi-systems_lights-manager')
-door_ss = importlib.import_module('pi-systems_door-subsystem')
-comms = importlib.import_module('pi-systems_communications')
-subsys_base = importlib.import_module('pi-systems_subsystem-base')
-sensor_ss = importlib.import_module('pi-systems_sensor-reader')
-FSM = importlib.import_module('pi-systems-defn-FSMs')
+try:
+    # Import the subsystems & relevant modules
+    subsys_inter = importlib.import_module('pi-systems_interface-subsystem')  # UNCOMMENT THIS TO RUN ON PI
+    subsys_pool = importlib.import_module("pi-systems_subsystem-pool")
+    pressure_ss = importlib.import_module('pi-systems_pressure-manager')
+    light_ss = importlib.import_module('pi-systems_lights-manager')
+    door_ss = importlib.import_module('pi-systems_door-subsystem')
+    comms = importlib.import_module('pi-systems_communications')
+    subsys_base = importlib.import_module('pi-systems_subsystem-base')
+    sensor_ss = importlib.import_module('pi-systems_sensor-reader')
+    FSM = importlib.import_module('pi-systems-defn-FSMs')
+except ModuleNotFoundError:
+    print("Module not found.  Check that RPi is installed.")
 
 inputs = []
 
@@ -45,7 +43,7 @@ try:
     door_open_butt = subsys_inter.InputComponent(name='O', pin=33, subtype='Button')
     door_close_butt = subsys_inter.InputComponent(name='Cl', pin=35, subtype='Button')
     emergency_butt = subsys_inter.InputComponent(name='E', pin=36, subtype='Button')
-    SPST_toggle = subsys_inter.InputComponent(name='Enable P/D/H', pin=37, subtype='Switch')
+    power_toggle = subsys_inter.InputComponent(name='Enable P/D/H', pin=37, subtype='Switch')
     pause_butt = subsys_inter.InputComponent(name='H', pin=38, subtype='Button')
     confirm_butt = subsys_inter.InputComponent(name='C', pin=40, subtype='Button')
     # Add to inputs list
@@ -156,15 +154,15 @@ except TypeError:
 # COMMENT OUT SECTION 2 AND USE SECTION 1 CODE ON THE PI
 
 # this is for debugging purposes only.
-inputs = [1,  # E
-          1,  # P
-          0,  # D
-          0,  # L
-          0,  # O
-          0,  # Cl
-          1,  # SPST
-          0,  # H
-          0]  # C
+inputs = [1,  # Emerg
+          1,  # Pressure
+          0,  # Depressure
+          0,  # Lights
+          0,  # Open
+          0,  # Close
+          1,  # Enable
+          0,  # Hold
+          0]  # Confirm
 
 
 class led:                          # this is for debugging purposes only.
@@ -174,6 +172,7 @@ class led:                          # this is for debugging purposes only.
 
     def write(self, value):
         self.state = value
+
 
 # this is for debugging purposes only.
 led1 = led(name="Pressurized LED")
@@ -209,7 +208,7 @@ def loop_FSMs(subsystems,
     #pressure = sensor_ss.sensor_data[3]  # Replace the line below once sensors
     pressure = 0
 
-    while(True):
+    while True:
         # i and j are used for very general mock door state ...
         # i = 0 represents door not in desired state
         # i = 1 represents door in desired state
@@ -224,7 +223,7 @@ def loop_FSMs(subsystems,
         print("L switch: ", inputs[3].state)
         print("O button: ", inputs[4].state)
         print("Cl button: ", inputs[5].state)
-        print("SPST Enable", inputs[6].state)
+        print("Controls Enable", inputs[6].state)
         '''
 
         # Check if user pressed Emergency button
