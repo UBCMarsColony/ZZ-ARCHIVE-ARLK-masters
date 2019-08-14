@@ -37,7 +37,7 @@ except RuntimeError:
          superuser privileges.  You can achieve this by using 'sudo' to \
          run your script")
 except ModuleNotFoundError:
-    print("Running on non-pi machine")
+    print("Running on non-pi machine.  ")
 
 
 class LightingSubsystem(subsys.Subsystem):

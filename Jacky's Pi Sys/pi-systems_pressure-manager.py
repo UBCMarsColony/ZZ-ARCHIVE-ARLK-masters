@@ -17,7 +17,7 @@ DEFAULT_LOOP_DELAY = 750
 
 
 class PressureSubsystem(subsys.Subsystem):
-    # For the Py ic2 protol structure
+    # For the Py ic2 protocol structure
     # Modelled after the structure in the pressurization-procedure.ino
 
     class Procedure(Enum):
@@ -81,11 +81,6 @@ class PressureSubsystem(subsys.Subsystem):
         with self:
             self.new_state = new_state
 
-# take dssp out in final code revision
-def dssp():
-    print("I AM PRINTING")
-
 if __name__ == "__main__":
     example = PressureSubsystem()
     print(type(example))
-    dssp()

@@ -1,18 +1,17 @@
-# Code for the airlock FSMs
-# Written by Noah Caleanu
+# Written by Noah Caleanu (noahcaleanu152@gmail.com)
+# Defining all the FSMs and their states/methods.
+
+from statemachine import StateMachine, State
+
+ON = 1
+OFF = 0
 
 # _________________________________________________________________________
-# DEFINE THE FSM CLASSES:
+# DEFINE THE FOLLOWING FSM CLASSES:
 # i.   PressureFSM
 # ii.  DoorFSM
 # iii. LightFSM
 # _________________________________________________________________________
-
-from statemachine import StateMachine, State
-import importlib
-
-ON = 1
-OFF = 0
 
 
 # i. Create a pressure FSM that controls TargetState and Priority of
@@ -182,7 +181,7 @@ class PressureFSM(StateMachine):
         self.leds[5].write(ON)
 
 
-# ii. Create a Door FSM that controls Procedure and Priority of
+# ii. Create a Door FSM that sets Procedure and Priority of
 #     the door subsystem
 class DoorFSM(StateMachine):
     #   State Definitions
@@ -268,99 +267,24 @@ class DoorFSM(StateMachine):
 # iii. Create FSM for Lighting that controls the state
 #      of the lighting subsystem
 class LightFSM(StateMachine):
-    # State Defintions.  Lights either on or off
+    # State Defintions.  Lights either on or off.
+    # NOTE No need for emergency state it will just stay in the same position when emergency triggered.
     on = State("ON")
     off = State("OFF", initial=True)
 
-    # Define the state transitions
+    # Define the state transition.
     turn_off = on.to(off)
     turn_on = off.to(on)
 
     def on_turn_off(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
-        self.airlock_light_ss.toggle()  # Debug this part/ ask thomas about lights-manager code
+        self.airlock_light_ss.toggle()
         print("Turn the lights off")
 
     def on_turn_on(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
         self.airlock_light_ss.toggle()
         print("Turn the lights on")
-
-
-
-
-
-class BaseDoorFSM(StateMachine):
-    #   State Definitions
-    idle = State("0", initial=True)
-    s1 = State("1") # State for opening the door commands
-    s2 = State("2") # closing door commands
-
-    #   State Transitions.  idling is upon initializing and is a state for waiting for user commands.
-    # Once user presses buttons, toggles switch, state changes occur.
-    idling = idle.to(idle)
-    open = idle.to(s1)
-    close = idle.to(s2)
-    opening = s1.to(s1)
-    closing = s2.to(s2)
-    opened = s1.to(idle)
-    closed = s2.to(idle)
-
-    # Methods for the states
-    # executed when the state transition (defined above) is triggered
-    def on_idling(self, airlock_door_ss):
-        airlock_door_ss.Procedure = 'Idle'  # int 0
-        airlock_door_ss.priority = 'low'  # same int value as pressure FSM
-
-    # Note to self: Include the priority later
-    def on_open(self, airlock_door_ss):
-        airlock_door_ss.Procedure = 'OpenDoor'  # int 1
-        #airlock_door_ss.priority = 'low'
-
-    def on_close(self, airlock_door_ss):
-        self.airlock_door_ss.Procedure = 'CloseDoor'  # int 2
-        #airlock_door_ss.priority = 'low'
-
-    def on_opening(self, airlock_door_ss):
-        self.airlock_door_ss.Procedure = 'OpenDoor'  # int 1
-        #airlock_door_ss.priority = 'low'
-
-    def on_closing(self, airlock_door_ss):
-        self.airlock_door_ss.Procedure = "CloseDoor"  # int 2
-        #airlock_door_ss.priority = 'low'
-
-    def on_opened(self, airlock_door_ss):
-        self.airlock_door_ss.Procedure = 'Idle'  # int 0
-        #airlock_door_ss.priority = 'low'
-
-    def on_closed(self, airlock_door_ss):
-        self.airlock_door_ss.Procedure = 'Idle'  # int 0
-        #airlock_door_ss.priority = 'low'
-
-
-
-class StateMachineHandler:
-    """
-    Handler for the desired FSMs.  Can add FSMs to list name,
-    Can remove them.
-    """
-    def __init__(self):
-        self.fsms = []
-
-    @property
-    def name(self, name):
-        self.name = name
-
-    def addfsm(self, to_add):
-        self.fsms.append(to_add)
-
-    def deletefsm(self, to_delete):
-        pass
-
-if __name__ == '__main__':
-    pressure_ss = importlib.import_module('pi-systems_pressure-manager')
-    test = BaseDoorFSM()
-    test.current_state.name
 
 
 
