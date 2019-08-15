@@ -26,7 +26,7 @@ class DoorInputSubsystem(comms.IntraModCommMixin, subsys.Subsystem):
         self.linked_door = linked_door
 
     def loop(self):
-        response = check_buttons()    
+        response = self.check_buttons()
         if response:
             print("Message received from %s: \n%s" % (self.linked_door.name, repr([chr(x) for x in reponse])))
             if response.action is comms.ExecuteProcedure:

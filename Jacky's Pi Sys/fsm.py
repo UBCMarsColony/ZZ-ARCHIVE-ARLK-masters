@@ -21,9 +21,9 @@ from FSM.FSMDefinitions import PressureFSM, DoorFSM, LightFSM
 ON = 1
 OFF = 0
 
-# Set target values for pressure FSM
-target_p = 100  # Earth atmosphere roughly 101.3kPa
-target_d = 50    # Martian Atmosphere 600 Pascals
+# Set target values for pressure FSM.
+target_p = 20  # 101.3 - Earth atmosphere roughly 101.3kPa =
+target_d = 10    # 6 - Martian Atmosphere 600 Pascals
 
 #  Create an instance of each FSM
 fsm_pressure = PressureFSM()
@@ -82,10 +82,10 @@ except NameError:
     in0 = MockInput("Emergency", p.emergency_pin, 1)  # Emergency button (INVERSE LOGIC) is not enabled when state 1
     in1 = MockInput("Pressurize", p.pressure_pin, 0)
     in2 = MockInput("Depressurize", p.depressure_pin, 0)
-    in3 = MockInput("Light Toggle", p.lights_pin, 0)
-    in4 = MockInput("Open", p.door_open_pin, 1)
+    in3 = MockInput("Light Toggle", p.lights_pin, 1)
+    in4 = MockInput("Open", p.door_open_pin, 0)
     in5 = MockInput("Close", p.door_close_pin, 0)
-    in6 = MockInput("Enable", p.power_pin, 0)
+    in6 = MockInput("Enable", p.power_pin, 1)
     in7 = MockInput("Pause", p.pause_pin, 0)
     in8 = MockInput("Confirm", p.confirm_pin, 0)
 
@@ -207,6 +207,7 @@ try:
     airlock_sensor_ss.start()
 except TypeError:
     print("TypeError. Skipping sensors subsystem declaration, using mock data...")
+
 except NameError:
     print("NameError. Skipping sensor subsystem declaration, using mock data...")
 
@@ -216,7 +217,7 @@ except NameError:
 # the details on the fsm design
 def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
     #pressure = sensor_ss.sensor_data[3]  # Replace the line below for sensors
-    pressure = 0
+    pressure = 15
 
     try:
         airlock_press_ss = subsystems[subsysID.pressure]
@@ -230,7 +231,6 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
         # i and j are used for very general mock door state ...
         # i = 0 represents door not in desired state
         # i = 1 represents door in desired state
-        j = 0   # Represents same thing as i but for closing door so just delete when sensors implemented
 
         # Check if user pressed Emergency button
         # NOTE EMERG LOGIC IS ACTIVE LOW
@@ -287,7 +287,6 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             # Check if user pressed D
             # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
             if airlock_inputs[2].state == 1 and airlock_inputs[0].state == 1:
-                pressure = 100  # For debugging. Delete when sensors implemented
                 fsm_pressure.start_depressurize(airlock_press_ss, airlock_outputs)
                 #while (sensor_ss.sensor_data[3] < target_d):  # REPLACE LINE BELOW WITH THIS FOR SENSORS
                 while(pressure > target_d):
@@ -319,6 +318,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             print("I am in idle again? ",
                   fsm_pressure.current_state == fsm_pressure.idle)
         else:
+            print("EN OFF. ")
             out4.write(OFF)
 
         # Check if user pressed L
@@ -328,7 +328,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                 try:
                     fsm_lights.turn_off(airlock_light_ss)
                 except NameError:
-                    print("SIM. MODE")
+                    pass
             # else the light switch is ON
             else:
                 pass
@@ -337,22 +337,19 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                 try:
                     fsm_lights.turn_on(airlock_light_ss)
                 except NameError:
-                    print("Subsys doesnt exist")
+                    pass
             else:
                 pass
 
         #Check if user pressed Door open
-        # CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA
         if airlock_inputs[4].state == 1 and airlock_inputs[0].state == 1:
             fsm_door.start_open(airlock_door_ss)
             #door_state, door_angle = door_ss.get_current_door_state()
 
             # While the door is not open
-            #while door_state is not 111:  # replace the line below when sensors implemeneted
-            while airlock_inputs[8].state != 1:
+            while airlock_inputs[8].state is 0:
                 if airlock_inputs[0].state == 1:
                     fsm_door.keep_opening(airlock_door_ss)
-                    #i = 1  # Delete once sensor data is implemented & replace with line below to get updated door_state every loop
                     airlock_inputs[8].state = 1  # Simulate user pressing button
                     #door_state, door_angle = door_ss.get_current_door_state(airlock_door_ss)
                 else:
@@ -361,9 +358,9 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                     elif fsm_door.current_state.name == "Emergency":
                         fsm_door.emerg_unresolved(airlock_door_ss)
             fsm_door.done_open(airlock_door_ss)
-            airlock_inputs[8].state = 0
+            airlock_inputs[8].state = 0  # Reset the confirm button for simulation
         else:
-            if(fsm_door.current_state == fsm_door.Emergency):
+            if fsm_door.current_state == fsm_door.Emergency:
                 fsm_door.emerg_unresolved(airlock_door_ss)
             else:
                 # no code red so keep idling
@@ -372,30 +369,30 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
         # Check if user pressed Door Close
         if airlock_inputs[5].state == 1 and airlock_inputs[0].state == 1:
             fsm_door.start_close(airlock_door_ss)
-
-            while j is 0:
+            while airlock_inputs[8].state is 0:
                 if airlock_inputs[0].state == 1:
                     fsm_door.keep_closing(airlock_door_ss)
-                    # j var represents when the door is in the processs of closing
-                    j = 1
+                    airlock_inputs[8].state = 1  # Simulate the confirm button being pressed
                 else:
-                    if(fsm_door.current_state == fsm_door.Emergency):
+                    if fsm_door.current_state == fsm_door.Emergency:
                         fsm_door.emerg_unresolved(airlock_door_ss)
                     else:
                         fsm_door.detected_emerg_2(airlock_door_ss)
             fsm_door.done_close(airlock_door_ss)
+            airlock_inputs[8].state = 0  # Reset the confirm button for simulation
         else:
-            if(fsm_door.current_state == fsm_door.Emergency):
+            if fsm_door.current_state == fsm_door.Emergency:
                 fsm_door.emerg_unresolved(airlock_door_ss)
             else:
                 fsm_door.keep_idling(airlock_door_ss)
 
         print(f"Current Pressure State: {fsm_pressure.current_state.name}")
         print(f"Current Door State: {fsm_door.current_state.name}")
-        print(f"Current Light State: {fsm_lights.current_state.name} \n\n")
+        print(f"Current Light State: {fsm_lights.current_state.name}")
         print("Airlock input states:")
         for input in airlock_inputs:
             print(f"{input.name}: {input.state}")
+        print("\n\n")
 
 
 fsm_loop(airlock_inputs,

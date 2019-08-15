@@ -1,6 +1,5 @@
 # Written by Noah Caleanu (noahcaleanu152@gmail.com)
 # Defining all the FSMs and their states/methods.
-
 from statemachine import StateMachine, State
 
 ON = 1
@@ -213,55 +212,81 @@ class DoorFSM(StateMachine):
         self.airlock_door_ss.priority = 'low'  # same int value as pressure FSM
 
     # Note to self: Include the priority later
-    def on_start_open(self, airlock_door_ss):
+    def on_start_open(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # We wish to Set Door State
+        #self.airlock_door_ss.DoorState = 111  # We wish to Set Door State
         self.airlock_door_ss.Procedure = 'OpenDoor'  # int 1
         self.priority = 'low'
 
-    def on_start_close(self, airlock_door_ss):
+    def on_start_close(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # We wish to Set Door State
+        #self.airlock_door_ss.DoorState = 99  # We wish to Set Door State
         self.airlock_door_ss.Procedure = 'CloseDoor'  # int 2
         self.priority = 'low'
 
-    def on_done_open(self, airlock_door_ss):
+    def on_done_open(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 4  # We dont wanna set state, so we will just get state.
         self.airlock_door_ss.Procedure = 'Idle'  # int 0
         self.priority = 'low'
 
-    def on_done_close(self, airlock_door_ss):
+    def on_done_close(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        # self.airlock_door_ss.Procedure.value = 4  # We dont wanna set state, so we will just get state.
         self.airlock_door_ss.Procedure = 'Idle'  # int 0
         self.priority = 'low'
 
     def on_keep_opening(self, airlock_door_ss):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # Set Door State to keep opening
+        #self.airlock_door_ss.DoorState = 3  # We set state to transit
         self.airlock_door_ss.Procedure = 'OpenDoor'  # int 1
         self.priority = 'low'
 
     def on_keep_closing(self, airlock_door_ss):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # Set Door State to keep opening
+        #self.airlock_door_ss.DoorState = 3  # We set state to transit
         self.airlock_door_ss.Procedure = "CloseDoor"  # int 2
         self.priority = 'low'
 
-    def on_detected_emerg_1(self, airlock_door_ss):
+    def on_detected_emerg_1(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # Set Door State to keep opening
+        #self.airlock_door_ss.DoorState = 0  # Emergency door state is unknown to us.
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
 
-    def on_detected_emerg_2(self, airlock_door_ss):
+    def on_detected_emerg_2(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # Set Door State to keep opening
+        #self.airlock_door_ss.DoorState = 0  # Emergency door state is unknown to us.
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
 
-    def on_detected_emerg_3(self, airlock_door_ss):
+    def on_detected_emerg_3(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # Set Door State to keep opening
+        #self.airlock_door_ss.DoorState = 0  # Emergency door state is unknown to us.
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
 
-    def on_emerg_unresolved(self, airlock_door_ss):
+    def on_emerg_unresolved(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
+        #self.airlock_door_ss.Procedure.value = 3  # Set Door State to keep opening
+        #self.airlock_door_ss.DoorState = 0  # Emergency door state is unknown to us.
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
 
 
 # iii. Create FSM for Lighting that controls the state
@@ -279,14 +304,7 @@ class LightFSM(StateMachine):
     def on_turn_off(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
         self.airlock_light_ss.toggle()
-        print("Turn the lights off")
 
     def on_turn_on(self, airlock_light_ss):
         self.airlock_light_ss = airlock_light_ss
         self.airlock_light_ss.toggle()
-        print("Turn the lights on")
-
-
-
-
-
