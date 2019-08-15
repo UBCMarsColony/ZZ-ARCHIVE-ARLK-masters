@@ -1,5 +1,5 @@
-# This file contains the mock classes for te airlock interface when running on a non-pi machine.
-import importlib
+# Written by Noah Caleanu (noahcaleanu152@gmail.com)
+# This file contains the mock classes for the airlock interface when running on a non-pi machine.
 
 
 # MAKE MOCK STRUCTURES FOR SIMULATION
@@ -34,6 +34,10 @@ class MockOutput:
 
 
 class MockLightSubsystem:
+    """
+    Class to simulate the Lighting Subsystem.
+    No need for a mock pressure or door class, as they initialize without hardware specific libraries
+    """
     def __init__(self, name):
         self.name = name
         self.state = 0

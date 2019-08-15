@@ -26,16 +26,16 @@ class PressureFSM(StateMachine):
 
     #   Next State Transitions
     keep_idling = idle.to(idle)
-    pause_press = pressurize.to(pause)
-    pause_depress = depressurize.to(pause)
-    resume_press = pause.to(pressurize)
-    resume_depress = pause.to(depressurize)
-    keep_pausing = pause.to(pause)
     start_pressurize = idle.to(pressurize)
     keep_pressurize = pressurize.to(pressurize)
+    pause_press = pressurize.to(pause)
+    resume_press = pause.to(pressurize)
     done_pressurize = pressurize.to(idle)
     start_depressurize = idle.to(depressurize)
     keep_depressurize = depressurize.to(depressurize)
+    pause_depress = depressurize.to(pause)
+    resume_depress = pause.to(depressurize)
+    keep_pausing = pause.to(pause)
     done_depressurize = depressurize.to(idle)
     detected_emerg_1 = pressurize.to(Emergency)
     detected_emerg_2 = depressurize.to(Emergency)
@@ -224,12 +224,12 @@ class DoorFSM(StateMachine):
         self.priority = 'low'
 
     def on_done_open(self, airlock_door_ss):
-        self.airlock_door_ss = self.airlock_door_ss
+        self.airlock_door_ss = airlock_door_ss
         self.airlock_door_ss.Procedure = 'Idle'  # int 0
         self.priority = 'low'
 
     def on_done_close(self, airlock_door_ss):
-        self.airlock_door_ss = self.airlock_door_ss
+        self.airlock_door_ss = airlock_door_ss
         self.airlock_door_ss.Procedure = 'Idle'  # int 0
         self.priority = 'low'
 

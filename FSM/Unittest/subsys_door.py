@@ -1,9 +1,11 @@
 import importlib
 import struct
 from enum import IntEnum
-subsys = importlib.import_module('pi-systems_subsystem-base')
-comms = importlib.import_module('pi-systems_communications')
+#subsys = importlib.import_module('pi-systems_subsystem-base')
+#comms = importlib.import_module('pi-systems_communications')
 
+subsys = importlib.import_module('FSM.Unittest.subsys_base')
+comms = importlib.import_module('FSM.Unittest.subsys_comm')
 
 class DoorSubsystem(subsys.Subsystem):
 
