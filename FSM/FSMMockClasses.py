@@ -16,7 +16,8 @@ class MockInput:
     def toggle(self):
         if self.state == 0:
             self.state = 1
-        self.state = 0
+        else:
+            self.state = 0
 
 
 class MockOutput:
@@ -50,6 +51,10 @@ class MockLightSubsystem:
 
 
 if __name__ == "__main__":
+    import sys
+    print(sys.getsizeof([]))
+    print(sys.getsizeof({}))
+
     print("YOU SHOULD SEE A STRING OF ALT 0's AND 1's RUNNING ME AS MAIN.")
     lights = MockLightSubsystem(name="AirMock Lights")
     print(lights.state)

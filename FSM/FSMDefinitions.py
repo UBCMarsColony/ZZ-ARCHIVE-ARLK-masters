@@ -177,7 +177,7 @@ class PressureFSM(StateMachine):
         self.airlock_press_ss.priority = 'high'
         #self.airlock_press_ss.request_new_state(0)        # UNCOMMENT FOR VALVES TO WORK
         self.leds = leds
-        self.leds[5].write(ON)
+        self.leds[5].write(ON) # Turn on emergency LED
 
 
 # ii. Create a Door FSM that sets Procedure and Priority of
@@ -231,12 +231,20 @@ class DoorFSM(StateMachine):
         #self.airlock_door_ss.Procedure.value = 4  # We dont wanna set state, so we will just get state.
         self.airlock_door_ss.Procedure = 'Idle'  # int 0
         self.priority = 'low'
+        self.leds = leds
+        # self.leds[4].write(ON)
+        # sleep(1)  # Pause so user can see confirm led on
+        # self.leds[4].write(OFF)
+
 
     def on_done_close(self, airlock_door_ss, leds):
         self.airlock_door_ss = airlock_door_ss
         # self.airlock_door_ss.Procedure.value = 4  # We dont wanna set state, so we will just get state.
         self.airlock_door_ss.Procedure = 'Idle'  # int 0
         self.priority = 'low'
+        # self.leds[4].write(ON)
+        # sleep(1)  # Pause so user can see confirm led on
+        # self.leds[4].write(OFF)
 
     def on_keep_opening(self, airlock_door_ss):
         self.airlock_door_ss = airlock_door_ss
@@ -259,6 +267,7 @@ class DoorFSM(StateMachine):
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
         self.leds = leds
+        # self.leds[4].write(OFF) # Turn off confirm if its on
         self.leds[5].write(ON)  # Turn on emergency LED
 
     def on_detected_emerg_2(self, airlock_door_ss, leds):
@@ -268,6 +277,7 @@ class DoorFSM(StateMachine):
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
         self.leds = leds
+        #self.leds[4].write(OFF) # Turn off confirm if its on
         self.leds[5].write(ON)  # Turn on emergency LED
 
     def on_detected_emerg_3(self, airlock_door_ss, leds):
@@ -277,6 +287,7 @@ class DoorFSM(StateMachine):
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
         self.leds = leds
+        #self.leds[4].write(OFF) # Turn off confirm if its on
         self.leds[5].write(ON)  # Turn on emergency LED
 
     def on_emerg_unresolved(self, airlock_door_ss, leds):
@@ -286,6 +297,7 @@ class DoorFSM(StateMachine):
         self.airlock_door_ss.Procedure = 'Emergency'  # int 0
         self.priority = 'high'
         self.leds = leds
+        # self.leds[4].write(OFF) # Turn off confirm if its on
         self.leds[5].write(ON)  # Turn on emergency LED
 
 

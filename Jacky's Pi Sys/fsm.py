@@ -81,8 +81,8 @@ except NameError:
     # CHANGE STATES TO SIMULATE DIFFERENT INPUTS
     in0 = MockInput("Emergency", p.emergency_pin, 1)  # Emergency button (INVERSE LOGIC) is not enabled when state 1
     in1 = MockInput("Pressurize", p.pressure_pin, 0)
-    in2 = MockInput("Depressurize", p.depressure_pin, 0)
-    in3 = MockInput("Light Toggle", p.lights_pin, 1)
+    in2 = MockInput("Depressurize", p.depressure_pin, 1)
+    in3 = MockInput("Light Toggle", p.lights_pin, 0)
     in4 = MockInput("Open", p.door_open_pin, 0)
     in5 = MockInput("Close", p.door_close_pin, 0)
     in6 = MockInput("Enable", p.power_pin, 1)
@@ -140,13 +140,13 @@ except NameError:
     out6 = MockOutput(name="Emergency LED", pin=p.out6_pin)
     out7 = MockOutput(name="Pause LED", pin=p.out7_pin)
 
-    airlock_outputs = [out1,  # LED x
-                       out2,  # LED x
-                       out3,  # LED x
-                       out4,  # LED x
-                       out5,  # LED x
-                       out6,  # LED x
-                       out7]   # LED x
+    airlock_outputs = [out1,  # LED for Pressurized
+                       out2,  # LED for In progress (of pressurizing)
+                       out3,  # LED for Depressurized
+                       out4,  # LED for Enable
+                       out5,  # LED for Confirm
+                       out6,  # LED for Emergencies
+                       out7]   # LED for Pause
 
 #  Now create the user interface for inputs and outputs
 try:
@@ -241,13 +241,13 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             elif(fsm_pressure.current_state.name == 'Emergency'):
                 fsm_pressure.emerg_unresolved(airlock_press_ss, airlock_outputs)
             if(fsm_door.current_state.name == 'Idle'):
-                fsm_door.detected_emerg_3(airlock_door_ss)
+                fsm_door.detected_emerg_3(airlock_door_ss, airlock_outputs)
             elif(fsm_door.current_state.name == 'Emergency'):
-                fsm_door.emerg_unresolved(airlock_door_ss)
+                fsm_door.emerg_unresolved(airlock_door_ss, airlock_outputs)
 
         # Check if the STSD switch enables the P/D/H buttons.  Doesnt effect lights
         if airlock_inputs[6].state == 1:
-            out4.write(ON) # This turns on an LED
+            out4.write(ON)  # This turns on an LED
 
             # Check if user pressed P
             # AIR./SIM.: CHANGE THIS TO READ SENSOR DATA NOT MOCK DATA: pressure
@@ -295,7 +295,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                             if fsm_pressure.current_state.name == 'depressurize': # This is redundant!!!!
                                 fsm_pressure.pause_depress(airlock_press_ss, airlock_outputs)
                                 while airlock_inputs[7].state is 1:
-                                    fsm_pressure.keep_pause(airlock_press_ss)
+                                    fsm_pressure.keep_pausing(airlock_press_ss)
                                 fsm_pressure.resume_depress(airlock_press_ss, airlock_outputs)
                         else:
                             fsm_pressure.keep_depressurize(airlock_press_ss, airlock_outputs)
@@ -314,9 +314,6 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                     fsm_pressure.emerg_unresolved(airlock_press_ss, airlock_outputs)
                 else:
                     fsm_pressure.keep_idling(airlock_press_ss)
-
-            print("I am in idle again? ",
-                  fsm_pressure.current_state == fsm_pressure.idle)
         else:
             print("EN OFF. ")
             out4.write(OFF)
@@ -336,6 +333,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             if fsm_lights.current_state.name == "OFF":
                 try:
                     fsm_lights.turn_on(airlock_light_ss)
+                    in3.toggle()
                 except NameError:
                     pass
             else:
@@ -343,7 +341,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
 
         #Check if user pressed Door open
         if airlock_inputs[4].state == 1 and airlock_inputs[0].state == 1:
-            fsm_door.start_open(airlock_door_ss)
+            fsm_door.start_open(airlock_door_ss, airlock_outputs)
             #door_state, door_angle = door_ss.get_current_door_state()
 
             # While the door is not open
@@ -354,14 +352,14 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                     #door_state, door_angle = door_ss.get_current_door_state(airlock_door_ss)
                 else:
                     if fsm_door.current_state.name == "Open":
-                        fsm_door.detected_emerg_1(airlock_door_ss)
+                        fsm_door.detected_emerg_1(airlock_door_ss, airlock_outputs)
                     elif fsm_door.current_state.name == "Emergency":
-                        fsm_door.emerg_unresolved(airlock_door_ss)
-            fsm_door.done_open(airlock_door_ss)
+                        fsm_door.emerg_unresolved(airlock_door_ss, airlock_outputs)
+            fsm_door.done_open(airlock_door_ss, airlock_outputs)
             airlock_inputs[8].state = 0  # Reset the confirm button for simulation
         else:
             if fsm_door.current_state == fsm_door.Emergency:
-                fsm_door.emerg_unresolved(airlock_door_ss)
+                fsm_door.emerg_unresolved(airlock_door_ss, airlock_outputs)
             else:
                 # no code red so keep idling
                 fsm_door.keep_idling(airlock_door_ss)
@@ -382,7 +380,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             airlock_inputs[8].state = 0  # Reset the confirm button for simulation
         else:
             if fsm_door.current_state == fsm_door.Emergency:
-                fsm_door.emerg_unresolved(airlock_door_ss)
+                fsm_door.emerg_unresolved(airlock_door_ss, airlock_outputs)
             else:
                 fsm_door.keep_idling(airlock_door_ss)
 

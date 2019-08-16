@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AutoTestManager">
-    <enabled-run-configurations>
-      <run-configuration type="tests" name="Unittests for test_Door.FSMDoorUnittest.test_keep_opening" />
-    </enabled-run-configurations>
-  </component>
   <component name="ChangeListManager">
     <list default="true" id="7b83a156-364c-40b9-a6a2-7bc7ba186141" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FSM/FSMDefinitions.py" beforeDir="false" afterPath="$PROJECT_DIR$/FSM/FSMDefinitions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FSM/FSMMockClasses.py" beforeDir="false" afterPath="$PROJECT_DIR$/FSM/FSMMockClasses.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Jacky's Pi Sys/fsm.py" beforeDir="false" afterPath="$PROJECT_DIR$/Jacky's Pi Sys/fsm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_door-input-subsystem.py" beforeDir="false" afterPath="$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_door-input-subsystem.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,20 +15,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1771">
-              <caret line="337" column="56" selection-start-line="337" selection-start-column="56" selection-end-line="337" selection-end-column="56" />
+            <state relative-caret-position="129">
+              <caret line="142" column="51" lean-forward="true" selection-start-line="142" selection-start-column="51" selection-end-line="142" selection-end-column="51" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FSM/FSMDefinitions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="280" lean-forward="true" selection-start-line="280" selection-end-line="280" />
+            <state relative-caret-position="554">
+              <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-start-column="31" selection-end-line="97" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -59,6 +55,8 @@
       <find>subsystems</find>
       <find>target_p</find>
       <find>target_d</find>
+      <find>keep_pausing</find>
+      <find>out5</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -87,7 +85,6 @@
         <option value="$PROJECT_DIR$/FSM/FSMSetup.py" />
         <option value="$PROJECT_DIR$/FSM/FSMConstants.py" />
         <option value="$PROJECT_DIR$/FSM/FSMSetUp.py" />
-        <option value="$PROJECT_DIR$/FSM/FSMMockClasses.py" />
         <option value="$PROJECT_DIR$/FSM/test_FSMUnittest.py" />
         <option value="$PROJECT_DIR$/FSM/FSMUnittest.py" />
         <option value="$PROJECT_DIR$/FSM/test_UnittestLights.py" />
@@ -101,9 +98,10 @@
         <option value="$PROJECT_DIR$/FSM/Unittest/subsys_door.py" />
         <option value="$PROJECT_DIR$/FSM/Unittest/test_Door.py" />
         <option value="$PROJECT_DIR$/FSM/Unittest/test_Pressure.py" />
-        <option value="$PROJECT_DIR$/Jacky's Pi Sys/fsm.py" />
         <option value="$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_door-input-subsystem.py" />
+        <option value="$PROJECT_DIR$/FSM/FSMMockClasses.py" />
         <option value="$PROJECT_DIR$/FSM/FSMDefinitions.py" />
+        <option value="$PROJECT_DIR$/Jacky's Pi Sys/fsm.py" />
       </list>
     </option>
   </component>
@@ -128,6 +126,12 @@
               <item name="marscol" type="b2602c69:ProjectViewProjectNode" />
               <item name="marscol" type="462c0819:PsiDirectoryNode" />
               <item name="FSM" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="marscol" type="b2602c69:ProjectViewProjectNode" />
+              <item name="marscol" type="462c0819:PsiDirectoryNode" />
+              <item name="FSM" type="462c0819:PsiDirectoryNode" />
+              <item name="Unittest" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="marscol" type="b2602c69:ProjectViewProjectNode" />
@@ -194,6 +198,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="FSMMockClasses" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="marscol" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/FSM" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/FSM/FSMMockClasses.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="fsm" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="marscol" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -215,21 +240,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Unittests for FSM.Unittest.test_Lights.FSMLightsUnittest" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
-      <module name="marscol" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/FSM" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;FSM.Unittest.test_Lights.FSMLightsUnittest&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Unittests for test_Pressure.FSMPressureUnittest.test_detected_emerg_3" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
+    <configuration name="Unittests for test_Pressure.FSMPressureUnittest.test_pause_pressurizing" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
       <module name="marscol" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -239,22 +250,8 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_Pressure.FSMPressureUnittest.test_detected_emerg_3&quot;" />
+      <option name="_new_target" value="&quot;test_Pressure.FSMPressureUnittest.test_pause_pressurizing&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Unittests in test_Door.py" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
-      <module name="marscol" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/FSM/Unittest" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/FSM/Unittest/test_Door.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
     <configuration name="Unittests in test_Pressure.py" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
@@ -274,10 +271,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.fsm" />
+        <item itemvalue="Python tests.Unittests for test_Pressure.FSMPressureUnittest.test_pause_pressurizing" />
+        <item itemvalue="Python.FSMMockClasses" />
         <item itemvalue="Python.FSMDefinitions" />
         <item itemvalue="Python tests.Unittests in test_Pressure.py" />
-        <item itemvalue="Python tests.Unittests in test_Door.py" />
-        <item itemvalue="Python tests.Unittests for test_Pressure.FSMPressureUnittest.test_detected_emerg_3" />
       </list>
     </recent_temporary>
   </component>
@@ -295,12 +292,6 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Unittests_for_test_Door_FSMDoorUnittest_test_keep_opening - 2019.08.14 at 19h 11m 46s.xml">
-      <configuration name="Unittests for test_Door.FSMDoorUnittest.test_keep_opening" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Unittests_in_test_Door_py - 2019.08.14 at 19h 18m 15s.xml">
-      <configuration name="Unittests in test_Door.py" configurationId="tests" />
-    </history-entry>
     <history-entry file="Unittests_for_test_Pressure_FSMPressureUnittest_test_test - 2019.08.14 at 20h 13m 24s.xml">
       <configuration name="Unittests for test_Pressure.FSMPressureUnittest.test_test" configurationId="tests" />
     </history-entry>
@@ -325,18 +316,24 @@
     <history-entry file="Unittests_for_test_Door_FSMDoorUnittest - 2019.08.14 at 20h 13m 24s.xml">
       <configuration name="Unittests for test_Door.FSMDoorUnittest" configurationId="tests" />
     </history-entry>
+    <history-entry file="Unittests_for_test_Pressure_FSMPressureUnittest_test_pause_pressurizing - 2019.08.16 at 13h 17m 21s.xml">
+      <configuration name="Unittests for test_Pressure.FSMPressureUnittest.test_pause_pressurizing" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_test_Pressure_FSMPressureUnittest_test_pause_pressurizing - 2019.08.16 at 13h 21m 39s.xml">
+      <configuration name="Unittests for test_Pressure.FSMPressureUnittest.test_pause_pressurizing" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24017744" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2059569" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32974428" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.43607" />
-      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.44145358" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.2153432" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.44145358" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -359,28 +356,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py</url>
-          <line>253</line>
-          <option name="timeStamp" value="14" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py</url>
           <line>288</line>
           <option name="timeStamp" value="15" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py</url>
-          <line>324</line>
+          <line>321</line>
           <option name="timeStamp" value="16" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py</url>
-          <line>369</line>
+          <line>367</line>
           <option name="timeStamp" value="18" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py</url>
           <line>248</line>
           <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py</url>
+          <line>261</line>
+          <option name="timeStamp" value="20" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -440,20 +437,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/pi-systems-subsys_FSMs.py" />
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37-32/Lib/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="166">
-          <caret line="311" selection-start-line="311" selection-end-line="311" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_pressure-manager.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="11" column="58" selection-start-line="11" selection-start-column="58" selection-end-line="11" selection-end-column="58" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_subsystem-base.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1989">
@@ -575,16 +558,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/FSM/Unittest/test_Pressure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="461">
-          <caret line="45" column="18" lean-forward="true" selection-start-line="45" selection-start-column="18" selection-end-line="45" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/FSM/Unittest/test_Door.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-17">
@@ -605,13 +578,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/FSM/FSMMockClasses.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="866">
-          <caret line="52" column="73" selection-start-line="52" selection-start-column="73" selection-end-line="52" selection-end-column="73" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_door-subsystem.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="95">
@@ -622,17 +588,58 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py">
+    <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/pi3_gpio_pinout_diagram.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_control_logic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1771">
-          <caret line="337" column="56" selection-start-line="337" selection-start-column="56" selection-end-line="337" selection-end-column="56" />
+        <state relative-caret-position="187">
+          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/pi-systems_pressure-manager.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="37" column="8" lean-forward="true" selection-start-line="37" selection-start-column="8" selection-end-line="37" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FSM/FSMMockClasses.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FSM/Unittest/test_Pressure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="274">
+          <caret line="94" column="57" lean-forward="true" selection-start-line="94" selection-start-column="57" selection-end-line="94" selection-end-column="57" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37-32/Lib/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="311" selection-start-line="311" selection-end-line="311" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/FSM/FSMDefinitions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="280" lean-forward="true" selection-start-line="280" selection-end-line="280" />
+        <state relative-caret-position="554">
+          <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-start-column="31" selection-end-line="97" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Jacky's Pi Sys/fsm.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="142" column="51" lean-forward="true" selection-start-line="142" selection-start-column="51" selection-end-line="142" selection-end-column="51" />
         </state>
       </provider>
     </entry>
