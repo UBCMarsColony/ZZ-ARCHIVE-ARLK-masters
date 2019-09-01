@@ -39,6 +39,7 @@ class PressureFSM(StateMachine):
     detected_emerg_1 = pressurize.to(Emergency)
     detected_emerg_2 = depressurize.to(Emergency)
     detected_emerg_3 = idle.to(Emergency)
+    detected_emerg_4 = pause.to(Emergency)
     emerg_unresolved = Emergency.to(Emergency)
 
     # Methods for the states actions
@@ -164,6 +165,14 @@ class PressureFSM(StateMachine):
         self.leds[5].write(ON)  # Turn on emergency LED
 
     def on_detected_emerg_3(self, airlock_press_ss, leds):
+        self.airlock_press_ss = airlock_press_ss
+        self.airlock_press_ss.TargetState = 'Emergency'
+        self.airlock_press_ss.priority = 'high'
+        #self.airlock_press_ss.request_new_state(0)        # UNCOMMENT FOR VALVES TO WORK
+        self.leds = leds
+        self.leds[5].write(ON)  # Turn on emergency LED
+
+    def on_detected_emerg_4(self, airlock_press_ss, leds):
         self.airlock_press_ss = airlock_press_ss
         self.airlock_press_ss.TargetState = 'Emergency'
         self.airlock_press_ss.priority = 'high'

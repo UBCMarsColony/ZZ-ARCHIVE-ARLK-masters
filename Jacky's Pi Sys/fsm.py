@@ -80,13 +80,13 @@ except NameError:
     # Using mock classes on non-pi machine.  Also for debugging purposes.
     # CHANGE STATES TO SIMULATE DIFFERENT INPUTS
     in0 = MockInput("Emergency", p.emergency_pin, 1)  # Emergency button (INVERSE LOGIC) is not enabled when state 1
-    in1 = MockInput("Pressurize", p.pressure_pin, 0)
-    in2 = MockInput("Depressurize", p.depressure_pin, 1)
+    in1 = MockInput("Pressurize", p.pressure_pin, 1)
+    in2 = MockInput("Depressurize", p.depressure_pin, 0)
     in3 = MockInput("Light Toggle", p.lights_pin, 0)
     in4 = MockInput("Open", p.door_open_pin, 0)
     in5 = MockInput("Close", p.door_close_pin, 0)
     in6 = MockInput("Enable", p.power_pin, 1)
-    in7 = MockInput("Pause", p.pause_pin, 0)
+    in7 = MockInput("Pause", p.pause_pin, 1)
     in8 = MockInput("Confirm", p.confirm_pin, 0)
 
     # Add the inputs to a list
@@ -245,7 +245,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             elif(fsm_door.current_state.name == 'Emergency'):
                 fsm_door.emerg_unresolved(airlock_door_ss, airlock_outputs)
 
-        # Check if the STSD switch enables the P/D/H buttons.  Doesnt effect lights
+        # Check if the Enable switch enables the Press./Depress./Pause buttons (does not effect lights)
         if airlock_inputs[6].state == 1:
             out4.write(ON)  # This turns on an LED
 
@@ -256,15 +256,27 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                 fsm_pressure.start_pressurize(airlock_press_ss, airlock_outputs)
 
                 # While not done pressurizing to target...
-                #while (sensor_ss.sensor_data[3] < target_p):  # REPLACE LINE BELOW WITH THIS FOR SENSORS
-                while (pressure < target_p):
+                #while (sensor_ss.sensor_data[3] < target_p):  # REPLACE LINE BELOW WITH THIS ONE FOR SENSORS
+                while pressure < target_p:
                     if airlock_inputs[0].state == 1:  # check for emerg. while pressurizing
                         if airlock_inputs[7].state == 1:  # check if user wants to pause
+                            print(fsm_pressure.current_state)
                             if fsm_pressure.current_state.name == "pressurize":
                                 fsm_pressure.pause_press(airlock_press_ss, airlock_outputs)
-                                while airlock_inputs[7].state is 1:
+                                while airlock_inputs[7].state == 1 and airlock_inputs[0].state == 1:
+                                    # while pausing and there is no emergency...
                                     fsm_pressure.keep_pausing(airlock_press_ss)
-                                fsm_pressure.resume_press(airlock_press_ss, airlock_outputs)
+                                    if airlock_inputs[0].state == 0:
+                                        fsm_pressure.detected_emerg_4(airlock_press_ss, airlock_outputs)
+                                    elif airlock_inputs[7].state == 1:
+                                        fsm_pressure.keep_pausing(airlock_press_ss)
+                                        airlock_inputs[0].toggle()
+                                    else:
+                                        fsm_pressure.resume_press(airlock_press_ss, airlock_outputs)
+                                if airlock_inputs[0].state == 0:
+                                    fsm_pressure.detected_emerg_4(airlock_press_ss, airlock_outputs)
+                                else:
+                                    fsm_pressure.resume_press(airlock_press_ss, airlock_outputs)
                         else:
                             # This is for no pausing & no emergencies.
                             fsm_pressure.keep_pressurize(airlock_press_ss, airlock_outputs)
@@ -273,13 +285,13 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
                             #sensor_ss.__update_sensor_data()  # Not sure if the sensors are read continuously but update the sensor value
                             print("PRESSURIZING...")
                     else:
-                        if(fsm_pressure.current_state == fsm_pressure.Emergency):
+                        if fsm_pressure.current_state == fsm_pressure.Emergency:
                             fsm_pressure.emerg_unresolved(airlock_press_ss, airlock_outputs) # Emerg to Emerg
                         else:
                             fsm_pressure.detected_emerg_1(airlock_press_ss, airlock_outputs) # Press to Emerg
                 fsm_pressure.done_pressurize(airlock_press_ss, airlock_outputs)
             else:
-                if(fsm_pressure.current_state == fsm_pressure.Emergency):
+                if fsm_pressure.current_state == fsm_pressure.Emergency:
                     fsm_pressure.emerg_unresolved(airlock_press_ss, airlock_outputs)
                 else:
                     fsm_pressure.keep_idling(airlock_press_ss)
@@ -289,28 +301,40 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             if airlock_inputs[2].state == 1 and airlock_inputs[0].state == 1:
                 fsm_pressure.start_depressurize(airlock_press_ss, airlock_outputs)
                 #while (sensor_ss.sensor_data[3] < target_d):  # REPLACE LINE BELOW WITH THIS FOR SENSORS
-                while(pressure > target_d):
+                while pressure > target_d:
                     if airlock_inputs[0].state == 1:
+                        # No emergencies
                         if airlock_inputs[7].state == 1:
-                            if fsm_pressure.current_state.name == 'depressurize': # This is redundant!!!!
+                            # Pause is pressed
+                            if fsm_pressure.current_state.name == 'depressurize':  # This is redundant!!!!
                                 fsm_pressure.pause_depress(airlock_press_ss, airlock_outputs)
-                                while airlock_inputs[7].state is 1:
+                                while airlock_inputs[7].state == 1 and airlock_inputs[0].state == 1:
+                                    # While pausing and no emergencies detected
                                     fsm_pressure.keep_pausing(airlock_press_ss)
-                                fsm_pressure.resume_depress(airlock_press_ss, airlock_outputs)
+                                    if airlock_inputs[0].state == 0:
+                                        fsm_pressure.detected_emerg_5(airlock_press_ss, airlock_outputs)
+                                    elif airlock_inputs[7].state == 1:
+                                        fsm_pressure.keep_pausing(airlock_press_ss)
+                                    else:
+                                        fsm_pressure.resume_depress(airlock_press_ss, airlock_outputs)
+                                if airlock_inputs[0].state == 0:
+                                    fsm_pressure.detected_emerg_4(airlock_press_ss, airlock_outputs)
+                                else:
+                                    fsm_pressure.resume_depress(airlock_press_ss, airlock_outputs)
                         else:
                             fsm_pressure.keep_depressurize(airlock_press_ss, airlock_outputs)
                             time.sleep(0.001)            # Take this out when sensors implemented
                             pressure = pressure - 1  # Take this out when sensors implemented
                             print("DEPRESSURIZING")
                     else:
-                        if(fsm_pressure.current_state == fsm_pressure.Emergency):
+                        if fsm_pressure.current_state == fsm_pressure.Emergency:
                             fsm_pressure.emerg_unresolved(airlock_press_ss, airlock_outputs)
                         else:
                             fsm_pressure.detected_emerg_2(airlock_press_ss, airlock_outputs)
                     # sensor_ss.__update_sensor_data()  # Might need to manually update. check how sensors are read
                 fsm_pressure.done_depressurize(airlock_press_ss, airlock_outputs)
             else:
-                if(fsm_pressure.current_state == fsm_pressure.Emergency):
+                if fsm_pressure.current_state == fsm_pressure.Emergency:
                     fsm_pressure.emerg_unresolved(airlock_press_ss, airlock_outputs)
                 else:
                     fsm_pressure.keep_idling(airlock_press_ss)
@@ -345,7 +369,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
             #door_state, door_angle = door_ss.get_current_door_state()
 
             # While the door is not open
-            while airlock_inputs[8].state is 0:
+            while airlock_inputs[8].state == 0:
                 if airlock_inputs[0].state == 1:
                     fsm_door.keep_opening(airlock_door_ss)
                     airlock_inputs[8].state = 1  # Simulate user pressing button
@@ -367,7 +391,7 @@ def fsm_loop(airlock_inputs, airlock_outputs, subsystems):
         # Check if user pressed Door Close
         if airlock_inputs[5].state == 1 and airlock_inputs[0].state == 1:
             fsm_door.start_close(airlock_door_ss)
-            while airlock_inputs[8].state is 0:
+            while airlock_inputs[8].state == 0:
                 if airlock_inputs[0].state == 1:
                     fsm_door.keep_closing(airlock_door_ss)
                     airlock_inputs[8].state = 1  # Simulate the confirm button being pressed

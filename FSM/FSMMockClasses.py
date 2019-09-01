@@ -19,6 +19,13 @@ class MockInput:
         else:
             self.state = 0
 
+    @property
+    def __bool__(self):
+        if self.state is 0:
+            return False
+        else:
+            return True
+
 
 class MockOutput:
     """
@@ -51,18 +58,11 @@ class MockLightSubsystem:
 
 
 if __name__ == "__main__":
-    import sys
-    print(sys.getsizeof([]))
-    print(sys.getsizeof({}))
+    inputs = [MockInput("in1", pin=1, state=1),
+              MockInput("in2", pin=2, state=0),
+              MockInput("in3", pin=3, state=0)]
 
-    print("YOU SHOULD SEE A STRING OF ALT 0's AND 1's RUNNING ME AS MAIN.")
-    lights = MockLightSubsystem(name="AirMock Lights")
-    print(lights.state)
-    lights.toggle()
-    print(lights.state)
-    lights.toggle()
-    print(lights.state)
-    lights.toggle()
-    print(lights.state)
-    lights.toggle()
-    print(lights.state)
+    print(inputs[0].__bool__)
+
+    print(1 == inputs[0].__bool__)
+
